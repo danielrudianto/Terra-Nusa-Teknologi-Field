@@ -1,0 +1,23 @@
+group = "id.co.alphakonstruksi.jam_monoton"
+version = "0.1.0"
+
+// Versi AGP datang dari proyek aplikasi (android/settings.gradle[.kts]),
+// jadi tidak ditulis di sini — plugin ini ikut versi apa pun yang dipakai
+// aplikasinya.
+plugins {
+    id("com.android.library")
+}
+
+android {
+    namespace = "id.co.alphakonstruksi.jam_monoton"
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        minSdk = 24
+    }
+}
