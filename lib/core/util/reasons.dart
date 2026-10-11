@@ -8,6 +8,7 @@ String reasonText(String? code, [String? detail]) {
     'TIDAK_VALID' => 'Isi data tidak sah',
     'TIDAK_BERHAK' => 'Akun Anda tidak berhak menyimpan data ini',
     'BUKAN_MILIK' => 'Data ini milik pengguna lain',
+    'DIOPER' => 'Log ini sudah dioper ke rekan — perubahan hanya dari HP pemegangnya',
     'SUDAH_DIHAPUS' => 'Data ini sudah dihapus di kantor',
     'SUDAH_DITINJAU' => 'Absen sudah ditinjau kantor — tidak dapat diubah lagi',
     'SUDAH_DIPERIKSA' => 'Log cor sudah diperiksa kantor — tidak dapat diubah lagi',

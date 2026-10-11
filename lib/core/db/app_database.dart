@@ -321,6 +321,55 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// Store a document that ALREADY lives on the server exactly as sent —
+  /// nothing is queued.
+  ///
+  /// Used when a colleague hands a running log over (Oper): the server's
+  /// reply carries the whole body at [version], and this phone continues
+  /// from there. The next change bumps the version past it as usual.
+  Future<void> saveSyncedDocument({
+    required String uuid,
+    required String entity,
+    required int userId,
+    required Map<String, Object?> body,
+    required int version,
+  }) {
+    return transaction(() async {
+      final now = DateTime.now();
+      final existing = await getDocument(uuid);
+      final fields = DocumentsCompanion(
+        entity: Value(entity),
+        userId: Value(userId),
+        body: Value(jsonEncode(body)),
+        version: Value(version),
+        syncedVersion: Value(version),
+        sendStatus: const Value('sent'),
+        reason: const Value(null),
+        detail: const Value(null),
+        attempts: const Value(0),
+        retryAfter: const Value(null),
+        updatedAt: Value(now),
+      );
+      if (existing == null) {
+        await into(documents).insert(
+          DocumentsCompanion.insert(
+            uuid: uuid,
+            entity: entity,
+            userId: userId,
+            body: jsonEncode(body),
+            version: Value(version),
+            syncedVersion: Value(version),
+            sendStatus: const Value('sent'),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+      } else {
+        await (update(documents)..where((t) => t.uuid.equals(uuid))).write(fields);
+      }
+    });
+  }
+
   /// Read, change and store ONE document inside a single transaction.
   ///
   /// The screen is no longer the only writer: the "Selesai TM" button on the

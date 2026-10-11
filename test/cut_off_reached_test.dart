@@ -29,6 +29,48 @@ void main() {
     expect(casting(null).reachedCutOffAfter(0), isFalse);
   });
 
+  group('shortfall to cut-off', () {
+    // D1000 = 0,785 m² per metre of column.
+    const area = 0.7853981633974483;
+
+    test('a small shortfall needs no explaining: the trim covers it', () {
+      final s = shortfallToCutOff(missingM: 0.40, areaM2: area, averageTruckM3: 7);
+      expect(s.mustExplain, isFalse);
+    });
+
+    test('past the slack it must be explained', () {
+      expect(shortfallToCutOff(missingM: 0.60, areaM2: area).mustExplain, isTrue);
+    });
+
+    test('metres become m3 and truckloads', () {
+      // 10 m of D1000 = 7,85 m3; with 7 m3 trucks that is 2 more TM.
+      final s = shortfallToCutOff(missingM: 10, areaM2: area, averageTruckM3: 7);
+      expect(s.volumeM3, closeTo(7.854, 0.001));
+      expect(s.trucks, 2);
+      expect(s.mustExplain, isTrue);
+    });
+
+    test('this pile\'s own average truck is used, not a guess', () {
+      // Daniel's case: 5 TM planned, 1 poured. With 4 m3 trucks the same
+      // hole needs twice as many loads as with 8 m3 ones.
+      expect(shortfallToCutOff(missingM: 10, areaM2: area, averageTruckM3: 4).trucks, 2);
+      expect(shortfallToCutOff(missingM: 20, areaM2: area, averageTruckM3: 4).trucks, 4);
+      expect(shortfallToCutOff(missingM: 20, areaM2: area, averageTruckM3: 8).trucks, 2);
+    });
+
+    test('no truck recorded yet falls back to a usual load', () {
+      final s = shortfallToCutOff(missingM: 20, areaM2: area);
+      expect(s.trucks, (20 * area / truckVolumeTypicalM3).ceil());
+    });
+
+    test('at or past cut-off there is nothing missing', () {
+      final s = shortfallToCutOff(missingM: -0.30, areaM2: area);
+      expect(s.volumeM3, 0);
+      expect(s.trucks, 0);
+      expect(s.mustExplain, isFalse);
+    });
+  });
+
   group('sounding after a truck', () {
     test('a rise is fine', () => expect(soundingProblem(8.0, before: 12.0, bottom: 20.4), isNull));
     test('the tape\'s 10 cm of slack is fine', () => expect(soundingProblem(12.08, before: 12.0, bottom: 20.4), isNull));

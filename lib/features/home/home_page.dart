@@ -10,6 +10,7 @@ import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/list_card.dart';
 import 'status_banners.dart';
+import 'watched_logs.dart';
 import '../settings/power_guide.dart';
 
 class HomePage extends ConsumerWidget {
@@ -54,6 +55,7 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: 18),
             const StatusBanners(),
             const PowerBanner(),
+            const _WatchedCard(),
             if (projects.isEmpty)
               const TerraBanner(
                 kind: BannerKind.info,
@@ -97,6 +99,76 @@ class HomePage extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "Sedang dipantau": the running drill and casting logs THIS user holds, one
+/// tap back into each. Gone once a log is finished or handed over (Oper).
+class _WatchedCard extends ConsumerWidget {
+  const _WatchedCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final w = context.colors;
+    final items = ref.watch(watchedLogsProvider);
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2, bottom: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text('Sedang dipantau',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, letterSpacing: -0.2, color: w.ink)),
+              ),
+              Text('${items.length} log', style: TextStyle(color: w.muted, fontSize: 13)),
+            ],
+          ),
+        ),
+        for (final l in items)
+          ListCard(
+            onTap: () => context.push(l.route),
+            edgeColor: l.entity == 'drill_log' ? w.warnFg : w.checkedFg,
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: l.entity == 'drill_log' ? w.warnBg : w.checkedBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    l.entity == 'drill_log' ? Icons.construction : Icons.foundation,
+                    color: l.entity == 'drill_log' ? w.warnFg : w.checkedFg,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${l.entity == 'drill_log' ? 'Bor' : 'Cor'} ${l.pointCode}',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
+                      Text(
+                        [
+                          if (l.projectCode != null) l.projectCode!,
+                          l.entity == 'drill_log' ? 'log bor berjalan' : 'log cor berjalan',
+                        ].join(' · '),
+                        style: TextStyle(color: w.muted, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: w.faint),
+              ],
+            ),
+          ),
+        const SizedBox(height: 6),
+      ],
     );
   }
 }

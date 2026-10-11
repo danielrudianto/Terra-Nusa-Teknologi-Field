@@ -175,6 +175,44 @@ class ApiClient {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Oper (handover) — move a running log to a colleague with a 6-digit code
+  // -------------------------------------------------------------------------
+
+  static String _handoverBase(String entity) =>
+      entity == 'drill_log' ? '/field/drill-logs' : '/field/castings';
+
+  /// Ask the server for a single-use handover code (holder only, 15 minutes).
+  Future<({String code, int validMinutes})> handoverCode(String entity, String uuid) async {
+    try {
+      final r = await dio.post<Map<String, dynamic>>('${_handoverBase(entity)}/$uuid/handover-code');
+      final data = (r.data ?? const {}).cast<String, Object?>();
+      return (code: '${data['code']}', validMinutes: toIntOrNull(data['validMinutes']) ?? 15);
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Redeem a handover code: the log moves to THIS user, and the reply carries
+  /// the whole body exactly as a phone stores it ([AppDatabase.saveSyncedDocument]).
+  Future<({String uuid, int version, Map<String, Object?> body})> redeemHandover(
+      String entity, String uuid, String code) async {
+    try {
+      final r = await dio.post<Map<String, dynamic>>(
+        '${_handoverBase(entity)}/handover',
+        data: {'uuid': uuid, 'code': code},
+      );
+      final data = (r.data ?? const {}).cast<String, Object?>();
+      return (
+        uuid: '${data['uuid']}',
+        version: toIntOrNull(data['version']) ?? 1,
+        body: (data['body'] as Map).cast<String, Object?>(),
+      );
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
   Future<void> logout() async {
     final refresh = await session.refreshToken();
     if (refresh == null) return;

@@ -30,6 +30,7 @@ import 'calc/pauses.dart';
 import 'calc/pile_snapshot.dart';
 import 'calc/volume.dart';
 import 'concrete_suppliers.dart';
+import 'handover.dart';
 import 'pile_section_view.dart';
 import 'tremie_string_view.dart';
 
@@ -233,14 +234,47 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   bool get _locked => _row?.serverStatus == 'diperiksa';
   bool get _finished => _doc!['status'] == 'selesai';
 
+  /// Handed over (Oper): the server names someone else as holder of THIS log,
+  /// so this phone only looks on — its pushes would be refused (DIOPER).
+  ///
+  /// The holder on the point describes the casting the SERVER has for that
+  /// point. If that is not this document (another phone logged the point, or
+  /// this log has never been pushed), it says NOTHING about this log — reading
+  /// it as a handover would lock a perfectly normal log read-only, and every
+  /// save would then do nothing.
+  bool get _handedAway {
+    if (_row == null) return false;
+    final serverUuid = _pilePoint?['castingUuid'];
+    if (serverUuid == null || '$serverUuid' != widget.uuid) return false;
+    final holder = toIntOrNull(_pilePoint?['castingHolderID']);
+    final me = ref.read(userProvider)?.id;
+    return holder != null && me != null && holder != me;
+  }
+
+  String? get _holderName => _pilePoint?['castingHolderName']?.toString();
+
+  /// Nothing on this screen may change the document.
+  bool get _readOnly => _locked || _handedAway;
+
   // -------------------------------------------------------------------------
   // Save
   // -------------------------------------------------------------------------
 
-  Future<void> _update(void Function(Map<String, Object?> d) f) async {
-    if (_locked) return;
+  /// Change and save the document. Returns FALSE when nothing was written.
+  ///
+  /// A caller must never report success on its own: a screen that is locked or
+  /// handed over writes nothing, and a silent `return` here used to leave the
+  /// caller showing its "saved" dialog and snackbar over unchanged data.
+  Future<bool> _update(void Function(Map<String, Object?> d) f) async {
+    if (_readOnly) {
+      if (mounted) showSnack(context, _readOnlyReason, icon: Icons.lock_outline);
+      return false;
+    }
     final p = ref.read(userProvider);
-    if (p == null) return;
+    if (p == null) {
+      if (mounted) showSnack(context, 'Belum masuk akun — tidak ada yang tersimpan.', icon: Icons.error_outline);
+      return false;
+    }
     setState(() => f(_doc!));
     final db = ref.read(dbProvider);
     await db.saveDocument(uuid: widget.uuid, entity: 'casting', userId: p.id, body: _doc!);
@@ -248,7 +282,13 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     _isNew = false;
     ref.read(syncProvider.notifier).afterSave();
     if (mounted) setState(() {});
+    return true;
   }
+
+  /// Why this screen cannot be changed — shown instead of a fake success.
+  String get _readOnlyReason => _locked
+      ? 'Log cor sudah diperiksa kantor — tidak dapat diubah lagi.'
+      : 'Log cor ini dipegang ${_holderName ?? 'rekan'} — ubah dari HP pemegangnya.';
 
   // -------------------------------------------------------------------------
   // Tremie
@@ -301,12 +341,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
   Future<void> _removeTopSegment() async {
     if (_tremie.isEmpty) return;
-    await _update((d) {
+    final saved = await _update((d) {
       final s = _tremie..sort((a, b) => (toIntOrNull(a['position']) ?? 0).compareTo(toIntOrNull(b['position']) ?? 0));
       final top = s.last;
       (d['tremie'] as List).removeWhere((x) => (x as Map)['uuid'] == top['uuid']);
     });
-    if (mounted) showSnack(context, 'Segmen teratas dihapus dari susunan.');
+    if (saved && mounted) showSnack(context, 'Segmen teratas dihapus dari susunan.');
   }
 
   Future<void> _customSegment() async {
@@ -412,7 +452,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (result == null) return;
     // The next truck is here: no more waiting reminders.
     await Notifications.cancelIdleReminders();
-    await _update((d) {
+    final saved = await _update((d) {
       (d['trucks'] as List).add({
         'uuid': newUuid(),
         'seq': seq,
@@ -436,6 +476,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         'note': null,
       });
     });
+    if (!saved) return;
     if (mounted) showSnack(context, 'TM #$seq tersimpan.', icon: Icons.local_shipping_outlined);
   }
 
@@ -488,7 +529,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     return f?.uuid;
   }
 
-  Future<void> _updateTruck(String truckUuid, void Function(Map<Object?, Object?> t) f) => _update((d) {
+  Future<bool> _updateTruck(String truckUuid, void Function(Map<Object?, Object?> t) f) => _update((d) {
         for (final x in (d['trucks'] as List)) {
           final m = x as Map;
           if (m['uuid'] == truckUuid) f(m);
@@ -518,7 +559,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     }
     await Notifications.cancelIdleReminders();
     final start = DateTime.now();
-    await _updateTruck('${truck['uuid']}', (t) => t['startAt'] = isoWithOffset(start));
+    if (!await _updateTruck('${truck['uuid']}', (t) => t['startAt'] = isoWithOffset(start))) return;
     await Notifications.requestPermission();
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
@@ -560,7 +601,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       body: 'Sudah lanjut cor? Ketuk Lanjut di log cor',
       from: now,
     );
-    await _update((d) {
+    if (!await _update((d) {
       final list = (d['pauses'] as List?) ?? <Object?>[];
       list.add(<String, Object?>{
         'uuid': newUuid(),
@@ -571,7 +612,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         'note': null,
       });
       d['pauses'] = list;
-    });
+    })) {
+      return;
+    }
     await Notifications.showPaused(
       route: '/casting/log/${widget.uuid}',
       title: 'TM #$seq dijeda · ${_pilePoint!['code']}',
@@ -591,7 +634,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _resumeTruck(Map<String, Object?> truck) async {
     final seq = toIntOrNull(truck['seq']) ?? 0;
     final now = DateTime.now();
-    await _update((d) => _closePause(d, seq, now));
+    if (!await _update((d) => _closePause(d, seq, now))) return;
     await Notifications.cancelPauseReminders();
     // The notification clock cannot pause: restart it from a start moved
     // forward by the paused time, so it shows pouring time only.
@@ -609,13 +652,14 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _finishTruck(Map<String, Object?> truck) async {
     final end = DateTime.now();
     final finishedSeq = toIntOrNull(truck['seq']) ?? 0;
-    await _update((d) {
+    final saved = await _update((d) {
       _closePause(d, finishedSeq, end);
       for (final x in (d['trucks'] as List)) {
         final m = x as Map;
         if (m['uuid'] == truck['uuid']) m['endAt'] = isoWithOffset(end);
       }
     });
+    if (!saved) return;
     await Notifications.clearStopwatch();
     await Notifications.cancelTruckReminder();
     await Notifications.cancelPauseReminders();
@@ -666,8 +710,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       }
       return false;
     }
-    await _updateTruck('${truck['uuid']}', (t) => t['concreteDepthAfterM'] = decimalText(value));
-    return true;
+    // The sounding is the gate before the next TM and before "Selesai cor":
+    // report whether it was really stored, not just that it was typed.
+    return _updateTruck('${truck['uuid']}', (t) => t['concreteDepthAfterM'] = decimalText(value));
   }
 
   /// The last finished truck still waiting for its sounding, if any.
@@ -749,7 +794,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       ),
     );
     if (result == null) return;
-    await _update((d) => d.addAll(result));
+    if (!await _update((d) => d.addAll(result))) return;
     if (mounted) showSnack(context, 'Data cor disimpan.');
   }
 
@@ -764,55 +809,72 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final short = !k.reachedCutOffAfter(last);
     final missing = level.depthM - k.geometry.cutOffDepthM;
     if (!mounted) return;
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<_FinishResult>(
       context: context,
-      builder: (c) {
-        final w = c.colors;
-        return AlertDialog(
-          icon: short ? Icon(Icons.warning_amber_rounded, size: 32, color: w.warnFg) : Icon(Icons.check_circle_outline, size: 32, color: w.okFg),
-          title: Text(short ? 'Beton belum sampai cut-off' : 'Selesai cor titik ini?', textAlign: TextAlign.center),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (short) ...[
-                Text(
-                  'Muka beton ${formatMeters(level.depthM)} dari GS, cut-off ${formatMeters(k.geometry.cutOffDepthM)}: '
-                  'masih kurang ${formatMeters(missing)}.',
-                  style: TextStyle(color: w.ink, fontWeight: FontWeight.w600, height: 1.4),
-                ),
-                if (!level.measured) ...[
-                  const SizedBox(height: 8),
-                  Text('Angka ini perkiraan dari volume. Sounding dulu untuk memastikan.',
-                      style: TextStyle(color: w.warnFg, height: 1.4)),
-                ],
-                const SizedBox(height: 10),
-              ],
-              Text('Titik ditandai sudah dicor. Log cor masih dapat diperbaiki sampai diperiksa kantor.',
-                  style: TextStyle(color: w.muted, height: 1.4)),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Belum')),
-            FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(short ? 'Tetap selesai' : 'Selesai')),
-          ],
-        );
-      },
+      builder: (_) => _FinishDialog(
+        code: '${_pilePoint!['code']}',
+        short: short,
+        missingM: missing,
+        levelDepthM: level.depthM,
+        cutOffDepthM: k.geometry.cutOffDepthM,
+        measured: level.measured,
+        pouredM3: k.totalVolumeM3,
+        theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
+        areaM2: k.geometry.areaM2,
+        averageTruckM3: k.trucks.isEmpty ? null : k.totalVolumeM3 / k.trucks.length,
+      ),
     );
-    if (confirmed != true) return;
+    if (result == null) return;
+    // Save FIRST: the stopwatch and the reminders belong to a pour that is
+    // still running, so they are only silenced once it really is finished.
+    if (!await _update((d) {
+      d['status'] = 'selesai';
+      // The office must be able to see WHY a pile was closed short, so the
+      // reason goes into the note the server already carries.
+      if (result.note != null) d['note'] = _withNote(d['note'], result.note!);
+    })) {
+      return;
+    }
     await Notifications.clearStopwatch();
     await Notifications.cancelTruckReminder();
     await Notifications.cancelPauseReminders();
     await Notifications.cancelIdleReminders();
-    await _update((d) => d['status'] = 'selesai');
+    // Read it BACK before saying it is finished: the cleaning dialog and the
+    // snackbar are the only proof the foreman gets, and they must never appear
+    // over a log that is still running.
+    if (!await _storedStatusIs('selesai')) {
+      if (mounted) {
+        showSnack(context, 'Status selesai belum tersimpan. Coba tekan "Selesai cor" sekali lagi.', icon: Icons.error_outline);
+      }
+      return;
+    }
     if (!mounted) return;
     await _remindCleaning();
     if (mounted) showSnack(context, 'Cor ${_pilePoint!['code']} selesai. Terkirim otomatis saat ada sinyal.');
   }
 
   Future<void> _reopenCasting() async {
-    await _update((d) => d['status'] = 'berjalan');
+    if (!await _update((d) => d['status'] = 'berjalan')) return;
     if (mounted) showSnack(context, 'Log cor dibuka lagi. Jangan lupa Selesai cor setelah beres.', icon: Icons.lock_open_outlined);
+  }
+
+  /// Add [line] to an existing note without losing what is already there.
+  ///
+  /// `DataCor.note` is capped at 500 characters on the server: a longer note
+  /// makes the whole item invalid, so it is trimmed here rather than rejected
+  /// after a day without signal.
+  static String _withNote(Object? existing, String line) {
+    final was = existing?.toString().trim() ?? '';
+    final merged = was.isEmpty ? line : '$was\n$line';
+    return merged.length <= 500 ? merged : merged.substring(0, 500);
+  }
+
+  /// What is really on disk for this document — the screen's own `_doc` is
+  /// only a copy in memory.
+  Future<bool> _storedStatusIs(String status) async {
+    final row = await ref.read(dbProvider).getDocument(widget.uuid);
+    if (row == null) return false;
+    return (jsonDecode(row.body) as Map)['status'] == status;
   }
 
   /// After the last truck: wash the tremie and hopper before the next pour.
@@ -911,6 +973,13 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       appBar: AppBar(
         title: Text('Cor ${_pilePoint!['code']}'),
         actions: [
+          if (_row != null && !_finished && !_readOnly)
+            IconButton(
+              tooltip: 'Oper ke rekan',
+              icon: const Icon(Icons.swap_horiz),
+              onPressed: () =>
+                  offerHandover(context, ref, entity: 'casting', uuid: widget.uuid, pointCode: '${_pilePoint!['code']}'),
+            ),
           if (_row != null) Padding(padding: const EdgeInsets.only(right: 12), child: StatusBadge.sendStatus(context, _row!.sendStatus)),
         ],
       ),
@@ -919,7 +988,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // ends above: no extra room needed under the last card.
         padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 8),
         children: [
-          if (_row?.sendStatus == 'rejected')
+          if (_handedAway)
+            TerraBanner(
+              kind: BannerKind.info,
+              icon: Icons.swap_horiz,
+              title: 'Dioper ke ${_holderName ?? 'rekan'}',
+              body: 'Log cor ini dilanjutkan dari HP ${_holderName ?? 'rekan'}. '
+                  'Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.',
+            ),
+          if (_row?.sendStatus == 'rejected' && !_handedAway)
             TerraBanner(kind: BannerKind.danger, title: 'Ditolak server', body: reasonText(_row!.reason, _row!.detail)),
           if (_locked)
             TerraBanner(
@@ -941,7 +1018,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               body: 'Hitungan memakai panjang bor RENCANA. Tandai kedalaman aktual dari daftar titik supaya saran potong tepat.',
             ),
 
-          _SummaryCard(geometry: g, castingState: k, grade: _grade, supplier: _doc!['supplierName']?.toString(), onEdit: _locked ? null : _editHeader),
+          _SummaryCard(geometry: g, castingState: k, grade: _grade, supplier: _doc!['supplierName']?.toString(), onEdit: _readOnly ? null : _editHeader),
           if (_row?.serverStatus != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: ReviewBadge(status: _row!.serverStatus!)),
 
           // --- live cross-section -------------------------------------------
@@ -953,8 +1030,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           _TremieCard(
             castingState: k,
             currentSeq: seq,
-            canEditLayout: !_locked && _trucks.isEmpty,
-            canRemove: !_locked && seq > 0,
+            canEditLayout: !_readOnly && _trucks.isEmpty,
+            canRemove: !_readOnly && seq > 0,
             onAdd: _addSegment,
             onAddBottom: _addBottom,
             onCustom: _customSegment,
@@ -971,7 +1048,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
             _TruckCard(
               truck: truck,
               castingState: k,
-              locked: _locked,
+              locked: _readOnly,
               onStart: () => _startTruck(truck),
               onFinish: () => _finishTruck(truck),
               onEditStart: () => _editTime(truck, start: true),
@@ -998,7 +1075,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                         Text('Belum ada TM', style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                         const SizedBox(height: 2),
                         Text(
-                          _locked
+                          _readOnly
                               ? 'Log cor ini tidak punya TM.'
                               : _tremie.isEmpty
                                   ? 'Susun tremie dulu, lalu tekan "TM #1 datang" saat truk pertama tiba.'
@@ -1013,7 +1090,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
             ),
         ],
       ),
-      bottomNavigationBar: _locked
+      bottomNavigationBar: _readOnly
           ? null
           : SafeArea(
               child: Padding(
@@ -2097,4 +2174,223 @@ String _hangText(double top, double bottom) {
   if (bottom <= 0) return '${m(top)}–${m(bottom)}\u00A0m di atas GS';
   if (top < 0) return '${m(top)}\u00A0m di atas GS sampai kedalaman ${m(bottom)}\u00A0m';
   return 'kedalaman ${m(top)}–${m(bottom)}\u00A0m';
+}
+
+/// What the finish dialog came back with. `note` is the reason a pile was
+/// closed before cut-off, or null when there is nothing to explain.
+class _FinishResult {
+  const _FinishResult({this.note});
+
+  final String? note;
+}
+
+/// Confirm "Selesai cor".
+///
+/// A pile closed below cut-off is a SHORT PILE, and concrete sets: there is no
+/// undo in the field. So the friction is graded by how short it is.
+///
+///   * at or past cut-off     → plain confirmation;
+///   * short by ≤ [_slackM]   → warning, still one tap (finishing a few
+///     centimetres under cut-off happens, and the trim covers it);
+///   * short by more          → the dialog refuses to let "Tetap selesai" be
+///     the easy button: a REASON must be picked first, "Belum — lanjut cor"
+///     is the filled one, and the shortfall is spelled out in m³ AND in
+///     truckloads, because "kurang 10,40 m" does not read as "4 TM lagi".
+///
+/// It is never blocked outright: pours really do get abandoned (blocked
+/// tremie, no truck, collapsed hole), and a foreman who cannot close a failed
+/// log would invent data instead.
+class _FinishDialog extends StatefulWidget {
+  const _FinishDialog({
+    required this.code,
+    required this.short,
+    required this.missingM,
+    required this.levelDepthM,
+    required this.cutOffDepthM,
+    required this.measured,
+    required this.pouredM3,
+    required this.theoreticalM3,
+    required this.areaM2,
+    required this.averageTruckM3,
+  });
+
+  final String code;
+  final bool short;
+
+  /// How far the concrete surface still is BELOW cut-off, in metres.
+  final double missingM;
+  final double levelDepthM;
+  final double cutOffDepthM;
+
+  /// The level came from a sounding, not from the poured volume.
+  final bool measured;
+  final double pouredM3;
+  final double theoreticalM3;
+  final double areaM2;
+
+  /// Average volume of the trucks on this pile — null when there is none yet.
+  final double? averageTruckM3;
+
+  @override
+  State<_FinishDialog> createState() => _FinishDialogState();
+}
+
+class _FinishDialogState extends State<_FinishDialog> {
+  /// Codes stay English; only what the foreman reads is Indonesian.
+  static const _reasons = <(String, String, IconData)>[
+    ('tremie_tersumbat', 'Tremie tersumbat / beton macet', Icons.block),
+    ('tm_tidak_datang', 'TM tidak datang / beton habis', Icons.local_shipping_outlined),
+    ('lubang_runtuh', 'Lubang runtuh', Icons.terrain_outlined),
+    ('alat_cuaca', 'Alat rusak atau cuaca', Icons.bolt_outlined),
+    ('lainnya', 'Lainnya', Icons.edit_outlined),
+  ];
+
+  String? _reason;
+  final _detail = TextEditingController();
+
+  @override
+  void dispose() {
+    _detail.dispose();
+    super.dispose();
+  }
+
+  /// Shortfall in m³ and truckloads, and whether it needs explaining.
+  ({double volumeM3, int trucks, bool mustExplain}) get _short => shortfallToCutOff(
+        missingM: widget.missingM,
+        areaM2: widget.areaM2,
+        averageTruckM3: widget.averageTruckM3,
+      );
+
+  bool get _mustExplain => widget.short && _short.mustExplain;
+
+  bool get _canFinish {
+    if (!_mustExplain) return true;
+    if (_reason == null) return false;
+    return _reason != 'lainnya' || _detail.text.trim().isNotEmpty;
+  }
+
+  String? get _note {
+    if (!_mustExplain || _reason == null) return null;
+    final label = _reasons.firstWhere((r) => r.$1 == _reason).$2;
+    final detail = _detail.text.trim();
+    final why = _reason == 'lainnya' ? detail : (detail.isEmpty ? label : '$label — $detail');
+    return 'Cor dihentikan sebelum cut-off '
+        '(kurang ${formatMeters(widget.missingM)} ≈ ${_decimal(_short.volumeM3)} m³): $why';
+  }
+
+  Widget _reasonRow(String code, String label, IconData icon) {
+    final w = context.colors;
+    final picked = _reason == code;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: picked ? w.brandSoft : w.surface2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: picked ? w.brand : w.border, width: picked ? 2 : 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => setState(() => _reason = code),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: picked ? w.brandStrong : w.muted),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(label,
+                      style: TextStyle(
+                        fontWeight: picked ? FontWeight.w800 : FontWeight.w600,
+                        color: picked ? w.brandStrong : w.ink,
+                      )),
+                ),
+                if (picked) Icon(Icons.check_circle, size: 20, color: w.brandStrong),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final percent = widget.theoreticalM3 <= 0 ? null : widget.pouredM3 / widget.theoreticalM3 * 100;
+    return AlertDialog(
+      icon: widget.short
+          ? Icon(Icons.warning_amber_rounded, size: 32, color: w.badFg)
+          : Icon(Icons.check_circle_outline, size: 32, color: w.okFg),
+      title: Text(widget.short ? 'Beton belum sampai cut-off' : 'Selesai cor ${widget.code}?',
+          textAlign: TextAlign.center),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.short) ...[
+              TerraBanner(
+                kind: _mustExplain ? BannerKind.danger : BannerKind.warning,
+                icon: Icons.straighten,
+                title: 'Masih kurang ${_decimal(_short.volumeM3)} m³ (±${_short.trucks} TM lagi)',
+                body: [
+                  'Muka beton ${formatMeters(widget.levelDepthM)} dari GS, cut-off '
+                      '${formatMeters(widget.cutOffDepthM)} — kurang ${formatMeters(widget.missingM)}.',
+                  'Sudah tercor ${_decimal(widget.pouredM3)} m³ dari ±${_decimal(widget.theoreticalM3)} m³ teoritis'
+                      '${percent == null ? '' : ' (${percent.toStringAsFixed(0)}%)'}.',
+                  if (!widget.measured) 'Angka ini perkiraan dari volume — sounding dulu untuk memastikan.',
+                ].join('\n'),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (_mustExplain) ...[
+              Text('Tiang yang ditutup di bawah cut-off jadi tiang pendek, dan beton mengeras — '
+                  'tidak bisa dibatalkan. Kalau cor memang dihentikan, pilih alasannya; kantor perlu tahu. '
+                  'Kalau cuma salah tekan, pilih "Belum — lanjut cor".',
+                  style: TextStyle(color: w.ink, height: 1.4)),
+              const SizedBox(height: 12),
+              for (final (code, label, icon) in _reasons) _reasonRow(code, label, icon),
+              if (_reason != null)
+                TextField(
+                  controller: _detail,
+                  maxLength: 150,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    labelText: _reason == 'lainnya' ? 'Alasan (wajib)' : 'Keterangan (boleh kosong)',
+                    hintText: 'mis. tremie mampet di segmen ke-3, beton sudah mengeras',
+                    counterText: '',
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+            ] else
+              Text(
+                widget.short
+                    ? 'Kurang sedikit saja dari cut-off — kelebihan di atas cut-off memang dipotong nanti. '
+                        'Titik ditandai sudah dicor; log cor masih dapat diperbaiki sampai diperiksa kantor.'
+                    : 'Titik ditandai sudah dicor. Log cor masih dapat diperbaiki sampai diperiksa kantor.',
+                style: TextStyle(color: w.muted, height: 1.4),
+              ),
+          ],
+        ),
+      ),
+      // The dangerous button is the quiet one: when the pile is far short,
+      // "Belum — lanjut cor" is what the thumb lands on.
+      actions: _mustExplain
+          ? [
+              TextButton(
+                onPressed: _canFinish ? () => Navigator.pop(context, _FinishResult(note: _note)) : null,
+                child: Text('Tetap selesai', style: TextStyle(color: _canFinish ? w.badFg : w.faint)),
+              ),
+              FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Belum — lanjut cor')),
+            ]
+          : [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Belum')),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, const _FinishResult()),
+                child: Text(widget.short ? 'Tetap selesai' : 'Selesai'),
+              ),
+            ],
+    );
+  }
 }

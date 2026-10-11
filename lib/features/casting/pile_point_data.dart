@@ -51,6 +51,24 @@ class FieldPilePoint {
   String? get serverCastingUuid => server['castingUuid'] == null ? null : '${server['castingUuid']}';
   String? get serverCastingBy => server['castingByName']?.toString();
 
+  /// Who HOLDS each log now (creator, or the colleague it was handed to via
+  /// Oper). Null while the server has no log, or on an older server.
+  int? get drillLogHolderId => toIntOrNull(server['drillLogHolderID']);
+  String? get drillLogHolderName => server['drillLogHolderName']?.toString();
+  int? get castingHolderId => toIntOrNull(server['castingHolderID']);
+  String? get castingHolderName => server['castingHolderName']?.toString();
+
+  /// This phone has the log, but the server says someone else holds it now:
+  /// it was handed over (Oper), and pushes from here are refused (DIOPER).
+  bool drillLogHandedAway(int? myUserId) =>
+      drillLog != null && drillLogHolderId != null && myUserId != null && drillLogHolderId != myUserId;
+  bool castingHandedAway(int? myUserId) =>
+      casting != null && castingHolderId != null && myUserId != null && castingHolderId != myUserId;
+
+  /// A RUNNING log held on another phone that a code can bring here.
+  bool get drillLogHeldElsewhere => drillLoggedElsewhere && server['drillLogStatus'] != 'selesai';
+  bool get castingHeldElsewhere => castedElsewhere && stage == 'berjalan';
+
   /// Someone already logs (or logged) this point elsewhere — another phone,
   /// or this phone before a reinstall. A second log is always rejected
   /// (COR_SUDAH_ADA), so "Mulai log cor" is closed.

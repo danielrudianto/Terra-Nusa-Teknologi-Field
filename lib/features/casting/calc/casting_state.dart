@@ -228,3 +228,37 @@ String? soundingProblem(double afterM, {required double before, required double 
   }
   return null;
 }
+
+/// Finishing a pile this far below cut-off counts as finished: the small
+/// over-pour above cut-off is trimmed off anyway, and a few centimetres under
+/// it is within the trim.
+const cutOffSlackM = 0.5;
+
+/// Usual truck volume, for turning a missing volume into "how many TM lagi"
+/// when this pile has no truck recorded yet.
+const truckVolumeTypicalM3 = 7.0;
+
+/// What is still missing to reach cut-off, for the "Selesai cor" confirmation.
+///
+/// [missingM] is how far the concrete surface still is BELOW cut-off (positive
+/// = short). Metres alone do not warn anybody — "kurang 10,40 m" reads as a
+/// number, "±4 TM lagi" reads as a mistake — so the shortfall is also given as
+/// a volume and as truckloads, using this pile's own average truck when it has
+/// one.
+///
+/// [mustExplain] is the gate on closing the pile short: beyond [cutOffSlackM]
+/// the screen asks for a reason instead of offering a one-tap "Tetap selesai".
+({double volumeM3, int trucks, bool mustExplain}) shortfallToCutOff({
+  required double missingM,
+  required double areaM2,
+  double? averageTruckM3,
+}) {
+  if (missingM <= 0) return (volumeM3: 0, trucks: 0, mustExplain: false);
+  final volume = areaM2 * missingM;
+  final per = (averageTruckM3 == null || averageTruckM3 <= 0) ? truckVolumeTypicalM3 : averageTruckM3;
+  return (
+    volumeM3: volume,
+    trucks: (volume / per).ceil(),
+    mustExplain: missingM > cutOffSlackM,
+  );
+}

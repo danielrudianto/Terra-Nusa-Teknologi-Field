@@ -18,6 +18,7 @@ import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/view_states.dart';
+import '../casting/handover.dart';
 import '../casting/level_reference.dart';
 import 'drill_readings.dart';
 import 'operator_picker.dart';
@@ -102,6 +103,12 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       _pilePoint = point;
       _row = row;
     });
+    // Handed over: the colleague's phone buzzes now, not this one.
+    if (_handedAway) {
+      try {
+        await Notifications.cancelDrillIdleReminders(widget.uuid);
+      } catch (_) {}
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -111,6 +118,24 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   List<DrillReading> get _readings => readingsOf(_doc);
   bool get _finished => _doc!['status'] == 'selesai';
   String get _code => '${_pilePoint!['code']}';
+
+  /// Handed over (Oper): the server names someone else as holder of THIS log,
+  /// so this phone only looks on — its pushes would be refused (DIOPER).
+  ///
+  /// The holder on the point describes the drill log the SERVER has for that
+  /// point. If that is not this document, it says NOTHING about this log —
+  /// reading it as a handover would lock a normal log read-only and make every
+  /// save do nothing.
+  bool get _handedAway {
+    if (_row == null) return false;
+    final serverUuid = _pilePoint?['drillLogUuid'];
+    if (serverUuid == null || '$serverUuid' != widget.uuid) return false;
+    final holder = toIntOrNull(_pilePoint?['drillLogHolderID']);
+    final me = ref.read(userProvider)?.id;
+    return holder != null && me != null && holder != me;
+  }
+
+  String? get _holderName => _pilePoint?['drillLogHolderName']?.toString();
 
   /// GS: the one entered in this log, else the point's.
   double? get _groundLevel => toDoubleOrNull(_doc!['groundLevel']) ?? toDoubleOrNull(_pilePoint!['groundLevel']);
@@ -140,9 +165,18 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     } catch (_) {}
   }
 
-  Future<void> _update(void Function(Map<String, Object?> d) f) async {
+  /// Change and save the log. Returns FALSE when nothing was written, so a
+  /// caller never reports success over unchanged data.
+  Future<bool> _update(void Function(Map<String, Object?> d) f) async {
+    if (_handedAway) {
+      if (mounted) _snack('Log bor ini dipegang ${_holderName ?? 'rekan'} — ubah dari HP pemegangnya.');
+      return false;
+    }
     final p = ref.read(userProvider);
-    if (p == null) return;
+    if (p == null) {
+      if (mounted) _snack('Belum masuk akun — tidak ada yang tersimpan.');
+      return false;
+    }
     setState(() => f(_doc!));
     final db = ref.read(dbProvider);
     await db.saveDocument(uuid: widget.uuid, entity: 'drill_log', userId: p.id, body: _doc!);
@@ -150,6 +184,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     ref.read(syncProvider.notifier).afterSave();
     await _updateIdleReminder();
     if (mounted) setState(() {});
+    return true;
   }
 
   List<Map<String, Object?>> get _entries =>
@@ -168,7 +203,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       // Nothing saved yet: keep it unsaved until the first reading.
       setState(() => _doc!['operatorUuid'] = picked);
     } else {
-      await _update((d) => d['operatorUuid'] = picked);
+      if (!await _update((d) => d['operatorUuid'] = picked)) return false;
       if (mounted) _snack('Operator bor disimpan.');
     }
     return true;
@@ -186,7 +221,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       builder: (_) => _ReadingSheet(readings: _readings, editing: editing, plannedM: _plannedM),
     );
     if (result == null) return;
-    await _update((d) {
+    final saved = await _update((d) {
       final list = _entries;
       if (editing != null) list.removeWhere((e) => e['uuid'] == editing.uuid);
       if (!result.delete) {
@@ -199,7 +234,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       }
       d['entries'] = list;
     });
-    if (!mounted) return;
+    if (!saved || !mounted) return;
     _snack(result.delete ? 'Bacaan dihapus.' : 'Tercatat ${formatMeters(result.depthM)} jam ${formatTime(result.at)}.');
   }
 
@@ -222,16 +257,24 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       ),
     );
     if (result == null) return;
-    await _update((d) {
+    final saved = await _update((d) {
       d['status'] = 'selesai';
       if (result.groundLevel != null) d['groundLevel'] = decimalText(result.groundLevel!, decimals: 3);
     });
+    // Read it back: "selesai dibor" must never be announced over a log that
+    // is still running.
+    if (!saved) return;
+    final stored = await ref.read(dbProvider).getDocument(widget.uuid);
+    if (stored == null || (jsonDecode(stored.body) as Map)['status'] != 'selesai') {
+      if (mounted) _snack('Status selesai belum tersimpan. Coba tekan "Selesai bor" sekali lagi.');
+      return;
+    }
     if (!mounted) return;
     _snack('$_code selesai dibor ${formatMeters(deepest)}.');
   }
 
   Future<void> _reopen() async {
-    await _update((d) => d['status'] = 'berjalan');
+    if (!await _update((d) => d['status'] = 'berjalan')) return;
     _snack('Log bor dibuka lagi.');
   }
 
@@ -262,12 +305,19 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     final w = context.colors;
     final readings = _readings;
     final cast = _pilePoint!['status'] == 'sudah_cor';
-    final canEdit = !_finished && !cast;
+    final canEdit = !_finished && !cast && !_handedAway;
+    final canOffer = _row != null && !_finished && !cast && !_handedAway;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Bor $_code'),
         actions: [
+          if (canOffer)
+            IconButton(
+              tooltip: 'Oper ke rekan',
+              icon: const Icon(Icons.swap_horiz),
+              onPressed: () => offerHandover(context, ref, entity: 'drill_log', uuid: widget.uuid, pointCode: _code),
+            ),
           if (_row != null) Padding(padding: const EdgeInsets.only(right: 12), child: StatusBadge.sendStatus(context, _row!.sendStatus)),
         ],
       ),
@@ -276,7 +326,15 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         // ends above: no extra room needed under the last card.
         padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 8),
         children: [
-          if (_row?.sendStatus == 'rejected')
+          if (_handedAway)
+            TerraBanner(
+              kind: BannerKind.info,
+              icon: Icons.swap_horiz,
+              title: 'Dioper ke ${_holderName ?? 'rekan'}',
+              body: 'Log bor ini dilanjutkan dari HP ${_holderName ?? 'rekan'}. '
+                  'Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.',
+            ),
+          if (_row?.sendStatus == 'rejected' && !_handedAway)
             TerraBanner(kind: BannerKind.danger, title: 'Ditolak server', body: reasonText(_row!.reason, _row!.detail)),
           _DepthHero(readings: readings, plannedM: _plannedM, diameterMm: toIntOrNull(_pilePoint!['diameterMm']), finished: _finished),
           _OperatorRow(uuid: _operatorUuid, onChange: canEdit ? _chooseOperator : null),

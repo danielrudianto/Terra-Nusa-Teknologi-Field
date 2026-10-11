@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/widgets/status_badge.dart';
 import '../drilling/drill_readings.dart';
+import 'handover.dart';
 import 'level_reference.dart';
 import 'pile_point_data.dart';
 
@@ -263,22 +266,42 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   body: 'Kedalaman dari GS belum dapat dihitung, dan log cor baru bisa dimulai setelah GS terisi. '
                       'Isi GS saat menandai titik ini sudah dibor.',
                 ),
-              if (elsewhere)
+              if (elsewhere) ...[
                 TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.block,
-                  title: 'Titik ini sudah punya log cor',
-                  body: '${t.serverCastingBy == null ? 'Dibuat' : 'Dibuat oleh ${t.serverCastingBy}'} dari HP lain. '
-                      'Satu titik hanya boleh satu log cor. Bila log itu salah, minta kantor menghapusnya dulu.',
+                  title: t.castingHeldElsewhere ? 'Sedang dicor dari HP lain' : 'Titik ini sudah punya log cor',
+                  body: '${t.castingHolderName ?? t.serverCastingBy ?? 'Rekan'} yang memegang log cornya. '
+                      'Satu titik hanya boleh satu log cor.'
+                      '${t.castingHeldElsewhere ? ' Untuk melanjutkan dari HP ini, minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.' : ' Bila log itu salah, minta kantor menghapusnya dulu.'}',
                 ),
-              if (drillingElsewhere)
+                if (t.castingHeldElsewhere && allows && t.serverCastingUuid != null) ...[
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () => _redeem(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t),
+                    icon: const Icon(Icons.swap_horiz),
+                    label: const Text('Lanjutkan di HP ini (kode oper)'),
+                  ),
+                ],
+              ],
+              if (drillingElsewhere) ...[
                 TerraBanner(
                   kind: BannerKind.info,
                   icon: Icons.construction,
                   title: 'Sedang dibor dari HP lain',
-                  body: 'Log bornya dibuat${t.serverDrillLogBy == null ? '' : ' oleh ${t.serverDrillLogBy}'}. '
-                      'Satu titik hanya boleh satu log bor. Log cor bisa dimulai setelah dia menekan "Selesai bor".',
-                )
+                  body: 'Log bornya dipegang ${t.drillLogHolderName ?? t.serverDrillLogBy ?? 'rekan'}. '
+                      'Satu titik hanya boleh satu log bor. Untuk melanjutkan dari HP ini, '
+                      'minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.',
+                ),
+                if (allows && t.serverDrillLogUuid != null) ...[
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () => _redeem(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t),
+                    icon: const Icon(Icons.swap_horiz),
+                    label: const Text('Lanjutkan di HP ini (kode oper)'),
+                  ),
+                ],
+              ]
               else if (!drilled && allows && !elsewhere)
                 TerraBanner(
                   kind: BannerKind.info,
@@ -368,6 +391,17 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         ),
       ),
     );
+  }
+
+  /// Type the handover code on a locked point; on success the log is on this
+  /// phone and its screen opens.
+  Future<void> _redeem(BuildContext sheet, {required String entity, required String uuid, required FieldPilePoint point}) async {
+    final ok = await redeemHandoverFlow(context, ref, entity: entity, uuid: uuid, pointCode: point.code);
+    if (!ok || !mounted) return;
+    if (sheet.mounted) Navigator.pop(sheet);
+    // Not awaited on purpose: this returns only when the log screen is
+    // popped again, and nothing here depends on that.
+    unawaited(context.push(entity == 'drill_log' ? '/drilling/log/$uuid' : '/casting/log/$uuid'));
   }
 
   String _elevation(double? v) =>
