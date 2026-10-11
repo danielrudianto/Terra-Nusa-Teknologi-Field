@@ -1,19 +1,31 @@
-// Ditulis tangan, BUKAN dari `flutter create`.
+// Written by hand, NOT from `flutter create`.
 //
-// `flutter create .` tidak menimpa berkas yang sudah ada, jadi berkas ini
-// tetap dipakai setelah folder android/ lainnya dibuat. Isinya = templat
-// Flutter 3.47 ditambah dua hal yang wajib untuk TerraBot Field:
+// `flutter create .` does not overwrite existing files, so this file
+// stays in use after the rest of the android/ folder is generated. Its contents =
+// the Flutter 3.47 template plus two things that are mandatory for TerraBot Field:
 //
-//   1. Desugaring pustaka inti Java — diminta flutter_local_notifications
-//      (notifikasi stopwatch pengecoran). Tanpa ini build GAGAL.
-//   2. minSdk 24 — batas bawah flutter_secure_storage 11 (dan Flutter 3.35+
-//      sendiri). Android 7.0 ke atas.
+//   1. Core library desugaring for Java — required by flutter_local_notifications
+//      (casting stopwatch notification). Without it the build FAILS.
+//   2. minSdk 24 — lower bound of flutter_secure_storage 11 (and Flutter 3.35+
+//      itself). Android 7.0 and up.
+
+import java.util.Properties
 
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Release signing key: android/key.properties + android/app/terrabot-field-release.jks.
+// Both are kept OUT of git. Every release MUST be signed with this same key,
+// or phones refuse to install the update over the app they have (and
+// uninstalling first deletes data not yet sent). Back both files up.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val hasReleaseKey = keystoreProperties.getProperty("storeFile") != null
 
 android {
     namespace = "id.co.alphakonstruksi.terrabot_field"
@@ -35,11 +47,22 @@ android {
         multiDexEnabled = true
     }
 
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: tanda tangan rilis sendiri sebelum APK dibagikan ke
-            // lapangan (lihat BACA-DULU.md, bagian "APK rilis").
-            signingConfig = signingConfigs.getByName("debug")
+            // Without key.properties (another laptop) the release build falls
+            // back to the debug key: fine for trying, NEVER for handing out.
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }
     }
 }

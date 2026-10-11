@@ -1,26 +1,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Kirim & tarik data. -->
+    <!-- Push & pull data. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Lokasi absen masuk/pulang. Hanya saat foto diambil (foreground);
-         TIDAK ada pelacakan latar. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- LOCATION IS DELIBERATELY NOT DECLARED (for now).
+         It was here for the attendance geofence, but attendance is on hold
+         (Features.attendance = false), so the app never asks for location.
+         A location permission the app does not use complicates the Play
+         Store "Data safety" review for nothing. When attendance returns,
+         restore:
+           <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+           <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+         and update the data-safety form + privacy policy to declare it. -->
 
-    <!-- Notifikasi stopwatch pengecoran (Android 13+ meminta izin). -->
+    <!-- Casting stopwatch notification (Android 13+ asks for permission). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- CAMERA SENGAJA TIDAK DIDEKLARASIKAN.
-         Foto diambil lewat aplikasi kamera bawaan HP (image_picker →
-         ACTION_IMAGE_CAPTURE). Bila CAMERA dideklarasikan tetapi belum
-         diizinkan, Android MENOLAK intent itu; tanpa deklarasi, kamera
-         bawaan berjalan tanpa izin tambahan. -->
+    <!-- CAMERA IS DELIBERATELY NOT DECLARED.
+         Photos are taken through the phone's built-in camera app (image_picker →
+         ACTION_IMAGE_CAPTURE). If CAMERA is declared but not yet
+         granted, Android REJECTS that intent; without the declaration, the
+         built-in camera runs without any extra permission. -->
+
+    <!-- Stamped attendance photos are also copied to the gallery (album
+         "TerraBot Field"). Android 10 and older need this permission to write
+         there; Android 11+ writes through MediaStore without it. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
 
     <application
         android:label="TerraBot Field"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -40,10 +53,14 @@
             </intent-filter>
         </activity>
 
-        <!-- Tombol "Selesai TM" pada notifikasi stopwatch. -->
+        <!-- The "Selesai TM" button on the stopwatch notification. -->
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        <!-- Fires the 20-minute pour reminder even when the app is closed. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -57,7 +74,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- Menemukan aplikasi kamera bawaan (Android 11+ package visibility). -->
+        <!-- Finds the built-in camera app (Android 11+ package visibility). -->
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>

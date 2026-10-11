@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TerraBot blue: the launch screen behind the white mark. -->
+    <color name="splash_blue">#2B74FE</color>
+</resources>

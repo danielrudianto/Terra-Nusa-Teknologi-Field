@@ -1,0 +1,19 @@
+name: monotonic_clock
+description: Android monotonic clock (elapsedRealtime + boot count) for TerraBot Field.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: id.co.alphakonstruksi.monotonic_clock
+        pluginClass: MonotonicClockPlugin

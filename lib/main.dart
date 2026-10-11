@@ -5,37 +5,41 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
-import 'inti/konteks.dart';
-import 'inti/penyedia.dart';
-import 'inti/perangkat/notifikasi.dart';
-import 'inti/sinkron/pekerja_latar.dart';
-import 'rute.dart';
+import 'core/app_context.dart';
+import 'core/config/env.dart';
+import 'core/providers.dart';
+import 'core/device/notifications.dart';
+import 'core/sync/background_sync.dart';
+import 'core/util/app_log.dart';
+import 'router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLog.installErrorHandlers();
   await initializeDateFormatting('id');
 
-  final konteks = await KonteksAplikasi.buka();
-  final wadah = ProviderContainer(overrides: [konteksProvider.overrideWithValue(konteks)]);
+  final appContext = await AppContext.open();
+  final container = ProviderContainer(overrides: [appContextProvider.overrideWithValue(appContext)]);
 
-  // Refresh token ditolak di tengah pemakaian → banner "Masuk lagi".
-  konteks.api.padaSesiHabis = () => wadah.read(sesiProvider.notifier).tandaiHabis();
+  // Refresh token rejected mid-use → "Masuk lagi" (sign in again) banner.
+  appContext.api.onSessionExpired = () => container.read(sessionProvider.notifier).markExpired();
 
-  await Notifikasi.siapkan((payload, aksi) {
-    if (payload != null && payload.startsWith('/')) wadah.read(ruteProvider).go(payload);
+  await Notifications.init((payload, action) {
+    if (payload != null && payload.startsWith('/')) container.read(routerProvider).go(payload);
   });
-  final ruteAwal = await Notifikasi.ruteAwal();
+  final initialRoute = await Notifications.initialRoute();
 
   try {
-    await pasangSinkronLatar();
-  } catch (e) {
-    // Tanpa sinkron latar aplikasi tetap jalan; kirim manual dari layar.
-    debugPrint('Sinkron latar tidak terpasang: $e');
+    await setupBackgroundSync();
+  } catch (e, st) {
+    // Without background sync the app still runs; push manually from the screen.
+    AppLog.error('background', 'not registered: $e', st);
   }
+  AppLog.info('app', 'start v${Env.appVersion}');
 
-  runApp(UncontrolledProviderScope(container: wadah, child: const AplikasiField()));
+  runApp(UncontrolledProviderScope(container: container, child: const FieldApp()));
 
-  if (ruteAwal != null && ruteAwal.startsWith('/')) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => wadah.read(ruteProvider).go(ruteAwal));
+  if (initialRoute != null && initialRoute.startsWith('/')) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => container.read(routerProvider).go(initialRoute));
   }
 }

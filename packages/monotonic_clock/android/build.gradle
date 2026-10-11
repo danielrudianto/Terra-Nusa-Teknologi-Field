@@ -1,0 +1,25 @@
+// The AGP version comes from the app project (android/settings.gradle.kts),
+// so it is not declared here — this plugin follows whatever the app uses.
+//
+// `plugins {}` MUST be the first block in the file: Gradle 9 rejects any
+// statement (including `group = ...`) before it.
+plugins {
+    id("com.android.library")
+}
+
+group = "id.co.alphakonstruksi.monotonic_clock"
+version = "0.1.0"
+
+android {
+    namespace = "id.co.alphakonstruksi.monotonic_clock"
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        minSdk = 24
+    }
+}

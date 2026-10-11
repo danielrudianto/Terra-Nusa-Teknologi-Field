@@ -1,11 +1,11 @@
 name: terrabot_field
-description: TerraBot Field — aplikasi lapangan AKN (absensi kru & log pengecoran), offline-first.
+description: TerraBot Field — AKN field app (crew attendance & pile casting log), offline-first.
 publish_to: "none"
-version: 0.1.0+1
+version: 1.0.0+4
 
 environment:
-  # Flutter stable per Oktober 2026 = 3.47 (Dart 3.12). Versi paket di bawah
-  # diperiksa terhadap kode sumbernya pada rilis terbaru masing-masing.
+  # Flutter stable as of October 2026 = 3.47 (Dart 3.12). The package versions below
+  # were checked against the source code of each latest release.
   sdk: ^3.12.0
   flutter: ">=3.44.0"
 
@@ -15,35 +15,46 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # State & navigasi
+  # State & navigation
   flutter_riverpod: ^3.4.3
   go_router: ^18.0.2
 
-  # Basis data lokal (offline-first). sqlite3_flutter_libs TIDAK dipakai
-  # lagi: sejak drift 2.32 / sqlite3 3.x, SQLite dibundel lewat build hook.
+  # Local database (offline-first). sqlite3_flutter_libs is NO LONGER used:
+  # since drift 2.32 / sqlite3 3.x, SQLite is bundled via a build hook.
   drift: ^2.35.1
   drift_flutter: ">=0.3.1 <1.0.0"
   path_provider: ^2.1.5
   path: ^1.9.0
 
-  # Jaringan & sesi
+  # Network & session
   dio: ^5.8.0
   flutter_secure_storage: ^11.2.0
   workmanager: ">=0.10.10 <1.0.0"
 
-  # Perangkat
+  # Device
   geolocator: ^14.1.1
+  geocoding: ^5.0.0
+  gal: ^2.3.3
   image_picker: ^1.2.0
   flutter_image_compress: ^2.4.0
   google_mlkit_face_detection: ">=0.13.0 <1.0.0"
   flutter_local_notifications: ^22.3.1
-  jam_monoton:
-    path: packages/jam_monoton
+  # Scheduled reminders take a TZDateTime; already a dependency of the
+  # notifications plugin, listed here because the app imports it.
+  timezone: ^0.11.0
+  monotonic_clock:
+    path: packages/monotonic_clock
 
-  # Utilitas
+  # Utilities
   uuid: ^4.5.1
   crypto: ^3.0.6
   intl: ^0.20.2
+  # Hand the downloaded Excel recap to WhatsApp, e-mail, Drive or a sheet app.
+  share_plus: ^13.0.0
+  # Real installed version for X-App-Version (the server's minimum check).
+  package_info_plus: ^10.0.0
+  # "Unduh versi baru" on the update page opens the APK / Play link.
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -55,9 +66,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Montserrat, sama dengan TerraBot web. Taruh berkas TTF-nya di
-  # assets/fonts/ (lihat BACA-DULU.md) — dibundel supaya tetap tampil
-  # sama tanpa sinyal.
+  # Montserrat, same as TerraBot web. Put the TTF files in
+  # assets/fonts/ (see SETUP.md) — bundled so the look stays
+  # the same without signal.
   fonts:
     - family: Montserrat
       fonts:
