@@ -94,6 +94,7 @@ class QueuePage extends ConsumerWidget {
         'absen_masuk' => 'Absen masuk',
         'absen_pulang' => 'Absen pulang',
         'tiket_tm' => 'Surat jalan TM',
+        'slump_tm' => 'Uji slump TM',
         _ => kind,
       };
 }

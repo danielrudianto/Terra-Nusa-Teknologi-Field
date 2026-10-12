@@ -444,6 +444,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         seq: seq,
         estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
         takeTicketPhoto: _takeTicketPhoto,
+        takeSlumpPhoto: _takeSlumpPhoto,
         suppliers: offer.suppliers,
         supplierId: defaultSupplierId,
         supplierName: defaultSupplierName,
@@ -457,7 +458,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         'uuid': newUuid(),
         'seq': seq,
         'truckNo': result['truckNo'],
-        'ticketNo': result['ticketNo'],
         'supplierID': result['supplierID'],
         'supplierName': result['supplierName'],
         'arrivedAt': isoWithOffset(DateTime.now()),
@@ -473,6 +473,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         'concreteDepthBeforeM': result['concreteDepthBeforeM'],
         'concreteDepthAfterM': null,
         'ticketPhotoUuid': result['ticketPhotoUuid'],
+        'slumpPhotoUuid': result['slumpPhotoUuid'],
         'note': null,
       });
     });
@@ -526,6 +527,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final p = ref.read(userProvider);
     if (p == null) return null;
     final f = await takePhoto(db: ref.read(dbProvider), userId: p.id, kind: 'tiket_tm');
+    return f?.uuid;
+  }
+
+  /// The slump cone, photographed with the tape against it. The typed figure
+  /// stays, but now it has its evidence.
+  Future<String?> _takeSlumpPhoto() async {
+    final p = ref.read(userProvider);
+    if (p == null) return null;
+    final f = await takePhoto(db: ref.read(dbProvider), userId: p.id, kind: 'slump_tm');
     return f?.uuid;
   }
 
@@ -1695,34 +1705,56 @@ class _TruckCard extends StatelessWidget {
               ),
             ),
           if (ratio != null) value('Rasio overbreak', _decimal(ratio)),
-          if (truck['ticketPhotoUuid'] != null) _TicketPhoto(uuid: '${truck['ticketPhotoUuid']}'),
+          if (truck['ticketPhotoUuid'] != null || truck['slumpPhotoUuid'] != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  if (truck['ticketPhotoUuid'] != null)
+                    _CastingPhoto(uuid: '${truck['ticketPhotoUuid']}', label: 'Surat jalan'),
+                  if (truck['ticketPhotoUuid'] != null && truck['slumpPhotoUuid'] != null) const SizedBox(width: 8),
+                  if (truck['slumpPhotoUuid'] != null)
+                    _CastingPhoto(uuid: '${truck['slumpPhotoUuid']}', label: 'Uji slump'),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class _TicketPhoto extends ConsumerWidget {
-  const _TicketPhoto({required this.uuid});
+/// One photo of a TM — the delivery note or the slump test — with its label,
+/// tappable to full screen.
+class _CastingPhoto extends ConsumerWidget {
+  const _CastingPhoto({required this.uuid, required this.label});
 
   final String uuid;
+  final String label;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final w = context.colors;
     final photo = ref.watch(_photoProvider(uuid)).value;
+    // Still on its way, or the file was cleaned up by the system.
     if (photo == null || !File(photo.path).existsSync()) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: GestureDetector(
-        onTap: () => showDialog<void>(
-          context: context,
-          builder: (c) => Dialog(child: InteractiveViewer(child: Image.file(File(photo.path)))),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(),
+            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: w.faint)),
+        const SizedBox(height: 3),
+        GestureDetector(
+          onTap: () => showDialog<void>(
+            context: context,
+            builder: (c) => Dialog(child: InteractiveViewer(child: Image.file(File(photo.path)))),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.file(File(photo.path), height: 90, width: 120, fit: BoxFit.cover, cacheHeight: 270),
+          ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.file(File(photo.path), height: 90, fit: BoxFit.cover, cacheHeight: 270),
-        ),
-      ),
+      ],
     );
   }
 }
@@ -1856,6 +1888,7 @@ class _TruckSheet extends StatefulWidget {
     required this.seq,
     required this.estimatedConcreteBefore,
     required this.takeTicketPhoto,
+    required this.takeSlumpPhoto,
     required this.suppliers,
     required this.supplierId,
     required this.supplierName,
@@ -1864,6 +1897,7 @@ class _TruckSheet extends StatefulWidget {
   final int seq;
   final double estimatedConcreteBefore;
   final Future<String?> Function() takeTicketPhoto;
+  final Future<String?> Function() takeSlumpPhoto;
 
   /// Concrete suppliers to offer, and the previous TM's (or the header's)
   /// choice as the preselected default.
@@ -1877,12 +1911,12 @@ class _TruckSheet extends StatefulWidget {
 
 class _TruckSheetState extends State<_TruckSheet> {
   final _truck = TextEditingController();
-  final _ticket = TextEditingController();
   final _volume = TextEditingController();
   final _slump = TextEditingController();
   final _sounding = TextEditingController();
   late final _supplier = TextEditingController(text: widget.supplierName ?? '');
   String? _photo;
+  String? _slumpPhoto;
   String? _error;
 
   /// Chosen supplier id; [_other] = typed by hand, null = none.
@@ -1895,7 +1929,7 @@ class _TruckSheetState extends State<_TruckSheet> {
 
   @override
   void dispose() {
-    for (final c in [_truck, _ticket, _volume, _slump, _sounding, _supplier]) {
+    for (final c in [_truck, _volume, _slump, _sounding, _supplier]) {
       c.dispose();
     }
     super.dispose();
@@ -1924,7 +1958,6 @@ class _TruckSheetState extends State<_TruckSheet> {
     final picked = widget.suppliers.where((s) => toIntOrNull(s['id']) == _supplierChoice).firstOrNull;
     Navigator.pop(context, {
       'truckNo': orNull(_truck),
-      'ticketNo': orNull(_ticket),
       // Picked from the list: id + its name. Typed: name only.
       'supplierID': picked == null ? null : toIntOrNull(picked['id']),
       'supplierName': picked == null ? orNull(_supplier) : '${picked['name']}',
@@ -1932,6 +1965,7 @@ class _TruckSheetState extends State<_TruckSheet> {
       'slumpCm': slump == null ? null : decimalText(slump, decimals: 1),
       'concreteDepthBeforeM': sounding == null ? null : decimalText(sounding),
       'ticketPhotoUuid': _photo,
+      'slumpPhotoUuid': _slumpPhoto,
     });
   }
 
@@ -1948,6 +1982,9 @@ class _TruckSheetState extends State<_TruckSheet> {
             Text('TM #${widget.seq} datang', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
             if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
+            // Two photos per TM. The delivery-note NUMBER is no longer typed:
+            // it is already on the note in the photo, and a retyped number is
+            // one more thing to get wrong at 2 a.m.
             OutlinedButton.icon(
               onPressed: () async {
                 final f = await widget.takeTicketPhoto();
@@ -1956,12 +1993,17 @@ class _TruckSheetState extends State<_TruckSheet> {
               icon: Icon(_photo == null ? Icons.receipt_long_outlined : Icons.check_circle),
               label: Text(_photo == null ? 'Foto surat jalan TM' : 'Foto surat jalan tersimpan · ulang'),
             ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final f = await widget.takeSlumpPhoto();
+                if (f != null) setState(() => _slumpPhoto = f);
+              },
+              icon: Icon(_slumpPhoto == null ? Icons.science_outlined : Icons.check_circle),
+              label: Text(_slumpPhoto == null ? 'Foto uji slump' : 'Foto uji slump tersimpan · ulang'),
+            ),
             const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: TextField(controller: _truck, decoration: const InputDecoration(labelText: 'Nomor lambung TM'))),
-              const SizedBox(width: 10),
-              Expanded(child: TextField(controller: _ticket, decoration: const InputDecoration(labelText: 'Nomor surat jalan'))),
-            ]),
+            TextField(controller: _truck, decoration: const InputDecoration(labelText: 'Nomor lambung TM')),
             const SizedBox(height: 12),
             if (widget.suppliers.isNotEmpty) ...[
               DropdownButtonFormField<int?>(

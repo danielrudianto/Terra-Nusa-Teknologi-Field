@@ -80,7 +80,7 @@ class Documents extends Table {
 class Photos extends Table {
   TextColumn get uuid => text()();
 
-  /// wajah | absen_masuk | absen_pulang | tiket_tm
+  /// wajah | absen_masuk | absen_pulang | tiket_tm | slump_tm
   TextColumn get kind => text()();
   TextColumn get path => text()();
   TextColumn get sha256 => text()();

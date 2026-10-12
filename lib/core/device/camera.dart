@@ -24,6 +24,9 @@ const _targets = {
   'absen_masuk': (width: 1024, kb: 80),
   'absen_pulang': (width: 1024, kb: 80),
   'tiket_tm': (width: 1400, kb: 160),
+  // Same as the ticket: the slump cone and the tape must stay readable when
+  // the office checks the figure the foreman typed.
+  'slump_tm': (width: 1400, kb: 160),
 };
 
 /// Album the stamped copies go to in the phone's gallery.
