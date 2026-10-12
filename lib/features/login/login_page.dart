@@ -51,6 +51,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await ref.read(sessionProvider.notifier).login(_email.text, _password.text);
       if (mounted) context.go('/home');
     } on ApiError catch (e) {
+      // Satu akun, satu HP: akun ini masih masuk di HP lain. Bukan
+      // kegagalan — orangnya tinggal memilih memindahkannya ke sini.
+      if (e.code == 'SESI_DI_PERANGKAT_LAIN') {
+        await _askMoveDevice(e);
+        return;
+      }
       setState(() => _error = e.offline
           ? 'Masuk perlu sinyal. Sesudah masuk sekali, aplikasi dapat dipakai tanpa sinyal.'
           : e.message);
@@ -59,6 +65,74 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// "Akun ini masih masuk di HP lain" — tanya dulu, baru pindahkan.
+  ///
+  /// Tidak dipindahkan diam-diam: salah ketik email rekan akan mengunci HP
+  /// orang lain tanpa dia tahu, dan yang terkunci baru menyadarinya saat
+  /// sedang mengecor.
+  Future<void> _askMoveDevice(ApiError e) async {
+    final w = context.colors;
+    final last = _lastSeenText(e.context?['terakhir']?.toString());
+    final move = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        icon: Icon(Icons.phonelink_lock, size: 32, color: w.warnFg),
+        title: const Text('Akun ini masih dipakai di HP lain', textAlign: TextAlign.center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Satu akun hanya boleh dipakai di satu HP, supaya catatan lapangan tidak bercabang.'
+              '${last == null ? '' : ' HP itu terakhir aktif $last.'}',
+              style: TextStyle(color: w.ink, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            const TerraBanner(
+              kind: BannerKind.info,
+              icon: Icons.cloud_upload_outlined,
+              title: 'Data di HP lama tidak hilang',
+              body: 'HP itu masih dapat mengirim sisa antreannya, hanya tidak boleh mencatat yang baru. Bila HP itu yang sebenarnya Anda pakai, batalkan saja dan masuk dari sana.',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Pindahkan ke HP ini')),
+        ],
+      ),
+    );
+    if (move != true || !mounted) {
+      setState(() => _error = e.message);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref.read(sessionProvider.notifier).login(_email.text, _password.text, moveDevice: true);
+      if (mounted) context.go('/home');
+    } on ApiError catch (e2) {
+      setState(() => _error = e2.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// "12 menit lalu" dari waktu ISO yang dikirim server; null bila tidak ada.
+  static String? _lastSeenText(String? iso) {
+    if (iso == null) return null;
+    final t = DateTime.tryParse(iso);
+    if (t == null) return null;
+    final d = DateTime.now().difference(t);
+    if (d.isNegative) return null;
+    if (d.inMinutes < 1) return 'barusan';
+    if (d.inMinutes < 60) return '${d.inMinutes} menit lalu';
+    if (d.inHours < 24) return '${d.inHours} jam lalu';
+    return '${d.inDays} hari lalu';
   }
 
   @override

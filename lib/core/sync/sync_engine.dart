@@ -14,6 +14,7 @@ import '../util/app_log.dart';
 import '../util/clock_drift.dart';
 import '../util/app_version.dart';
 import '../util/format.dart';
+import '../device/device_lock.dart';
 
 /// Summary of one sync round — for the banner on Home and the background log.
 class SyncResult {
@@ -330,6 +331,10 @@ class SyncEngine {
         }
         cursor = d['cursor']?.toString();
         await db.writeMeta(cursorKey, cursor);
+        // Satu akun, satu HP. Pull SELALU boleh, juga bagi HP yang sudah
+        // digantikan — justru lewat sinilah HP itu akhirnya tahu dirinya
+        // terkunci dan dapat memperingatkan orangnya.
+        await db.writeMeta('device_lock', DeviceLock.fromPull(d['device'])?.encode());
         final serverTime = d['serverTime']?.toString();
         if (serverTime != null) await db.writeMeta('server_time', '$serverTime|${DateTime.now().toIso8601String()}');
         // Every reading and TM time comes from the phone clock: a clock that

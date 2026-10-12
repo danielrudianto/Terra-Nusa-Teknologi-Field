@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/util/clock_drift.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/util/format.dart';
 
 /// Status banners shown at the TOP of every main page.
 ///
@@ -19,6 +20,7 @@ class StatusBanners extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider).value;
+    final lock = ref.watch(deviceLockProvider).value;
     final rejected = ref.watch(rejectedCountProvider).value ?? 0;
     final pending = ref.watch(pendingCountProvider).value ?? 0;
     final pendingPhotos = ref.watch(pendingPhotoCountProvider).value ?? 0;
@@ -33,6 +35,24 @@ class StatusBanners extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Satu akun, satu HP. Paling atas bersama sesi berakhir: selama ini
+        // tidak dibereskan, apa pun yang dicatat di HP ini akhirnya ditolak.
+        if (lock != null)
+          TerraBanner(
+            kind: lock.graceOver ? BannerKind.danger : BannerKind.warning,
+            icon: Icons.phonelink_lock,
+            title: lock.graceOver
+                ? 'HP ini sudah digantikan'
+                : 'Akun ini dipakai di HP lain',
+            body: lock.graceOver
+                ? 'Akun Anda dipakai masuk di HP lain, jadi HP ini tidak lagi menerima catatan baru. '
+                    'Sisa antrean tetap terkirim dari sini. Bila HP ini yang Anda pakai, masuk lagi di HP ini.'
+                : 'Akun Anda dipakai masuk di HP lain'
+                    '${lock.byName == null ? '' : ' (${lock.byName})'}. '
+                    'Kirim sisa data dari HP ini, lalu lanjutkan di HP itu. '
+                    'Mulai ${longDate(lock.until)} HP ini tidak lagi menerima catatan baru.',
+            action: FilledButton(onPressed: () => context.go('/login'), child: const Text('Masuk di HP ini')),
+          ),
         if (session?.sessionExpired ?? false)
           TerraBanner(
             kind: BannerKind.danger,

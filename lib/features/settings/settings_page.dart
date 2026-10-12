@@ -41,7 +41,7 @@ class SettingsPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, 32),
         children: [
-          Text('Pengaturan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: w.ink)),
+          Text(t(context).settingsTitle, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: w.ink)),
           const SizedBox(height: 16),
 
           // --- account ----------------------------------------------------
@@ -62,7 +62,7 @@ class SettingsPage extends ConsumerWidget {
                       Text(user?.name ?? '–', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: w.ink)),
                       Text(user?.email ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(color: w.muted, fontSize: 13)),
                       Text(
-                        ['Level ${session?.permissions.level ?? '–'}', if (departments.isNotEmpty) departments.join(', ')].join(' · '),
+                        [t(context).settingsLevel('${session?.permissions.level ?? '–'}'), if (departments.isNotEmpty) departments.join(', ')].join(' · '),
                         style: TextStyle(color: w.muted, fontSize: 13),
                       ),
                     ],
@@ -72,47 +72,47 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
 
-          const _Section('Tampilan'),
+          _Section(t(context).sectionAppearance),
           const _AppearanceCard(),
 
-          const _Section('Proyek saya'),
+          _Section(t(context).sectionMyProject),
           const _MyProjectOptions(),
 
-          const _Section('Notifikasi'),
+          _Section(t(context).sectionNotifications),
           const _NotificationTile(),
           const _PowerTile(),
 
-          const _Section('Akun'),
+          _Section(t(context).sectionAccount),
           _Tile(
             icon: Icons.refresh,
-            title: 'Muat ulang hak akses',
-            subtitle: 'Setelah kantor mengubah level atau divisi Anda.',
+            title: t(context).reloadPermissions,
+            subtitle: t(context).reloadPermissionsBody,
             onTap: () async {
               await ref.read(sessionProvider.notifier).reloadPermissions();
               if (!context.mounted) return;
-              _snack(context, 'Hak akses dimuat ulang.');
+              _snack(context, t(context).permissionsReloaded);
             },
           ),
           const SizedBox(height: 8),
           if (pendingDocs > 0 || photo > 0)
             TerraBanner(
               kind: BannerKind.warning,
-              title: 'Masih ada $pendingDocs data dan $photo foto belum terkirim',
-              body: 'Keluar TIDAK menghapusnya; terkirim begitu Anda masuk lagi. Tetapi orang lain yang masuk di HP ini tidak dapat mengirimnya.',
+              title: t(context).logoutPendingTitle(pendingDocs, photo),
+              body: t(context).logoutPendingBody,
             ),
           _LogoutButton(onPressed: () => _logout(context, ref)),
 
-          const _Section('Tentang'),
+          _Section(t(context).sectionAbout),
           _Tile(
             icon: Icons.info_outline,
-            title: 'Versi aplikasi',
+            title: t(context).appVersion,
             subtitle: 'v${Env.appVersion} · ${Env.apiUrl.replaceFirst('https://', '')}\n'
-                'ID perangkat ${appContext.deviceId.substring(0, 8)}',
+                '${t(context).deviceIdLabel(appContext.deviceId.substring(0, 8))}',
           ),
           _Tile(
             icon: Icons.bug_report_outlined,
-            title: 'Kirim log ke admin',
-            subtitle: 'Bila aplikasi bermasalah: catatan galat dari HP ini, tanpa data pribadi.',
+            title: t(context).sendLog,
+            subtitle: t(context).sendLogBody,
             onTap: () => _sendLog(context, appContext.deviceId),
           ),
         ],
@@ -126,7 +126,7 @@ class SettingsPage extends ConsumerWidget {
     final text = await AppLog.read();
     if (!context.mounted) return;
     if (text.trim().isEmpty) {
-      _snack(context, 'Belum ada catatan galat di HP ini.');
+      _snack(context, t(context).noLogYet);
       return;
     }
     try {
@@ -140,7 +140,7 @@ class SettingsPage extends ConsumerWidget {
       );
     } catch (e) {
       if (!context.mounted) return;
-      _snack(context, 'Log gagal dibagikan: $e');
+      _snack(context, t(context).logShareFailed('$e'));
     }
   }
 
@@ -149,11 +149,11 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (c) => AlertDialog(
         icon: const Icon(Icons.logout, size: 32),
-        title: const Text('Keluar?', textAlign: TextAlign.center),
-        content: const Text('Perlu sinyal untuk masuk lagi.'),
+        title: Text(t(context).logoutConfirm, textAlign: TextAlign.center),
+        content: Text(t(context).logoutConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Keluar')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(context).cancel)),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(t(context).logout)),
         ],
       ),
     );
@@ -204,13 +204,13 @@ class _AppearanceCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          label('Tema'),
+          label(t(context).settingsTheme),
           Row(
             children: [
-              for (final (i, (mode, text, icon)) in const [
-                (ThemeMode.system, 'Ikuti HP', Icons.smartphone),
-                (ThemeMode.light, 'Terang', Icons.light_mode_outlined),
-                (ThemeMode.dark, 'Gelap', Icons.dark_mode_outlined),
+              for (final (i, (mode, text, icon)) in [
+                (ThemeMode.system, t(context).themeSystem, Icons.smartphone),
+                (ThemeMode.light, t(context).themeLight, Icons.light_mode_outlined),
+                (ThemeMode.dark, t(context).themeDark, Icons.dark_mode_outlined),
               ].indexed) ...[
                 if (i > 0) const SizedBox(width: 8),
                 Expanded(
@@ -225,7 +225,7 @@ class _AppearanceCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          label('Warna aksen'),
+          label(t(context).settingsAccent),
           Row(
             children: [
               for (final (i, opt) in accentOptions.indexed) ...[
@@ -233,7 +233,7 @@ class _AppearanceCard extends ConsumerWidget {
                 Expanded(
                   child: Semantics(
                     button: true,
-                    label: opt.label,
+                    label: _accentLabel(context, opt.id),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(Dimens.radiusBanner),
                       onTap: () => _save(ref, a.copyWith(accentId: opt.id)),
@@ -255,7 +255,7 @@ class _AppearanceCard extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            opt.label.split(' ').first,
+                            _accentLabel(context, opt.id),
                             style: TextStyle(fontSize: 12, color: a.accentId == opt.id ? w.ink : w.muted),
                           ),
                         ],
@@ -295,15 +295,15 @@ class _AppearanceCard extends ConsumerWidget {
             child: Text(t(context).settingsLanguageBody, style: TextStyle(color: w.muted, fontSize: 13, height: 1.35)),
           ),
           const SizedBox(height: 16),
-          label('Ukuran teks'),
+          label(t(context).settingsTextSize),
           Row(
             children: [
-              for (final (i, (text, scale)) in textScaleOptions.indexed) ...[
+              for (final (i, (_, scale)) in textScaleOptions.indexed) ...[
                 if (i > 0) const SizedBox(width: 8),
                 Expanded(
                   child: _ChoiceButton(
                     selected: a.textScale == scale,
-                    text: text,
+                    text: _textSizeLabel(context, i),
                     onTap: () => _save(ref, a.copyWith(textScale: scale)),
                   ),
                 ),
@@ -487,7 +487,7 @@ class _MyProjectOptions extends ConsumerWidget {
     Future<void> choose(int? id) async {
       await ref.read(myProjectProvider.notifier).choose(id);
       if (!context.mounted) return;
-      _snack(context, id == null ? 'Proyek saya dikosongkan.' : 'Proyek saya disimpan.');
+      _snack(context, id == null ? t(context).myProjectCleared : t(context).myProjectSaved);
     }
 
     return Column(
@@ -497,17 +497,17 @@ class _MyProjectOptions extends ConsumerWidget {
           padding: const EdgeInsets.only(left: 2, bottom: 10),
           child: Text(
               Features.attendance
-                  ? 'Absen, pekerja baru dan log cor langsung memakai proyek ini. Masih bisa diganti di tiap layar.'
-                  : 'Daftar titik bor & cor langsung membuka proyek ini di urutan teratas.',
+                  ? t(context).myProjectBodyAttendance
+                  : t(context).myProjectBody,
               style: TextStyle(color: w.muted, height: 1.4)),
         ),
         if (projects.hasError)
-          TerraBanner(kind: BannerKind.danger, title: 'Daftar proyek gagal dibaca', body: '${projects.error}')
+          TerraBanner(kind: BannerKind.danger, title: t(context).projectsLoadFailed, body: '${projects.error}')
         else if (projects.hasValue && choices.isEmpty)
-          const TerraBanner(
+          TerraBanner(
             kind: BannerKind.info,
-            title: 'Daftar proyek belum ada di HP',
-            body: 'Tarik ke bawah di Beranda untuk mengambilnya dari server. Perlu sinyal sekali saja.',
+            title: t(context).projectsMissingTitle,
+            body: t(context).projectsMissingBody,
           ),
         for (final p in choices)
           _Tile(
@@ -538,10 +538,10 @@ class _NotificationTile extends ConsumerWidget {
     final on = ref.watch(_notificationsEnabledProvider).value ?? true;
     return _Tile(
       icon: on ? Icons.notifications_active : Icons.notifications_off,
-      title: 'Pengingat getar',
+      title: t(context).notifTitle,
       subtitle: on
-          ? 'Aktif. HP bergetar saat TM lebih dari 20 menit dan selama cor dijeda.'
-          : 'Mati. Ketuk untuk mengizinkan; tanpa ini pengingat saat ngecor tidak muncul.',
+          ? t(context).notifOn
+          : t(context).notifOff,
       selected: on,
       trailing: Icon(on ? Icons.toggle_on : Icons.toggle_off, size: 34, color: on ? w.brand : w.muted),
       onTap: on
@@ -567,10 +567,10 @@ class _PowerTile extends ConsumerWidget {
     final ok = status.unrestricted;
     return _Tile(
       icon: ok ? Icons.battery_full : Icons.battery_alert_outlined,
-      title: 'Baterai & mulai otomatis',
+      title: t(context).powerTitle,
       subtitle: ok
-          ? 'Tanpa batasan. Pengingat dan kirim otomatis jalan saat layar mati.'
-          : 'Masih dibatasi HP. Ketuk untuk mengatur, supaya pengingat cor tidak terlewat.',
+          ? t(context).powerOk
+          : t(context).powerRestricted,
       selected: ok,
       trailing: Icon(Icons.chevron_right, color: w.muted),
       onTap: () => showPowerGuide(context, status),
@@ -611,3 +611,21 @@ class _LogoutButton extends StatelessWidget {
     );
   }
 }
+
+/// Nama warna aksen dan ukuran teks, diterjemahkan.
+///
+/// Datanya (`accentOptions`, `textScaleOptions`) tetap berisi nilai, bukan
+/// kalimat: yang disimpan di HP adalah id dan angkanya, jadi mengganti
+/// bahasa tidak boleh mengubah apa pun yang tersimpan.
+String _accentLabel(BuildContext context, String id) => switch (id) {
+      'jingga' => t(context).accentOrange,
+      'teal' => t(context).accentTeal,
+      'ungu' => t(context).accentPurple,
+      _ => t(context).accentBlue,
+    };
+
+String _textSizeLabel(BuildContext context, int i) => switch (i) {
+      1 => t(context).textSizeLarge,
+      2 => t(context).textSizeHuge,
+      _ => t(context).textSizeNormal,
+    };

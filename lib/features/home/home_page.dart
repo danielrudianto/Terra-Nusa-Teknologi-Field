@@ -24,8 +24,12 @@ class HomePage extends ConsumerWidget {
     final session = ref.watch(sessionProvider).value;
     final user = session?.user;
     final projects = ref.watch(projectsProvider).value ?? const [];
-    final canAttend = Features.attendance && (session?.allows('field_attendance', 'create') ?? false);
-    final canCast = session?.allows('field_casting', 'create') ?? false;
+    // HP yang sudah digantikan dan lewat masa tenggang hanya boleh
+    // mengirim sisa antreannya; pintu masuk pekerjaan baru ditutup di
+    // sini, dan sebabnya sudah terbaca di banner atas.
+    final canRecord = ref.watch(canRecordProvider);
+    final canAttend = canRecord && Features.attendance && (session?.allows('field_attendance', 'create') ?? false);
+    final canCast = canRecord && (session?.allows('field_casting', 'create') ?? false);
     final canViewWorkers = Features.attendance && (session?.allows('field_worker', 'read') ?? false);
     // What was drilled and cast across projects: directors (level 5+) and
     // Engineering from level 3 — the same rule as GET /field/reports.

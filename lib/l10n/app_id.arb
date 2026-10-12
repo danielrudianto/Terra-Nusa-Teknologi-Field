@@ -69,5 +69,220 @@
   "languageSystem": "Ikut HP",
   "languageIndonesian": "Indonesia",
   "languageEnglish": "English",
-  "languageChinese": "中文"
+  "languageChinese": "中文",
+  "settingsTitle": "Pengaturan",
+  "@settingsTitle": {
+    "description": "Halaman Pengaturan: settingsTitle"
+  },
+  "settingsLevel": "Level {n}",
+  "@settingsLevel": {
+    "description": "Halaman Pengaturan: settingsLevel",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionAppearance": "Tampilan",
+  "@sectionAppearance": {
+    "description": "Halaman Pengaturan: sectionAppearance"
+  },
+  "sectionMyProject": "Proyek saya",
+  "@sectionMyProject": {
+    "description": "Halaman Pengaturan: sectionMyProject"
+  },
+  "sectionNotifications": "Notifikasi",
+  "@sectionNotifications": {
+    "description": "Halaman Pengaturan: sectionNotifications"
+  },
+  "sectionAccount": "Akun",
+  "@sectionAccount": {
+    "description": "Halaman Pengaturan: sectionAccount"
+  },
+  "sectionAbout": "Tentang",
+  "@sectionAbout": {
+    "description": "Halaman Pengaturan: sectionAbout"
+  },
+  "settingsTheme": "Tema",
+  "@settingsTheme": {
+    "description": "Halaman Pengaturan: settingsTheme"
+  },
+  "themeSystem": "Ikuti HP",
+  "@themeSystem": {
+    "description": "Halaman Pengaturan: themeSystem"
+  },
+  "themeLight": "Terang",
+  "@themeLight": {
+    "description": "Halaman Pengaturan: themeLight"
+  },
+  "themeDark": "Gelap",
+  "@themeDark": {
+    "description": "Halaman Pengaturan: themeDark"
+  },
+  "settingsAccent": "Warna aksen",
+  "@settingsAccent": {
+    "description": "Halaman Pengaturan: settingsAccent"
+  },
+  "accentBlue": "Biru",
+  "@accentBlue": {
+    "description": "Halaman Pengaturan: accentBlue"
+  },
+  "accentOrange": "Jingga",
+  "@accentOrange": {
+    "description": "Halaman Pengaturan: accentOrange"
+  },
+  "accentTeal": "Teal",
+  "@accentTeal": {
+    "description": "Halaman Pengaturan: accentTeal"
+  },
+  "accentPurple": "Ungu",
+  "@accentPurple": {
+    "description": "Halaman Pengaturan: accentPurple"
+  },
+  "settingsTextSize": "Ukuran teks",
+  "@settingsTextSize": {
+    "description": "Halaman Pengaturan: settingsTextSize"
+  },
+  "textSizeNormal": "Normal",
+  "@textSizeNormal": {
+    "description": "Halaman Pengaturan: textSizeNormal"
+  },
+  "textSizeLarge": "Besar",
+  "@textSizeLarge": {
+    "description": "Halaman Pengaturan: textSizeLarge"
+  },
+  "textSizeHuge": "Sangat besar",
+  "@textSizeHuge": {
+    "description": "Halaman Pengaturan: textSizeHuge"
+  },
+  "myProjectBodyAttendance": "Absen, pekerja baru dan log cor langsung memakai proyek ini. Masih bisa diganti di tiap layar.",
+  "@myProjectBodyAttendance": {
+    "description": "Halaman Pengaturan: myProjectBodyAttendance"
+  },
+  "myProjectBody": "Daftar titik bor & cor langsung membuka proyek ini di urutan teratas.",
+  "@myProjectBody": {
+    "description": "Halaman Pengaturan: myProjectBody"
+  },
+  "myProjectSaved": "Proyek saya disimpan.",
+  "@myProjectSaved": {
+    "description": "Halaman Pengaturan: myProjectSaved"
+  },
+  "myProjectCleared": "Proyek saya dikosongkan.",
+  "@myProjectCleared": {
+    "description": "Halaman Pengaturan: myProjectCleared"
+  },
+  "projectsLoadFailed": "Daftar proyek gagal dibaca",
+  "@projectsLoadFailed": {
+    "description": "Halaman Pengaturan: projectsLoadFailed"
+  },
+  "projectsMissingTitle": "Daftar proyek belum ada di HP",
+  "@projectsMissingTitle": {
+    "description": "Halaman Pengaturan: projectsMissingTitle"
+  },
+  "projectsMissingBody": "Tarik ke bawah di Beranda untuk mengambilnya dari server. Perlu sinyal sekali saja.",
+  "@projectsMissingBody": {
+    "description": "Halaman Pengaturan: projectsMissingBody"
+  },
+  "notifTitle": "Pengingat getar",
+  "@notifTitle": {
+    "description": "Halaman Pengaturan: notifTitle"
+  },
+  "notifOn": "Aktif. HP bergetar saat TM lebih dari 20 menit dan selama cor dijeda.",
+  "@notifOn": {
+    "description": "Halaman Pengaturan: notifOn"
+  },
+  "notifOff": "Mati. Ketuk untuk mengizinkan; tanpa ini pengingat saat ngecor tidak muncul.",
+  "@notifOff": {
+    "description": "Halaman Pengaturan: notifOff"
+  },
+  "powerTitle": "Baterai & mulai otomatis",
+  "@powerTitle": {
+    "description": "Halaman Pengaturan: powerTitle"
+  },
+  "powerOk": "Tanpa batasan. Pengingat dan kirim otomatis jalan saat layar mati.",
+  "@powerOk": {
+    "description": "Halaman Pengaturan: powerOk"
+  },
+  "powerRestricted": "Masih dibatasi HP. Ketuk untuk mengatur, supaya pengingat cor tidak terlewat.",
+  "@powerRestricted": {
+    "description": "Halaman Pengaturan: powerRestricted"
+  },
+  "reloadPermissions": "Muat ulang hak akses",
+  "@reloadPermissions": {
+    "description": "Halaman Pengaturan: reloadPermissions"
+  },
+  "reloadPermissionsBody": "Setelah kantor mengubah level atau divisi Anda.",
+  "@reloadPermissionsBody": {
+    "description": "Halaman Pengaturan: reloadPermissionsBody"
+  },
+  "permissionsReloaded": "Hak akses dimuat ulang.",
+  "@permissionsReloaded": {
+    "description": "Halaman Pengaturan: permissionsReloaded"
+  },
+  "logoutPendingTitle": "Masih ada {docs} data dan {photos} foto belum terkirim",
+  "@logoutPendingTitle": {
+    "description": "Halaman Pengaturan: logoutPendingTitle",
+    "placeholders": {
+      "docs": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "logoutPendingBody": "Keluar TIDAK menghapusnya; terkirim begitu Anda masuk lagi. Tetapi orang lain yang masuk di HP ini tidak dapat mengirimnya.",
+  "@logoutPendingBody": {
+    "description": "Halaman Pengaturan: logoutPendingBody"
+  },
+  "logout": "Keluar",
+  "@logout": {
+    "description": "Halaman Pengaturan: logout"
+  },
+  "logoutConfirm": "Keluar?",
+  "@logoutConfirm": {
+    "description": "Halaman Pengaturan: logoutConfirm"
+  },
+  "logoutConfirmBody": "Perlu sinyal untuk masuk lagi.",
+  "@logoutConfirmBody": {
+    "description": "Halaman Pengaturan: logoutConfirmBody"
+  },
+  "cancel": "Batal",
+  "@cancel": {
+    "description": "Halaman Pengaturan: cancel"
+  },
+  "appVersion": "Versi aplikasi",
+  "@appVersion": {
+    "description": "Halaman Pengaturan: appVersion"
+  },
+  "deviceIdLabel": "ID perangkat {id}",
+  "@deviceIdLabel": {
+    "description": "Halaman Pengaturan: deviceIdLabel",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "sendLog": "Kirim log ke admin",
+  "@sendLog": {
+    "description": "Halaman Pengaturan: sendLog"
+  },
+  "sendLogBody": "Bila aplikasi bermasalah: catatan galat dari HP ini, tanpa data pribadi.",
+  "@sendLogBody": {
+    "description": "Halaman Pengaturan: sendLogBody"
+  },
+  "noLogYet": "Belum ada catatan galat di HP ini.",
+  "@noLogYet": {
+    "description": "Halaman Pengaturan: noLogYet"
+  },
+  "logShareFailed": "Log gagal dibagikan: {error}",
+  "@logShareFailed": {
+    "description": "Halaman Pengaturan: logShareFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

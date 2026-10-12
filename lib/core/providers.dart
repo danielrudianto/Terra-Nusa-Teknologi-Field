@@ -17,6 +17,7 @@ import 'util/app_version.dart';
 import 'util/clock_drift.dart';
 import 'util/format.dart';
 import '../features/workers/worker.dart';
+import 'device/device_lock.dart';
 
 export '../features/workers/worker.dart';
 export 'util/app_version.dart' show AppOutdated;
@@ -59,9 +60,9 @@ class SessionNotifier extends AsyncNotifier<SessionState> {
     return SessionState(user: user, permissions: await _save.permissions(), sessionExpired: expiresAt);
   }
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(String email, String password, {bool moveDevice = false}) async {
     final api = ref.read(apiProvider);
-    final (user, access, refresh) = await api.login(email, password);
+    final (user, access, refresh) = await api.login(email, password, moveDevice: moveDevice);
     final previous = await _save.user();
     if (previous != null && previous.id != user.id) {
       await ref.read(dbProvider).switchUser();
@@ -227,6 +228,24 @@ final appearanceProvider = StreamProvider<Appearance>((ref) {
 /// Phone clock vs server clock at the last pull; null = never pulled.
 final clockDriftProvider = StreamProvider<Duration?>((ref) {
   return ref.watch(dbProvider).watchMeta('server_time').map(clockDriftOf);
+});
+
+/// Satu akun, satu HP: HP ini sudah digantikan HP lain. Null = tidak.
+///
+/// Diisi oleh setiap pull, jadi HP yang sedang tanpa sinyal baru
+/// mengetahuinya begitu ada sinyal — dan sampai saat itu ia tetap boleh
+/// mencatat, yang memang disengaja (lihat masa tenggang di server).
+final deviceLockProvider = StreamProvider<DeviceLock?>((ref) {
+  return ref.watch(dbProvider).watchMeta('device_lock').map(DeviceLock.decode);
+});
+
+/// Boleh memulai pekerjaan BARU di HP ini?
+///
+/// Mengirim sisa antrean tidak pernah ikut dimatikan: yang sudah tercatat
+/// harus tetap sampai ke server, apa pun keadaan HP-nya.
+final canRecordProvider = Provider<bool>((ref) {
+  final lock = ref.watch(deviceLockProvider).value;
+  return lock == null || !lock.graceOver;
 });
 
 /// When the oldest change still waiting to be sent was made; null = all sent.

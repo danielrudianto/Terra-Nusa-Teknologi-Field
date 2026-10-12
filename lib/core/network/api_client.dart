@@ -123,9 +123,16 @@ class ApiClient {
 
   // -------------------------------------------------------------------------
 
-  Future<(AppUser, String, String)> login(String email, String password) async {
+  /// [moveDevice] answers the server's "this account is still signed in on
+  /// another phone": true means "yes, move it here". Sent only after the
+  /// person has said so — never on the first attempt.
+  Future<(AppUser, String, String)> login(String email, String password, {bool moveDevice = false}) async {
     try {
-      final r = await dio.post<Map<String, dynamic>>('/auth/', data: {'email': email.trim(), 'password': password});
+      final r = await dio.post<Map<String, dynamic>>('/auth/', data: {
+        'email': email.trim(),
+        'password': password,
+        if (moveDevice) 'pindahkanPerangkat': true,
+      });
       final data = r.data ?? const {};
       final user = AppUser.fromJson((data['user'] as Map).cast<String, Object?>());
       return (user, data['access_token'] as String, data['refresh_token'] as String);

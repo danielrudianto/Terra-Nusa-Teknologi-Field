@@ -228,7 +228,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
 
   Future<void> _showActions(FieldPilePoint t) async {
     final session = ref.read(sessionProvider).value;
-    final allows = session?.allows('field_casting', 'create') ?? false;
+    // Satu akun, satu HP: HP yang sudah digantikan dan lewat masa
+    // tenggang hanya boleh mengirim sisa antreannya, tidak membuka
+    // pekerjaan baru. Sebabnya terbaca di banner Beranda.
+    final allows = ref.watch(canRecordProvider) && (session?.allows('field_casting', 'create') ?? false);
     final g = t.geometry;
     final w = context.colors;
     // The casting log needs the drilled depth: it sets the hole bottom that

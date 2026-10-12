@@ -1,7 +1,19 @@
 # CLAUDE.md — TerraBot Field (Flutter)
 
 Code language: English — file, class, method and variable names and comments.
-Text shown on screen stays Indonesian (the users are foremen and QS on site).
+
+Text shown on screen is TRANSLATED: Indonesian (default), English and 中文.
+Never hard-code a user-visible string. Add the key to all three of
+`lib/l10n/app_id.arb`, `app_en.arb`, `app_zh.arb` (Indonesian carries the
+`@key` description), run `flutter gen-l10n`, and read it with
+`t(context).theKey` (`lib/core/i18n.dart`). The synthetic
+`package:flutter_gen` is GONE since Flutter 3.47 — the generated classes
+live in `lib/l10n/`.
+
+What stays untranslated on purpose: server contract values (photo kinds,
+review statuses, reason codes), stored ids (`accentOptions.id`), and field
+terms that are the same on every site in all three languages (TM, slump,
+tremie, cut-off) — those keep their trade spelling per language.
 
 ## Must
 
