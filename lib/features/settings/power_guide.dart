@@ -5,6 +5,7 @@ import '../../core/device/device_power.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// This phone's battery / auto-start state. Re-read when the app comes back
 /// to the front (FieldApp), i.e. right after the user changed it.
@@ -26,15 +27,11 @@ Future<void> showPowerGuide(BuildContext context, PowerStatus status) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Biarkan TerraBot Field jalan', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+              Text(t(context).keepRunningTitle, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
               const SizedBox(height: 6),
-              Text(
-                'HP ini mematikan aplikasi yang tidak sedang dibuka. Tanpa pengaturan di bawah, getar pengingat cor '
-                '(20 menit, jeda) dan kirim otomatis TIDAK jalan saat layar mati.',
-                style: TextStyle(color: w.muted, height: 1.4),
-              ),
+              Text(t(context).keepRunningBody, style: TextStyle(color: w.muted, height: 1.4)),
               const SizedBox(height: 14),
-              for (final (i, s) in status.steps.indexed)
+              for (final (i, s) in status.steps(context).indexed)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
@@ -59,7 +56,7 @@ Future<void> showPowerGuide(BuildContext context, PowerStatus status) {
                       if (!await DevicePower.openAutostart()) await DevicePower.openAppSettings();
                     },
                     icon: const Icon(Icons.play_circle_outline),
-                    label: const Text('Buka pengaturan Mulai otomatis'),
+                    label: Text(t(context).openAutostart),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -70,12 +67,12 @@ Future<void> showPowerGuide(BuildContext context, PowerStatus status) {
                     ? OutlinedButton.icon(
                         onPressed: DevicePower.openAppSettings,
                         icon: const Icon(Icons.battery_charging_full),
-                        label: const Text('Buka pengaturan Baterai aplikasi'),
+                        label: Text(t(context).openBattery),
                       )
                     : FilledButton.icon(
                         onPressed: DevicePower.openAppSettings,
                         icon: const Icon(Icons.battery_charging_full),
-                        label: const Text('Buka pengaturan Baterai aplikasi'),
+                        label: Text(t(context).openBattery),
                       ),
               ),
             ],
@@ -97,9 +94,9 @@ class PowerBanner extends ConsumerWidget {
     return TerraBanner(
       kind: BannerKind.warning,
       icon: Icons.battery_alert_outlined,
-      title: 'Atur baterai HP sekali saja',
-      body: 'Supaya getar pengingat cor dan kirim otomatis tetap jalan saat layar mati.',
-      action: TextButton(onPressed: () => showPowerGuide(context, status), child: const Text('Atur')),
+      title: t(context).setBatteryOnce,
+      body: t(context).setBatteryBody,
+      action: TextButton(onPressed: () => showPowerGuide(context, status), child: Text(t(context).setUp)),
     );
   }
 }

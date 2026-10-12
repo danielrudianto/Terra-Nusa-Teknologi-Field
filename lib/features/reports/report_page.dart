@@ -14,6 +14,7 @@ import '../../core/util/format.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/view_states.dart';
+import '../../core/i18n.dart';
 
 /// Date range of the report, both ends included.
 typedef ReportRange = ({DateTime from, DateTime to});
@@ -89,11 +90,14 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             children: [
               option(
                 Icons.date_range,
-                'Periode ini',
-                range.from == range.to ? longDate(range.from) : '${longDate(range.from)} – ${longDate(range.to)}',
+                t(context).thisPeriod,
+                range.from == range.to
+                    ? longDate(range.from)
+                    : t(context).dateRange(longDate(range.from), longDate(range.to)),
                 false,
               ),
-              option(Icons.all_inclusive, 'Rekap lengkap', 'Semua titik sejak awal proyek sampai ${longDate(range.to)}', true),
+              option(Icons.all_inclusive, t(context).fullRecap,
+                  t(context).fullRecapBody(longDate(range.to)), true),
               const SizedBox(height: 8),
             ],
           ),
@@ -111,7 +115,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')],
-          subject: 'Rekapitulasi Data Tiang',
+          subject: t(context).excelSubject,
         ),
       );
     } catch (e) {
@@ -122,7 +126,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             children: [
               const Icon(Icons.error_outline, color: Colors.white),
               const SizedBox(width: 10),
-              Expanded(child: Text(e is ApiError ? e.message : 'Excel gagal diunduh: $e')),
+              Expanded(child: Text(e is ApiError ? e.message : t(context).excelFailed('$e'))),
             ],
           ),
         ),
@@ -143,7 +147,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     final multiDay = range.from != range.to;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Laporan lapangan')),
+      appBar: AppBar(title: Text(t(context).reportsTitle)),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(_reportProvider(range)),
         child: ListView(
@@ -153,11 +157,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final (k, l) in const [('today', 'Hari ini'), ('yesterday', 'Kemarin'), ('week', '7 hari')])
+                for (final (k, l) in [('today', t(context).presetToday), ('yesterday', t(context).presetYesterday), ('week', t(context).presetWeek)])
                   ChoiceChip(label: Text(l), selected: _preset == k, onSelected: (_) => setState(() => _preset = k)),
                 ChoiceChip(
                   avatar: const Icon(Icons.event, size: 18),
-                  label: Text(_preset == 'custom' ? DateFormat('d MMM', 'id').format(_customDay) : 'Pilih tanggal'),
+                  label: Text(_preset == 'custom' ? DateFormat('d MMM', 'id').format(_customDay) : t(context).pickDate),
                   selected: _preset == 'custom',
                   onSelected: (_) => _pickDay(),
                 ),
@@ -165,9 +169,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ),
             const SizedBox(height: 6),
             Text(
-              multiDay
-                  ? '${longDate(range.from)} – ${longDate(range.to)}'
-                  : longDate(range.from),
+              multiDay ? t(context).dateRange(longDate(range.from), longDate(range.to)) : longDate(range.from),
               style: TextStyle(color: w.muted),
             ),
             const SizedBox(height: 12),
@@ -178,7 +180,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 icon: _downloading
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.table_view),
-                label: Text(_downloading ? 'Menyiapkan Excel…' : 'Unduh Excel (Rekapitulasi Data Tiang)'),
+                label: Text(_downloading ? t(context).preparingExcel : t(context).downloadExcel),
               ),
             ),
             const SizedBox(height: 14),
@@ -186,7 +188,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               loading: () => const [Padding(padding: EdgeInsets.only(top: 40), child: LoadingState())],
               error: (e, _) => [
                 ErrorState(
-                  title: 'Laporan gagal dibaca',
+                  title: t(context).reportLoadError,
                   message: e is ApiError ? e.message : '$e',
                 ),
               ],
@@ -211,27 +213,28 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     return [
       Row(
         children: [
-          _Stat(label: 'Titik dibor', value: '${totals['drilledPoints'] ?? 0}', sub: formatMeters(toDoubleOrNull(totals['drilledM']), decimals: 1)),
+          _Stat(label: t(context).statDrilledPoints, value: '${totals['drilledPoints'] ?? 0}', sub: formatMeters(toDoubleOrNull(totals['drilledM']), decimals: 1)),
           const SizedBox(width: 10),
           _Stat(
-            label: 'Titik dicor',
+            label: t(context).statCastPoints,
             value: '${totals['castPoints'] ?? 0}',
-            sub: '${(toDoubleOrNull(totals['castM3']) ?? 0).toStringAsFixed(1).replaceAll('.', ',')} m³ · ${totals['trucks'] ?? 0} TM',
+            sub: t(context).statCastSub(
+                (toDoubleOrNull(totals['castM3']) ?? 0).toStringAsFixed(1).replaceAll('.', ','), '${totals['trucks'] ?? 0}'),
           ),
         ],
       ),
       const SizedBox(height: 14),
       if (operators.isNotEmpty) _OperatorCard(operators: operators),
-      if (ids.isEmpty) const EmptyState(message: 'Belum ada titik yang dibor atau dicor pada tanggal ini.'),
+      if (ids.isEmpty) EmptyState(message: t(context).noPointsThatDay),
       for (final id in ids)
         _ProjectCard(
-          title: projects[id] == null ? 'Proyek #$id' : '${projects[id]!['code']} · ${projects[id]!['name']}',
+          title: projects[id] == null ? t(context).projectNo(id) : '${projects[id]!['code']} · ${projects[id]!['name']}',
           drilling: [for (final x in drilling) if ('${x['projectID']}' == id) x],
           casting: [for (final x in casting) if ('${x['projectID']}' == id) x],
           showDate: multiDay,
         ),
       const SizedBox(height: 8),
-      Text('Tarik ke bawah untuk memuat ulang. Data dari semua HP yang sudah terkirim.',
+      Text(t(context).pullToReload,
           style: TextStyle(color: w.faint, fontSize: 12)),
     ];
   }
@@ -286,7 +289,7 @@ class _OperatorCard extends StatelessWidget {
             children: [
               Icon(Icons.engineering, size: 18, color: w.brand),
               const SizedBox(width: 6),
-              Text('Operator bor', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
+              Text(t(context).drillOperator, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
             ],
           ),
           const SizedBox(height: 6),
@@ -315,7 +318,7 @@ class _OperatorCard extends StatelessWidget {
                     children: [
                       Text(formatMeters(toDoubleOrNull(o['meters']), decimals: 1),
                           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
-                      Text('${o['points']} titik', style: TextStyle(color: w.muted, fontSize: 12.5)),
+                      Text(t(context).pointsSuffix('${o['points']}'), style: TextStyle(color: w.muted, fontSize: 12.5)),
                     ],
                   ),
                 ],
@@ -385,40 +388,42 @@ class _ProjectCard extends StatelessWidget {
         children: [
           Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
           if (drilling.isNotEmpty) ...[
-            heading(Icons.construction, 'Dibor (${drilling.length})'),
+            heading(Icons.construction, t(context).drilledCount(drilling.length)),
             for (final x in drilling)
               row(
                 code: '${x['pilePointCode']}',
                 main: 'D${x['diameterMm']} · ${formatMeters(toDoubleOrNull(x['depthM']))}',
                 sub: [
                   _when(x),
-                  if (x['source'] == 'tanda') 'tanpa log',
-                  if (x['operatorName'] != null) 'op. ${x['operatorName']}',
+                  if (x['source'] == 'tanda') t(context).noLog,
+                  if (x['operatorName'] != null) t(context).operatorShort('${x['operatorName']}'),
                   if (x['byName'] != null) '${x['byName']}',
                 ].where((s) => s.isNotEmpty).join(' · '),
                 badge: x['status'] == 'selesai'
-                    ? StatusBadge(text: 'Selesai', bg: w.okBg, fg: w.okFg)
-                    : StatusBadge(text: 'Sedang dibor', bg: w.warnBg, fg: w.warnFg),
+                    ? StatusBadge(text: t(context).statusDone, bg: w.okBg, fg: w.okFg)
+                    : StatusBadge(text: t(context).stageDrilling, bg: w.warnBg, fg: w.warnFg),
               ),
           ],
           if (casting.isNotEmpty) ...[
-            heading(Icons.foundation, 'Dicor (${casting.length})'),
+            heading(Icons.foundation, t(context).castCount(casting.length)),
             for (final x in casting)
               () {
                 final over = toDoubleOrNull(x['overusePercent']);
                 return row(
                   code: '${x['pilePointCode']}',
-                  main: '${x['trucks']} TM · ${(toDoubleOrNull(x['volumeM3']) ?? 0).toStringAsFixed(1).replaceAll('.', ',')} m³',
+                  main: t(context).statCastSub((toDoubleOrNull(x['volumeM3']) ?? 0).toStringAsFixed(1).replaceAll('.', ','), '${x['trucks']}'),
                   sub: [
                     _when(x),
-                    'teoritis ${(toDoubleOrNull(x['theoreticalM3']) ?? 0).toStringAsFixed(1).replaceAll('.', ',')} m³'
-                        '${over == null ? '' : ' (${over >= 0 ? '+' : ''}${over.toStringAsFixed(0)}%)'}',
+                    t(context).theoreticalOf(
+                      (toDoubleOrNull(x['theoreticalM3']) ?? 0).toStringAsFixed(1).replaceAll('.', ','),
+                      over == null ? '' : t(context).percentParens(over >= 0 ? '+' : '', over.toStringAsFixed(0)),
+                    ),
                     if (x['byName'] != null) '${x['byName']}',
                   ].where((s) => s.isNotEmpty).join(' · '),
                   badge: switch (x['status']) {
-                    'diperiksa' => StatusBadge(text: 'Diperiksa', bg: w.okBg, fg: w.okFg),
-                    'selesai' => StatusBadge(text: 'Selesai', bg: w.infoBg, fg: w.infoFg),
-                    _ => StatusBadge(text: 'Sedang dicor', bg: w.checkedBg, fg: w.checkedFg),
+                    'diperiksa' => StatusBadge(text: t(context).statusChecked, bg: w.okBg, fg: w.okFg),
+                    'selesai' => StatusBadge(text: t(context).statusDone, bg: w.infoBg, fg: w.infoFg),
+                    _ => StatusBadge(text: t(context).stageCasting, bg: w.checkedBg, fg: w.checkedFg),
                   },
                 );
               }(),

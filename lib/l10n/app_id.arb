@@ -284,5 +284,3930 @@
         "type": "String"
       }
     }
+  },
+  "castingTitle": "Log pengecoran",
+  "@castingTitle": {
+    "description": "AppBar layar cor"
+  },
+  "projectsLoadError": "Proyek gagal dibaca",
+  "@projectsLoadError": {
+    "description": "projectsLoadError"
+  },
+  "pickProject": "Pilih proyek",
+  "@pickProject": {
+    "description": "pickProject"
+  },
+  "pickProjectBody": "Titik bor diisi kantor dari gambar kerja",
+  "@pickProjectBody": {
+    "description": "pickProjectBody"
+  },
+  "noCastingProjects": "Belum ada proyek cor di HP. Tarik ke bawah saat ada sinyal.",
+  "@noCastingProjects": {
+    "description": "noCastingProjects"
+  },
+  "myProjectTag": "PROYEK SAYA",
+  "@myProjectTag": {
+    "description": "myProjectTag"
+  },
+  "pointCount": "{n} titik",
+  "@pointCount": {
+    "description": "pointCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsTitle": "Titik bor",
+  "@pointsTitle": {
+    "description": "pointsTitle"
+  },
+  "pointsTitleOf": "{code} · titik bor",
+  "@pointsTitleOf": {
+    "description": "pointsTitleOf",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "toTop": "Ke atas",
+  "@toTop": {
+    "description": "toTop"
+  },
+  "pointsLoadError": "Titik gagal dibaca",
+  "@pointsLoadError": {
+    "description": "pointsLoadError"
+  },
+  "noPointsTitle": "Belum ada titik bor",
+  "@noPointsTitle": {
+    "description": "noPointsTitle"
+  },
+  "noPointsBody": "Titik bor diisi kantor (impor Excel di TerraBot web). Tarik ke bawah di halaman sebelumnya untuk mengambil yang terbaru.",
+  "@noPointsBody": {
+    "description": "noPointsBody"
+  },
+  "searchPointCode": "Cari kode titik",
+  "@searchPointCode": {
+    "description": "searchPointCode"
+  },
+  "clear": "Hapus",
+  "@clear": {
+    "description": "clear"
+  },
+  "filterAll": "Semua",
+  "@filterAll": {
+    "description": "filterAll"
+  },
+  "filterUndrilled": "Belum bor",
+  "@filterUndrilled": {
+    "description": "filterUndrilled"
+  },
+  "filterDrilled": "Dibor",
+  "@filterDrilled": {
+    "description": "filterDrilled"
+  },
+  "filterCast": "Dicor",
+  "@filterCast": {
+    "description": "filterCast"
+  },
+  "castProgress": "{done} dari {total} titik sudah dicor",
+  "@castProgress": {
+    "description": "castProgress",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "noMatchingPoints": "Tidak ada titik yang cocok.",
+  "@noMatchingPoints": {
+    "description": "noMatchingPoints"
+  },
+  "stageCasting": "Sedang dicor",
+  "@stageCasting": {
+    "description": "stageCasting"
+  },
+  "stageCast": "Sudah dicor",
+  "@stageCast": {
+    "description": "stageCast"
+  },
+  "stageDrilled": "Dibor {depth}",
+  "@stageDrilled": {
+    "description": "stageDrilled",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "stageDrilling": "Sedang dibor",
+  "@stageDrilling": {
+    "description": "stageDrilling"
+  },
+  "stageUndrilled": "Belum dibor",
+  "@stageUndrilled": {
+    "description": "stageUndrilled"
+  },
+  "gsMissingShort": "GS belum diisi",
+  "@gsMissingShort": {
+    "description": "gsMissingShort"
+  },
+  "pointHeading": "Titik {code}",
+  "@pointHeading": {
+    "description": "pointHeading",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldDiameter": "Diameter",
+  "@fieldDiameter": {
+    "description": "fieldDiameter"
+  },
+  "fieldLevels": "GS / cut-off / tip",
+  "@fieldLevels": {
+    "description": "fieldLevels"
+  },
+  "fieldCutOffDepth": "Kedalaman cut-off dari GS",
+  "@fieldCutOffDepth": {
+    "description": "fieldCutOffDepth"
+  },
+  "fieldPlannedDrill": "Panjang bor rencana",
+  "@fieldPlannedDrill": {
+    "description": "fieldPlannedDrill"
+  },
+  "fieldPlannedEff": "Panjang efektif rencana",
+  "@fieldPlannedEff": {
+    "description": "fieldPlannedEff"
+  },
+  "fieldPlannedVol": "Volume teoritis rencana",
+  "@fieldPlannedVol": {
+    "description": "fieldPlannedVol"
+  },
+  "fieldActualDrill": "Kedalaman bor aktual",
+  "@fieldActualDrill": {
+    "description": "fieldActualDrill"
+  },
+  "gsMissingTitle": "Elevasi GS belum diisi",
+  "@gsMissingTitle": {
+    "description": "gsMissingTitle"
+  },
+  "gsMissingBody": "Kedalaman dari GS belum dapat dihitung, dan log cor baru bisa dimulai setelah GS terisi. Isi GS saat menandai titik ini sudah dibor.",
+  "@gsMissingBody": {
+    "description": "gsMissingBody"
+  },
+  "notFilled": "belum diisi",
+  "@notFilled": {
+    "description": "notFilled"
+  },
+  "castLogExists": "Titik ini sudah punya log cor",
+  "@castLogExists": {
+    "description": "castLogExists"
+  },
+  "castLogOnMyOther": "Log cornya ada di HP Anda yang lain",
+  "@castLogOnMyOther": {
+    "description": "castLogOnMyOther"
+  },
+  "castLogElsewhere": "Sedang dicor dari HP lain",
+  "@castLogElsewhere": {
+    "description": "castLogElsewhere"
+  },
+  "castLogHeldBody": "{who} yang memegang log cornya. Satu titik hanya boleh satu log cor. Bila log itu salah, minta kantor menghapusnya dulu.",
+  "@castLogHeldBody": {
+    "description": "castLogHeldBody",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "logIsMineBody": "Log ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. Ambil langsung ke sini tanpa kode oper.",
+  "@logIsMineBody": {
+    "description": "logIsMineBody"
+  },
+  "castLogHandoverBody": "{who} yang memegang log cornya. Satu titik hanya boleh satu log cor. Untuk melanjutkan dari HP ini, minta dia menekan \"Oper ke rekan\" lalu masukkan kodenya di sini.",
+  "@castLogHandoverBody": {
+    "description": "castLogHandoverBody",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "takeToThisPhone": "Ambil ke HP ini",
+  "@takeToThisPhone": {
+    "description": "takeToThisPhone"
+  },
+  "continueHereCode": "Lanjutkan di HP ini (kode oper)",
+  "@continueHereCode": {
+    "description": "continueHereCode"
+  },
+  "drillLogOnMyOther": "Log bornya ada di HP Anda yang lain",
+  "@drillLogOnMyOther": {
+    "description": "drillLogOnMyOther"
+  },
+  "drillLogElsewhere": "Sedang dibor dari HP lain",
+  "@drillLogElsewhere": {
+    "description": "drillLogElsewhere"
+  },
+  "drillLogHandoverBody": "Log bornya dipegang {who}. Satu titik hanya boleh satu log bor. Untuk melanjutkan dari HP ini, minta dia menekan \"Oper ke rekan\" lalu masukkan kodenya di sini.",
+  "@drillLogHandoverBody": {
+    "description": "drillLogHandoverBody",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "drillFirstTitle": "Catat bor dulu",
+  "@drillFirstTitle": {
+    "description": "drillFirstTitle"
+  },
+  "castAfterDrillLog": "Log cor bisa dimulai setelah log bor ditutup dengan \"Selesai bor\".",
+  "@castAfterDrillLog": {
+    "description": "castAfterDrillLog"
+  },
+  "castAfterDrilled": "Log cor baru bisa dimulai setelah titik ini selesai dibor: lewat log bor, atau tandai langsung.",
+  "@castAfterDrilled": {
+    "description": "castAfterDrilled"
+  },
+  "viewOnlyTitle": "Hanya dapat dilihat",
+  "@viewOnlyTitle": {
+    "description": "viewOnlyTitle"
+  },
+  "viewOnlyCastBody": "Akun ini tidak berhak mencatat log cor.",
+  "@viewOnlyCastBody": {
+    "description": "viewOnlyCastBody"
+  },
+  "continueDrillLog": "Lanjutkan log bor",
+  "@continueDrillLog": {
+    "description": "continueDrillLog"
+  },
+  "viewDrillLog": "Lihat log bor",
+  "@viewDrillLog": {
+    "description": "viewDrillLog"
+  },
+  "startDrillLog": "Mulai log bor",
+  "@startDrillLog": {
+    "description": "startDrillLog"
+  },
+  "markDrilledNoLog": "Tandai sudah dibor (tanpa log)",
+  "@markDrilledNoLog": {
+    "description": "markDrilledNoLog"
+  },
+  "correctDrillGs": "Koreksi kedalaman bor / GS",
+  "@correctDrillGs": {
+    "description": "correctDrillGs"
+  },
+  "openCastLog": "Buka log cor",
+  "@openCastLog": {
+    "description": "openCastLog"
+  },
+  "startCastLog": "Mulai log cor",
+  "@startCastLog": {
+    "description": "startCastLog"
+  },
+  "colleague": "Rekan",
+  "@colleague": {
+    "description": "colleague"
+  },
+  "markedDrilled": "{code} ditandai sudah dibor {depth}.",
+  "@markedDrilled": {
+    "description": "markedDrilled",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "gsInvalid": "Elevasi GS tidak sah.",
+  "@gsInvalid": {
+    "description": "gsInvalid"
+  },
+  "gsRequiredMsg": "Isi elevasi GS titik ini. Log cor tidak dapat dimulai tanpanya.",
+  "@gsRequiredMsg": {
+    "description": "gsRequiredMsg"
+  },
+  "drillDepthInvalid": "Isi kedalaman bor (m), lebih dari 0.",
+  "@drillDepthInvalid": {
+    "description": "drillDepthInvalid"
+  },
+  "drillDepthTooDeep": "Kedalaman paling dalam {max}. Periksa angkanya.",
+  "@drillDepthTooDeep": {
+    "description": "drillDepthTooDeep",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "markDrilledTitle": "Tandai dibor {code}",
+  "@markDrilledTitle": {
+    "description": "markDrilledTitle",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInput": "Periksa isian",
+  "@checkInput": {
+    "description": "checkInput"
+  },
+  "gsFieldRequired": "Elevasi GS (m) — wajib",
+  "@gsFieldRequired": {
+    "description": "gsFieldRequired"
+  },
+  "gsField": "Elevasi GS (m)",
+  "@gsField": {
+    "description": "gsField"
+  },
+  "cutOffAboveGsTitle": "Cut-off di atas GS",
+  "@cutOffAboveGsTitle": {
+    "description": "cutOffAboveGsTitle"
+  },
+  "cutOffAboveGsBody": "COL {col} lebih tinggi dari GS ini. Pastikan angka GS benar sebelum menyimpan.",
+  "@cutOffAboveGsBody": {
+    "description": "cutOffAboveGsBody",
+    "placeholders": {
+      "col": {
+        "type": "String"
+      }
+    }
+  },
+  "drillDepthField": "Kedalaman bor (m)",
+  "@drillDepthField": {
+    "description": "drillDepthField"
+  },
+  "beyondPlanTitle": "Sudah lewat {over} dari rencana",
+  "@beyondPlanTitle": {
+    "description": "beyondPlanTitle",
+    "placeholders": {
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "beyondPlanBody": "Rencana {planned}. Lewat sedikit boleh; pastikan memang perlu dibor lebih dalam.",
+  "@beyondPlanBody": {
+    "description": "beyondPlanBody",
+    "placeholders": {
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "save": "Simpan",
+  "@save": {
+    "description": "save"
+  },
+  "drillLogWord": "log bor",
+  "@drillLogWord": {
+    "description": "drillLogWord"
+  },
+  "castLogWord": "log cor",
+  "@castLogWord": {
+    "description": "castLogWord"
+  },
+  "sendingFirst": "Mengirim {log} dulu…",
+  "@sendingFirst": {
+    "description": "sendingFirst",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      }
+    }
+  },
+  "sendBeforeHandoverTitle": "Kirim dulu sebelum oper",
+  "@sendBeforeHandoverTitle": {
+    "description": "sendBeforeHandoverTitle"
+  },
+  "sendBeforeHandoverBody": "Isi {log} ini belum sampai ke server, jadi belum bisa dioper. Cari sinyal sebentar, lalu coba lagi — rekan menerima persis isi terakhir.",
+  "@sendBeforeHandoverBody": {
+    "description": "sendBeforeHandoverBody",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      }
+    }
+  },
+  "understood": "Mengerti",
+  "@understood": {
+    "description": "understood"
+  },
+  "askingCode": "Meminta kode oper…",
+  "@askingCode": {
+    "description": "askingCode"
+  },
+  "handoverTitle": "Oper {log} {code}",
+  "@handoverTitle": {
+    "description": "handoverTitle",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverBody": "Minta rekan membuka titik {code} di HP-nya dan memilih \"Lanjutkan di HP ini\", lalu sebutkan kode ini:",
+  "@handoverBody": {
+    "description": "handoverBody",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "codeValidFor": "Berlaku {minutes} menit, sekali pakai",
+  "@codeValidFor": {
+    "description": "codeValidFor",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "codeValidBody": "Begitu rekan memasukkannya, log pindah ke dia dan HP ini hanya bisa melihat. Foto yang diambil di HP ini tetap terkirim dari sini.",
+  "@codeValidBody": {
+    "description": "codeValidBody"
+  },
+  "done": "Selesai",
+  "@done": {
+    "description": "done"
+  },
+  "takeLogHere": "Ambil {log} {code} ke HP ini",
+  "@takeLogHere": {
+    "description": "takeLogHere",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "takeLogHereBody": "{log} ini memang dipegang akun Anda, hanya isinya belum ada di HP ini. Tidak perlu kode oper.\n\nBila log ini sedang terbuka di HP Anda yang lain, lanjutkan di SATU HP saja supaya isiannya tidak bertabrakan.",
+  "@takeLogHereBody": {
+    "description": "takeLogHereBody",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      }
+    }
+  },
+  "takingLog": "Mengambil {log}…",
+  "@takingLog": {
+    "description": "takingLog",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      }
+    }
+  },
+  "logNowHere": "{log} {code} sekarang dipegang HP ini.",
+  "@logNowHere": {
+    "description": "logNowHere",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "continueLog": "Lanjutkan {log} {code}",
+  "@continueLog": {
+    "description": "continueLog",
+    "placeholders": {
+      "log": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "enterHandoverCode": "Masukkan kode oper 6 angka yang disebutkan pemegang lognya (dia menekan \"Oper ke rekan\" di HP-nya).",
+  "@enterHandoverCode": {
+    "description": "enterHandoverCode"
+  },
+  "takeOver": "Ambil alih",
+  "@takeOver": {
+    "description": "takeOver"
+  },
+  "castLogNotOnPhone": "Log cor tidak ditemukan di HP ini.",
+  "@castLogNotOnPhone": {
+    "description": "castLogNotOnPhone"
+  },
+  "pointNotOnPhone": "Titik bor tidak ada di HP ini. Tarik data terbaru saat ada sinyal.",
+  "@pointNotOnPhone": {
+    "description": "pointNotOnPhone"
+  },
+  "gsMissingFor": "Elevasi GS titik {code} belum diisi. Kembali ke daftar titik, pilih \"Tandai sudah dibor\", lalu isi GS-nya.",
+  "@gsMissingFor": {
+    "description": "gsMissingFor",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "pointHasCastLog": "Titik {code} sudah punya log cor{by}. Satu titik hanya boleh satu log cor.",
+  "@pointHasCastLog": {
+    "description": "pointHasCastLog",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "by": {
+        "type": "String"
+      }
+    }
+  },
+  "byWhom": " dari {who}",
+  "@byWhom": {
+    "description": "byWhom",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "pointNotDrilled": "Titik {code} belum ditandai sudah dibor. Kembali ke daftar titik, pilih \"Tandai sudah dibor\", lalu isi kedalamannya.",
+  "@pointNotDrilled": {
+    "description": "pointNotDrilled",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "notSignedIn": "Belum masuk akun — tidak ada yang tersimpan.",
+  "@notSignedIn": {
+    "description": "notSignedIn"
+  },
+  "lockedByOffice": "Log cor sudah diperiksa kantor — tidak dapat diubah lagi.",
+  "@lockedByOffice": {
+    "description": "lockedByOffice"
+  },
+  "heldByOther": "Log cor ini dipegang {who} — ubah dari HP pemegangnya.",
+  "@heldByOther": {
+    "description": "heldByOther",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieTooLongTitle": "Tremie kepanjangan",
+  "@tremieTooLongTitle": {
+    "description": "tremieTooLongTitle"
+  },
+  "tremieTooLongAdd": "Dengan segmen {len} m ini, ujung atas tremie {stick} di atas GS (paling tinggi {max}, setinggi hopper). Lubang ini cukup {need} tremie. Periksa lagi segmen yang terpasang.",
+  "@tremieTooLongAdd": {
+    "description": "tremieTooLongAdd",
+    "placeholders": {
+      "len": {
+        "type": "String"
+      },
+      "stick": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieBottomTitle": "Tremie bottom",
+  "@tremieBottomTitle": {
+    "description": "tremieBottomTitle"
+  },
+  "lengthM": "Panjang (m)",
+  "@lengthM": {
+    "description": "lengthM"
+  },
+  "tremieBottomHint": "Ujung runcing yang dipasang paling bawah. Ukur panjangnya untuk cor ini.",
+  "@tremieBottomHint": {
+    "description": "tremieBottomHint"
+  },
+  "topSegmentRemoved": "Segmen teratas dihapus dari susunan.",
+  "@topSegmentRemoved": {
+    "description": "topSegmentRemoved"
+  },
+  "segmentLength": "Panjang segmen",
+  "@segmentLength": {
+    "description": "segmentLength"
+  },
+  "dontPullYet": "Jangan dicabut dulu",
+  "@dontPullYet": {
+    "description": "dontPullYet"
+  },
+  "embedTooShortTitle": "Tertanam terlalu pendek",
+  "@embedTooShortTitle": {
+    "description": "embedTooShortTitle"
+  },
+  "embedAfterRemoval": "Setelah segmen {len} m ini dicabut, tremie tinggal tertanam {after} di beton (paling sedikit {min}). Beton baru bisa menembus muka beton dan bercampur lumpur.",
+  "@embedAfterRemoval": {
+    "description": "embedAfterRemoval",
+    "placeholders": {
+      "len": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "estimateSoundFirst": "{text}\n\nMuka beton ini perkiraan. Sounding dulu kalau ragu.",
+  "@estimateSoundFirst": {
+    "description": "estimateSoundFirst",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "tickAnyway": "Tetap centang",
+  "@tickAnyway": {
+    "description": "tickAnyway"
+  },
+  "pullUndone": "Cabut dibatalkan; segmen terpasang lagi.",
+  "@pullUndone": {
+    "description": "pullUndone"
+  },
+  "pullRecorded": "Segmen tercatat dicabut setelah TM #{seq}.",
+  "@pullRecorded": {
+    "description": "pullRecorded",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "truckSaved": "TM #{seq} tersimpan.",
+  "@truckSaved": {
+    "description": "truckSaved",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "truckUpdated": "TM #{seq} diperbarui.",
+  "@truckUpdated": {
+    "description": "truckUpdated",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "atCutOffTitle": "Beton sudah sampai cut-off",
+  "@atCutOffTitle": {
+    "description": "atCutOffTitle"
+  },
+  "atCutOffBody": "Muka beton {level} dari GS, cut-off {cutoff}{over}. Biasanya cor titik ini sudah cukup.",
+  "@atCutOffBody": {
+    "description": "atCutOffBody",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "cutoff": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "overBy": " (lebih {over})",
+  "@overBy": {
+    "description": "overBy",
+    "placeholders": {
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "estimateFromVolume": "Angka ini perkiraan dari volume. Sounding dulu untuk memastikan.",
+  "@estimateFromVolume": {
+    "description": "estimateFromVolume"
+  },
+  "finishCasting": "Selesai cor",
+  "@finishCasting": {
+    "description": "finishCasting"
+  },
+  "addTruckAnyway": "Tetap tambah TM",
+  "@addTruckAnyway": {
+    "description": "addTruckAnyway"
+  },
+  "soundingAfter": "Sounding setelah TM #{seq}",
+  "@soundingAfter": {
+    "description": "soundingAfter",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "soundingBefore": "Sounding sebelum TM #{seq}",
+  "@soundingBefore": {
+    "description": "soundingBefore",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "concreteDepthField": "Kedalaman muka beton dari GS (m)",
+  "@concreteDepthField": {
+    "description": "concreteDepthField"
+  },
+  "soundingHint": "Wajib diukur. Perkiraan dari volume: {est}.",
+  "@soundingHint": {
+    "description": "soundingHint",
+    "placeholders": {
+      "est": {
+        "type": "String"
+      }
+    }
+  },
+  "soundingMissing": "Sounding TM #{seq} belum diisi. Wajib sebelum TM berikutnya.",
+  "@soundingMissing": {
+    "description": "soundingMissing",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "truckStartTime": "Jam mulai TM #{seq}",
+  "@truckStartTime": {
+    "description": "truckStartTime",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "truckEndTime": "Jam selesai TM #{seq}",
+  "@truckEndTime": {
+    "description": "truckEndTime",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "soundingCleared": "Sounding TM #{seq} dikosongkan.",
+  "@soundingCleared": {
+    "description": "soundingCleared",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "soundingSaved": "Sounding TM #{seq} tersimpan: {value}.",
+  "@soundingSaved": {
+    "description": "soundingSaved",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieNotAtBottom": "Tremie belum sampai dasar",
+  "@tremieNotAtBottom": {
+    "description": "tremieNotAtBottom"
+  },
+  "tremieTooLongNow": "Terpasang {fitted}, ujung atasnya {stick} di atas GS (paling tinggi {max}). Lubang ini cukup {need}. Hapus segmen yang berlebih dulu.",
+  "@tremieTooLongNow": {
+    "description": "tremieTooLongNow",
+    "placeholders": {
+      "fitted": {
+        "type": "String"
+      },
+      "stick": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieShortBody": "Terpasang {fitted}, perlu {need} (dasar lubang dikurangi celah). Tambah segmen dulu: beton yang jatuh dari atas akan bercampur lumpur.",
+  "@tremieShortBody": {
+    "description": "tremieShortBody",
+    "placeholders": {
+      "fitted": {
+        "type": "String"
+      },
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "notifPouring": "Mengecor TM #{seq}",
+  "@notifPouring": {
+    "description": "notifPouring",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "notifTapToOpen": "{vol} m³ · ketuk untuk membuka log cor",
+  "@notifTapToOpen": {
+    "description": "notifTapToOpen",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "pourStarted": "Cor TM #{seq} dimulai. Jamnya berjalan di notifikasi.",
+  "@pourStarted": {
+    "description": "pourStarted",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "notifTruckLate": "TM #{seq} sudah {min} menit · {code}",
+  "@notifTruckLate": {
+    "description": "notifTruckLate",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      },
+      "min": {
+        "type": "int"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "notifTruckLateBody": "Belum selesai dicor. Cek muka beton dan posisi tremie.",
+  "@notifTruckLateBody": {
+    "description": "notifTruckLateBody"
+  },
+  "notifPausedTitle": "TM #{seq} dijeda",
+  "@notifPausedTitle": {
+    "description": "notifPausedTitle",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "notifPausedBody": "{reason} · ketuk untuk melanjutkan",
+  "@notifPausedBody": {
+    "description": "notifPausedBody",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "notifStillPaused": "TM #{seq} masih dijeda · {code}",
+  "@notifStillPaused": {
+    "description": "notifStillPaused",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "notifStillPausedBody": "Sudah lanjut cor? Ketuk Lanjut di log cor",
+  "@notifStillPausedBody": {
+    "description": "notifStillPausedBody"
+  },
+  "pourPaused": "Cor dijeda: {reason}.",
+  "@pourPaused": {
+    "description": "pourPaused",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "pourResumed": "Cor TM #{seq} dilanjutkan.",
+  "@pourResumed": {
+    "description": "pourResumed",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "notifNoNextTruck": "Belum ada TM berikutnya · {code}",
+  "@notifNoNextTruck": {
+    "description": "notifNoNextTruck",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "notifNoNextTruckBody": "Awas sambungan dingin. Cek kapan TM datang",
+  "@notifNoNextTruckBody": {
+    "description": "notifNoNextTruckBody"
+  },
+  "truckFinished": "TM #{seq} selesai dicor.",
+  "@truckFinished": {
+    "description": "truckFinished",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "castDataSaved": "Data cor disimpan.",
+  "@castDataSaved": {
+    "description": "castDataSaved"
+  },
+  "finishNotStored": "Status selesai belum tersimpan. Coba tekan \"Selesai cor\" sekali lagi.",
+  "@finishNotStored": {
+    "description": "finishNotStored"
+  },
+  "castFinished": "Cor {code} selesai. Terkirim otomatis saat ada sinyal.",
+  "@castFinished": {
+    "description": "castFinished",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "castReopened": "Log cor dibuka lagi. Jangan lupa Selesai cor setelah beres.",
+  "@castReopened": {
+    "description": "castReopened"
+  },
+  "cleanTremieTitle": "Bersihkan tremie & hopper",
+  "@cleanTremieTitle": {
+    "description": "cleanTremieTitle"
+  },
+  "beforeNextUse": "Sebelum dipakai lagi",
+  "@beforeNextUse": {
+    "description": "beforeNextUse"
+  },
+  "cleanWhy": "Sisa beton yang mengeras di dalam pipa atau sambungan bisa menyumbat tremie saat cor berikutnya.",
+  "@cleanWhy": {
+    "description": "cleanWhy"
+  },
+  "cleanStep1": "Siram/semprot hopper dan tiap segmen tremie sampai bersih dari sisa beton.",
+  "@cleanStep1": {
+    "description": "cleanStep1"
+  },
+  "cleanStep2": "Bersihkan sambungan dan karet seal; ganti seal yang rusak.",
+  "@cleanStep2": {
+    "description": "cleanStep2"
+  },
+  "cleanStep3": "Lakukan segera, sebelum sisa beton mengeras.",
+  "@cleanStep3": {
+    "description": "cleanStep3"
+  },
+  "cleanStep4": "Susun kembali di tempatnya, jangan tergeletak di tanah.",
+  "@cleanStep4": {
+    "description": "cleanStep4"
+  },
+  "cleanedOk": "Siap, dibersihkan",
+  "@cleanedOk": {
+    "description": "cleanedOk"
+  },
+  "castOf": "Cor {code}",
+  "@castOf": {
+    "description": "castOf",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "handOverToMate": "Oper ke rekan",
+  "@handOverToMate": {
+    "description": "handOverToMate"
+  },
+  "handedOverTo": "Dioper ke {who}",
+  "@handedOverTo": {
+    "description": "handedOverTo",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "handedOverBody": "Log cor ini dilanjutkan dari HP {who}. Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.",
+  "@handedOverBody": {
+    "description": "handedOverBody",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "rejectedByServer": "Ditolak server",
+  "@rejectedByServer": {
+    "description": "rejectedByServer"
+  },
+  "reviewedByOffice": "Sudah diperiksa kantor",
+  "@reviewedByOffice": {
+    "description": "reviewedByOffice"
+  },
+  "officeNote": "Catatan: {note}",
+  "@officeNote": {
+    "description": "officeNote",
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "cannotChangeAnymore": "Log cor ini tidak dapat diubah lagi.",
+  "@cannotChangeAnymore": {
+    "description": "cannotChangeAnymore"
+  },
+  "gradeMissingTitle": "Mutu beton (fc') belum diisi",
+  "@gradeMissingTitle": {
+    "description": "gradeMissingTitle"
+  },
+  "gradeMissingBody": "Titik dan proyek ini belum punya mutu bawaan. Isi di data cor, atau log cor akan ditolak server.",
+  "@gradeMissingBody": {
+    "description": "gradeMissingBody"
+  },
+  "fill": "Isi",
+  "@fill": {
+    "description": "fill"
+  },
+  "drillDepthUnmarked": "Kedalaman bor belum ditandai",
+  "@drillDepthUnmarked": {
+    "description": "drillDepthUnmarked"
+  },
+  "drillDepthUnmarkedBody": "Hitungan memakai panjang bor RENCANA. Tandai kedalaman aktual dari daftar titik supaya saran potong tepat.",
+  "@drillDepthUnmarkedBody": {
+    "description": "drillDepthUnmarkedBody"
+  },
+  "tremieSection": "Tremie",
+  "@tremieSection": {
+    "description": "tremieSection"
+  },
+  "tremieSectionBody": "Segmen bawah → atas. Ujung bawah {gap} di atas dasar lubang.",
+  "@tremieSectionBody": {
+    "description": "tremieSectionBody",
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "trucksSection": "Truk mixer (TM)",
+  "@trucksSection": {
+    "description": "trucksSection"
+  },
+  "trucksSectionBody": "{n} TM · {vol} m³",
+  "@trucksSectionBody": {
+    "description": "trucksSectionBody",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "noTrucksYet": "Belum ada TM",
+  "@noTrucksYet": {
+    "description": "noTrucksYet"
+  },
+  "noTrucksReadOnly": "Log cor ini tidak punya TM.",
+  "@noTrucksReadOnly": {
+    "description": "noTrucksReadOnly"
+  },
+  "noTrucksTremieFirst": "Susun tremie dulu, lalu tekan \"TM #1 datang\" saat truk pertama tiba.",
+  "@noTrucksTremieFirst": {
+    "description": "noTrucksTremieFirst"
+  },
+  "noTrucksTapArrived": "Tekan \"TM #1 datang\" di bawah saat truk pertama tiba.",
+  "@noTrucksTapArrived": {
+    "description": "noTrucksTapArrived"
+  },
+  "pause": "Jeda",
+  "@pause": {
+    "description": "pause"
+  },
+  "resume": "Lanjut",
+  "@resume": {
+    "description": "resume"
+  },
+  "finishTruck": "Selesai TM #{seq}",
+  "@finishTruck": {
+    "description": "finishTruck",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "startTruck": "Mulai cor TM #{seq}",
+  "@startTruck": {
+    "description": "startTruck",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieFirst": "Susun tremie dulu",
+  "@tremieFirst": {
+    "description": "tremieFirst"
+  },
+  "truckArrived": "TM #{seq} datang",
+  "@truckArrived": {
+    "description": "truckArrived",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "castDone": "Cor selesai",
+  "@castDone": {
+    "description": "castDone"
+  },
+  "savedAutoSend": "Tersimpan. Dikirim otomatis.",
+  "@savedAutoSend": {
+    "description": "savedAutoSend"
+  },
+  "reopen": "Buka lagi",
+  "@reopen": {
+    "description": "reopen"
+  },
+  "planNoPull": "Rencana TM #{seq}: tidak perlu cabut",
+  "@planNoPull": {
+    "description": "planNoPull",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "planTitle": "Rencana TM #{seq}",
+  "@planTitle": {
+    "description": "planTitle",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "planCutLine": "• Setelah ±{vol} m³: cabut {which} → tertanam {before} → {after} m",
+  "@planCutLine": {
+    "description": "planCutLine",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      },
+      "which": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "joinThen": " lalu ",
+  "@joinThen": {
+    "description": "joinThen"
+  },
+  "warnEmbedShort": "⚠ Tertanam sebelum TM ini hanya {emb} m — periksa sounding.",
+  "@warnEmbedShort": {
+    "description": "warnEmbedShort",
+    "placeholders": {
+      "emb": {
+        "type": "String"
+      }
+    }
+  },
+  "warnNoSafePull": "⚠ Setelah ±{vol} m³ tertanam melewati 6 m dan tidak ada segmen yang aman dicabut.",
+  "@warnNoSafePull": {
+    "description": "warnNoSafePull",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "planEnd": "Perkiraan akhir TM: muka beton {level}, tertanam {emb}{cut}.",
+  "@planEnd": {
+    "description": "planEnd",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "emb": {
+        "type": "String"
+      },
+      "cut": {
+        "type": "String"
+      }
+    }
+  },
+  "cutOffReachedSuffix": " — cut-off tercapai",
+  "@cutOffReachedSuffix": {
+    "description": "cutOffReachedSuffix"
+  },
+  "usingOverbreak": "Memakai rasio overbreak {ratio} dari sounding TM sebelumnya.",
+  "@usingOverbreak": {
+    "description": "usingOverbreak",
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      }
+    }
+  },
+  "embedTitle": "Tertanam {emb}{est}",
+  "@embedTitle": {
+    "description": "embedTitle",
+    "placeholders": {
+      "emb": {
+        "type": "String"
+      },
+      "est": {
+        "type": "String"
+      }
+    }
+  },
+  "estimateSuffix": " (perkiraan)",
+  "@estimateSuffix": {
+    "description": "estimateSuffix"
+  },
+  "notSoundedYet": "Muka beton belum disounding — angka ini dari volume. Sounding dulu sebelum mencabut.",
+  "@notSoundedYet": {
+    "description": "notSoundedYet"
+  },
+  "dontPullUnderOne": "Kurang dari 1 m: JANGAN cabut. Tremie berisiko keluar dari beton.",
+  "@dontPullUnderOne": {
+    "description": "dontPullUnderOne"
+  },
+  "noPullNeeded": "Tidak perlu cabut sekarang.",
+  "@noPullNeeded": {
+    "description": "noPullNeeded"
+  },
+  "pullSuggestion": "Saran: cabut {which} → tertanam {after}. Centang di daftar tremie setelah dicabut.",
+  "@pullSuggestion": {
+    "description": "pullSuggestion",
+    "placeholders": {
+      "which": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "tick": "Centang",
+  "@tick": {
+    "description": "tick"
+  },
+  "cellGrade": "Mutu fc'",
+  "@cellGrade": {
+    "description": "cellGrade"
+  },
+  "cellSupplier": "Pemasok",
+  "@cellSupplier": {
+    "description": "cellSupplier"
+  },
+  "cellHoleBottom": "Dasar lubang",
+  "@cellHoleBottom": {
+    "description": "cellHoleBottom"
+  },
+  "cellCutOff": "Cut-off",
+  "@cellCutOff": {
+    "description": "cellCutOff"
+  },
+  "cellConcreteLevel": "Muka beton",
+  "@cellConcreteLevel": {
+    "description": "cellConcreteLevel"
+  },
+  "cellTheoretical": "Teoritis",
+  "@cellTheoretical": {
+    "description": "cellTheoretical"
+  },
+  "cellUsed": "Terpakai",
+  "@cellUsed": {
+    "description": "cellUsed"
+  },
+  "cellOveruse": "Lebih pakai",
+  "@cellOveruse": {
+    "description": "cellOveruse"
+  },
+  "estimatedFootnote": "* perkiraan dari volume",
+  "@estimatedFootnote": {
+    "description": "estimatedFootnote"
+  },
+  "tremieNeedFrom": "Perlu {need}. Mulai dari tremie bottom (ujung runcing).",
+  "@tremieNeedFrom": {
+    "description": "tremieNeedFrom",
+    "placeholders": {
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieOverLong": "Kepanjangan: ujung atas {stick} di atas GS (paling tinggi {max}). Hapus segmen teratas.",
+  "@tremieOverLong": {
+    "description": "tremieOverLong",
+    "placeholders": {
+      "stick": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieAtBottom": "Sudah sampai dasar. Ujung atas {stick} di atas GS (hopper).",
+  "@tremieAtBottom": {
+    "description": "tremieAtBottom",
+    "placeholders": {
+      "stick": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieShortBy": "Kurang {missing} lagi sampai dasar.",
+  "@tremieShortBy": {
+    "description": "tremieShortBy",
+    "placeholders": {
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "ofNeeded": "dari {need} perlu",
+  "@ofNeeded": {
+    "description": "ofNeeded",
+    "placeholders": {
+      "need": {
+        "type": "String"
+      }
+    }
+  },
+  "fitBottomPiece": "Pasang tremie bottom",
+  "@fitBottomPiece": {
+    "description": "fitBottomPiece"
+  },
+  "other": "Lainnya",
+  "@other": {
+    "description": "other"
+  },
+  "removeTop": "Hapus teratas",
+  "@removeTop": {
+    "description": "removeTop"
+  },
+  "pullTremieTitle": "Cabut tremie",
+  "@pullTremieTitle": {
+    "description": "pullTremieTitle"
+  },
+  "pullTremieBody": "Tekan \"Cabut\" pada segmen yang dicabut setelah TM ini. Gambar di atas ikut berubah.",
+  "@pullTremieBody": {
+    "description": "pullTremieBody"
+  },
+  "tremieBottomOf": "Tremie bottom · {len} m",
+  "@tremieBottomOf": {
+    "description": "tremieBottomOf",
+    "placeholders": {
+      "len": {
+        "type": "String"
+      }
+    }
+  },
+  "pipeOf": "Pipa {len} m",
+  "@pipeOf": {
+    "description": "pipeOf",
+    "placeholders": {
+      "len": {
+        "type": "String"
+      }
+    }
+  },
+  "pulledAfterTruck": "Dicabut setelah TM #{seq}",
+  "@pulledAfterTruck": {
+    "description": "pulledAfterTruck",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "lowest": "paling bawah",
+  "@lowest": {
+    "description": "lowest"
+  },
+  "pull": "Cabut",
+  "@pull": {
+    "description": "pull"
+  },
+  "truckHeading": "TM #{seq} · {vol} m³",
+  "@truckHeading": {
+    "description": "truckHeading",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "hullNo": "Lambung {no}",
+  "@hullNo": {
+    "description": "hullNo",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "ticketNo": "SJ {no}",
+  "@ticketNo": {
+    "description": "ticketNo",
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "slumpOf": "Slump {cm} cm",
+  "@slumpOf": {
+    "description": "slumpOf",
+    "placeholders": {
+      "cm": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieFitted": "Tremie terpasang",
+  "@tremieFitted": {
+    "description": "tremieFitted"
+  },
+  "start": "Mulai",
+  "@start": {
+    "description": "start"
+  },
+  "finish": "Selesai",
+  "@finish": {
+    "description": "finish"
+  },
+  "pausesCount": "{n}× · {total}",
+  "@pausesCount": {
+    "description": "pausesCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseLine": "{reason} · {from}–{to}",
+  "@pauseLine": {
+    "description": "pauseLine",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "now": "sekarang",
+  "@now": {
+    "description": "now"
+  },
+  "soundingBeforeLabel": "Sounding sebelum",
+  "@soundingBeforeLabel": {
+    "description": "soundingBeforeLabel"
+  },
+  "soundingAfterLabel": "Sounding sesudah",
+  "@soundingAfterLabel": {
+    "description": "soundingAfterLabel"
+  },
+  "soundingAfterRequired": "Sounding sesudah wajib diisi. Ketuk baris di atas.",
+  "@soundingAfterRequired": {
+    "description": "soundingAfterRequired"
+  },
+  "overbreakRatio": "Rasio overbreak",
+  "@overbreakRatio": {
+    "description": "overbreakRatio"
+  },
+  "deliveryNote": "Surat jalan",
+  "@deliveryNote": {
+    "description": "deliveryNote"
+  },
+  "slumpTest": "Uji slump",
+  "@slumpTest": {
+    "description": "slumpTest"
+  },
+  "pausedLabel": "Dijeda",
+  "@pausedLabel": {
+    "description": "pausedLabel"
+  },
+  "overMinutes": "Lewat {min} menit",
+  "@overMinutes": {
+    "description": "overMinutes",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "pourTime": "Waktu tuang",
+  "@pourTime": {
+    "description": "pourTime"
+  },
+  "pauseTruckTitle": "Jeda TM #{seq}",
+  "@pauseTruckTitle": {
+    "description": "pauseTruckTitle",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "pauseTruckBody": "Kenapa dijeda? Jam tuang berhenti, dan HP bergetar tiap 3 menit sampai Anda ketuk Lanjut.",
+  "@pauseTruckBody": {
+    "description": "pauseTruckBody"
+  },
+  "volumeInvalid": "Isi volume TM (m³), paling besar {max}.",
+  "@volumeInvalid": {
+    "description": "volumeInvalid",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "volumeUnusual": "{vol} m³ lebih besar dari biasanya (5–7 m³). Cek surat jalannya; kalau benar, tekan Simpan TM sekali lagi.",
+  "@volumeUnusual": {
+    "description": "volumeUnusual",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "slumpInvalid": "Slump tidak masuk akal (0–40 cm).",
+  "@slumpInvalid": {
+    "description": "slumpInvalid"
+  },
+  "editTruck": "Ubah TM #{seq}",
+  "@editTruck": {
+    "description": "editTruck",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "photoTicket": "Foto surat jalan TM",
+  "@photoTicket": {
+    "description": "photoTicket"
+  },
+  "photoTicketDone": "Foto surat jalan tersimpan · ulang",
+  "@photoTicketDone": {
+    "description": "photoTicketDone"
+  },
+  "photoSlump": "Foto uji slump",
+  "@photoSlump": {
+    "description": "photoSlump"
+  },
+  "photoSlumpDone": "Foto uji slump tersimpan · ulang",
+  "@photoSlumpDone": {
+    "description": "photoSlumpDone"
+  },
+  "hullNoField": "Nomor lambung TM",
+  "@hullNoField": {
+    "description": "hullNoField"
+  },
+  "truckSupplier": "Pemasok beton TM ini",
+  "@truckSupplier": {
+    "description": "truckSupplier"
+  },
+  "otherTypeName": "Lainnya — ketik nama",
+  "@otherTypeName": {
+    "description": "otherTypeName"
+  },
+  "otherSupplierName": "Nama pemasok lain",
+  "@otherSupplierName": {
+    "description": "otherSupplierName"
+  },
+  "volumeField": "Volume",
+  "@volumeField": {
+    "description": "volumeField"
+  },
+  "slumpField": "Slump",
+  "@slumpField": {
+    "description": "slumpField"
+  },
+  "soundingBeforeOptional": "Sounding sebelum (opsional)",
+  "@soundingBeforeOptional": {
+    "description": "soundingBeforeOptional"
+  },
+  "estimateHint": "perkiraan {value}",
+  "@estimateHint": {
+    "description": "estimateHint",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "saveChanges": "Simpan perubahan",
+  "@saveChanges": {
+    "description": "saveChanges"
+  },
+  "saveTruck": "Simpan TM",
+  "@saveTruck": {
+    "description": "saveTruck"
+  },
+  "castDataTitle": "Data cor",
+  "@castDataTitle": {
+    "description": "castDataTitle"
+  },
+  "defaultGrade": "Mutu bawaan fc' {grade} MPa",
+  "@defaultGrade": {
+    "description": "defaultGrade",
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultGradeBody": "Dari titik/proyek. Isi hanya bila beton yang datang berbeda.",
+  "@defaultGradeBody": {
+    "description": "defaultGradeBody"
+  },
+  "suppliersWithPo": "Pemasok dengan PO beton di proyek ini",
+  "@suppliersWithPo": {
+    "description": "suppliersWithPo"
+  },
+  "noPoYet": "Belum ada PO beton di proyek ini",
+  "@noPoYet": {
+    "description": "noPoYet"
+  },
+  "suppliersWithPoBody": "Jadi isian awal tiap TM; tiap TM datang masih bisa memilih pemasoknya sendiri. Tidak ada di daftar? Pilih \"Lainnya\" lalu ketik namanya, dan kabari kantor.",
+  "@suppliersWithPoBody": {
+    "description": "suppliersWithPoBody"
+  },
+  "noPoYetBody": "Menampilkan semua pemasok beton; daftar menyempit sendiri setelah kantor membuat PO. Tiap TM datang masih bisa memilih pemasoknya sendiri.",
+  "@noPoYetBody": {
+    "description": "noPoYetBody"
+  },
+  "defaultSupplier": "Pemasok beton bawaan (batching plant)",
+  "@defaultSupplier": {
+    "description": "defaultSupplier"
+  },
+  "concreteSupplier": "Pemasok beton (batching plant)",
+  "@concreteSupplier": {
+    "description": "concreteSupplier"
+  },
+  "tremieGapField": "Celah ujung tremie di atas dasar",
+  "@tremieGapField": {
+    "description": "tremieGapField"
+  },
+  "noteField": "Catatan",
+  "@noteField": {
+    "description": "noteField"
+  },
+  "hangAboveGs": "{top}–{bottom} m di atas GS",
+  "@hangAboveGs": {
+    "description": "hangAboveGs",
+    "placeholders": {
+      "top": {
+        "type": "String"
+      },
+      "bottom": {
+        "type": "String"
+      }
+    }
+  },
+  "hangAcrossGs": "{top} m di atas GS sampai kedalaman {bottom} m",
+  "@hangAcrossGs": {
+    "description": "hangAcrossGs",
+    "placeholders": {
+      "top": {
+        "type": "String"
+      },
+      "bottom": {
+        "type": "String"
+      }
+    }
+  },
+  "hangDepth": "kedalaman {top}–{bottom} m",
+  "@hangDepth": {
+    "description": "hangDepth",
+    "placeholders": {
+      "top": {
+        "type": "String"
+      },
+      "bottom": {
+        "type": "String"
+      }
+    }
+  },
+  "stopTremieBlocked": "Tremie tersumbat / beton macet",
+  "@stopTremieBlocked": {
+    "description": "stopTremieBlocked"
+  },
+  "stopNoTruck": "TM tidak datang / beton habis",
+  "@stopNoTruck": {
+    "description": "stopNoTruck"
+  },
+  "stopHoleCollapse": "Lubang runtuh",
+  "@stopHoleCollapse": {
+    "description": "stopHoleCollapse"
+  },
+  "stopPlantWeather": "Alat rusak atau cuaca",
+  "@stopPlantWeather": {
+    "description": "stopPlantWeather"
+  },
+  "labelDetail": "{label} — {detail}",
+  "@labelDetail": {
+    "description": "labelDetail",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "stoppedBeforeCutOff": "Cor dihentikan sebelum cut-off (kurang {missing} ≈ {vol} m³): {why}",
+  "@stoppedBeforeCutOff": {
+    "description": "stoppedBeforeCutOff",
+    "placeholders": {
+      "missing": {
+        "type": "String"
+      },
+      "vol": {
+        "type": "String"
+      },
+      "why": {
+        "type": "String"
+      }
+    }
+  },
+  "belowCutOffTitle": "Beton belum sampai cut-off",
+  "@belowCutOffTitle": {
+    "description": "belowCutOffTitle"
+  },
+  "finishCastingOf": "Selesai cor {code}?",
+  "@finishCastingOf": {
+    "description": "finishCastingOf",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "shortfallTitle": "Masih kurang {vol} m³ (±{trucks} TM lagi)",
+  "@shortfallTitle": {
+    "description": "shortfallTitle",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      },
+      "trucks": {
+        "type": "int"
+      }
+    }
+  },
+  "shortfallLine1": "Muka beton {level} dari GS, cut-off {cutoff} — kurang {missing}.",
+  "@shortfallLine1": {
+    "description": "shortfallLine1",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "cutoff": {
+        "type": "String"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "shortfallLine2": "Sudah tercor {poured} m³ dari ±{theoretical} m³ teoritis{percent}.",
+  "@shortfallLine2": {
+    "description": "shortfallLine2",
+    "placeholders": {
+      "poured": {
+        "type": "String"
+      },
+      "theoretical": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "percentSuffix": " ({percent}%)",
+  "@percentSuffix": {
+    "description": "percentSuffix",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "estimateSoundToBeSure": "Angka ini perkiraan dari volume — sounding dulu untuk memastikan.",
+  "@estimateSoundToBeSure": {
+    "description": "estimateSoundToBeSure"
+  },
+  "shortPileWarning": "Tiang yang ditutup di bawah cut-off jadi tiang pendek, dan beton mengeras — tidak bisa dibatalkan. Kalau cor memang dihentikan, pilih alasannya; kantor perlu tahu. Kalau cuma salah tekan, pilih \"Belum — lanjut cor\".",
+  "@shortPileWarning": {
+    "description": "shortPileWarning"
+  },
+  "reasonRequired": "Alasan (wajib)",
+  "@reasonRequired": {
+    "description": "reasonRequired"
+  },
+  "detailOptional": "Keterangan (boleh kosong)",
+  "@detailOptional": {
+    "description": "detailOptional"
+  },
+  "reasonHint": "mis. tremie mampet di segmen ke-3, beton sudah mengeras",
+  "@reasonHint": {
+    "description": "reasonHint"
+  },
+  "shortABitBody": "Kurang sedikit saja dari cut-off — kelebihan di atas cut-off memang dipotong nanti. Titik ditandai sudah dicor; log cor masih dapat diperbaiki sampai diperiksa kantor.",
+  "@shortABitBody": {
+    "description": "shortABitBody"
+  },
+  "finishedBody": "Titik ditandai sudah dicor. Log cor masih dapat diperbaiki sampai diperiksa kantor.",
+  "@finishedBody": {
+    "description": "finishedBody"
+  },
+  "finishAnyway": "Tetap selesai",
+  "@finishAnyway": {
+    "description": "finishAnyway"
+  },
+  "notYetKeepPouring": "Belum — lanjut cor",
+  "@notYetKeepPouring": {
+    "description": "notYetKeepPouring"
+  },
+  "notYet": "Belum",
+  "@notYet": {
+    "description": "notYet"
+  },
+  "castLogTitle": "Log cor",
+  "@castLogTitle": {
+    "description": "castLogTitle"
+  },
+  "overuseTitle": "Beton terpakai {percent}% di atas teoretis",
+  "@overuseTitle": {
+    "description": "overuseTitle",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "overuseBody": "Sampai muka beton {level}: terpakai {used} m³, teoretis {theoretical} m³. Kemungkinan lubang membesar atau runtuh. Laporkan ke pengawas.",
+  "@overuseBody": {
+    "description": "overuseBody",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      },
+      "theoretical": {
+        "type": "String"
+      }
+    }
+  },
+  "gapInvalid": "Celah bawah tremie 0–5 m.",
+  "@gapInvalid": {
+    "description": "gapInvalid"
+  },
+  "reasonTidakValid": "Isi data tidak sah",
+  "@reasonTidakValid": {
+    "description": "reasonTidakValid"
+  },
+  "reasonTidakBerhak": "Akun Anda tidak berhak menyimpan data ini",
+  "@reasonTidakBerhak": {
+    "description": "reasonTidakBerhak"
+  },
+  "reasonBukanMilik": "Data ini milik pengguna lain",
+  "@reasonBukanMilik": {
+    "description": "reasonBukanMilik"
+  },
+  "reasonDioper": "Log ini sudah dioper ke rekan — perubahan hanya dari HP pemegangnya",
+  "@reasonDioper": {
+    "description": "reasonDioper"
+  },
+  "reasonSudahDihapus": "Data ini sudah dihapus di kantor",
+  "@reasonSudahDihapus": {
+    "description": "reasonSudahDihapus"
+  },
+  "reasonSudahDitinjau": "Absen sudah ditinjau kantor — tidak dapat diubah lagi",
+  "@reasonSudahDitinjau": {
+    "description": "reasonSudahDitinjau"
+  },
+  "reasonSudahDiperiksa": "Log cor sudah diperiksa kantor — tidak dapat diubah lagi",
+  "@reasonSudahDiperiksa": {
+    "description": "reasonSudahDiperiksa"
+  },
+  "reasonSudahDicor": "Titik ini sudah tercatat dicor",
+  "@reasonSudahDicor": {
+    "description": "reasonSudahDicor"
+  },
+  "reasonProyekTidakAda": "Proyek tidak ditemukan atau sudah ditutup",
+  "@reasonProyekTidakAda": {
+    "description": "reasonProyekTidakAda"
+  },
+  "reasonProyekTanggalTetap": "Proyek dan tanggal absen tidak dapat diganti setelah terkirim",
+  "@reasonProyekTanggalTetap": {
+    "description": "reasonProyekTanggalTetap"
+  },
+  "reasonTanggalDepan": "Tanggal absen di masa depan — periksa jam HP",
+  "@reasonTanggalDepan": {
+    "description": "reasonTanggalDepan"
+  },
+  "reasonAbsenSudahAda": "Sudah ada absen Anda untuk proyek dan tanggal ini",
+  "@reasonAbsenSudahAda": {
+    "description": "reasonAbsenSudahAda"
+  },
+  "reasonWorkerBelumAda": "Menunggu data pekerja baru terkirim lebih dulu",
+  "@reasonWorkerBelumAda": {
+    "description": "reasonWorkerBelumAda"
+  },
+  "reasonPekerjaDihapus": "Ada pekerja yang sudah dihapus di kantor",
+  "@reasonPekerjaDihapus": {
+    "description": "reasonPekerjaDihapus"
+  },
+  "reasonPekerjaBukanKru": "Ada pekerja yang bukan kru Anda",
+  "@reasonPekerjaBukanKru": {
+    "description": "reasonPekerjaBukanKru"
+  },
+  "reasonPekerjaGanda": "Ada pekerja tercatat dua kali",
+  "@reasonPekerjaGanda": {
+    "description": "reasonPekerjaGanda"
+  },
+  "reasonUuidBentrok": "Data bentrok dengan data lain — hubungi admin",
+  "@reasonUuidBentrok": {
+    "description": "reasonUuidBentrok"
+  },
+  "reasonTitikTidakAda": "Titik bor tidak ditemukan atau sudah dihapus",
+  "@reasonTitikTidakAda": {
+    "description": "reasonTitikTidakAda"
+  },
+  "reasonTitikTetap": "Titik log cor tidak dapat diganti",
+  "@reasonTitikTetap": {
+    "description": "reasonTitikTetap"
+  },
+  "reasonCorSudahAda": "Titik ini sudah punya log cor dari HP lain",
+  "@reasonCorSudahAda": {
+    "description": "reasonCorSudahAda"
+  },
+  "reasonMutuKosong": "Mutu beton (fc') belum diisi — isi di log cor, atau minta kantor mengisinya di titik/proyek",
+  "@reasonMutuKosong": {
+    "description": "reasonMutuKosong"
+  },
+  "reasonPemasokTidakAda": "Pemasok beton tidak ditemukan",
+  "@reasonPemasokTidakAda": {
+    "description": "reasonPemasokTidakAda"
+  },
+  "reasonTmGanda": "Nomor urut TM ganda",
+  "@reasonTmGanda": {
+    "description": "reasonTmGanda"
+  },
+  "reasonJamTmTerbalik": "Jam selesai TM lebih awal dari jam mulai",
+  "@reasonJamTmTerbalik": {
+    "description": "reasonJamTmTerbalik"
+  },
+  "reasonSegmenGanda": "Posisi segmen tremie ganda",
+  "@reasonSegmenGanda": {
+    "description": "reasonSegmenGanda"
+  },
+  "reasonSegmenTmAsing": "Segmen dicabut setelah TM yang tidak ada",
+  "@reasonSegmenTmAsing": {
+    "description": "reasonSegmenTmAsing"
+  },
+  "reasonGsKosong": "Elevasi GS titik ini belum diisi — isi saat menandai titik dibor",
+  "@reasonGsKosong": {
+    "description": "reasonGsKosong"
+  },
+  "reasonJedaTmAsing": "Ada jeda untuk TM yang tidak ada",
+  "@reasonJedaTmAsing": {
+    "description": "reasonJedaTmAsing"
+  },
+  "reasonJamJedaTerbalik": "Jam jeda tidak masuk akal — periksa jam HP",
+  "@reasonJamJedaTerbalik": {
+    "description": "reasonJamJedaTerbalik"
+  },
+  "reasonTremieBottomSalah": "Tremie bottom harus paling bawah, hanya satu, dan tidak dicabut",
+  "@reasonTremieBottomSalah": {
+    "description": "reasonTremieBottomSalah"
+  },
+  "reasonSoundingKosong": "Sounding sesudah TM belum diisi — wajib sebelum selesai cor",
+  "@reasonSoundingKosong": {
+    "description": "reasonSoundingKosong"
+  },
+  "reasonLogBorSudahAda": "Titik ini sudah punya log bor dari HP lain",
+  "@reasonLogBorSudahAda": {
+    "description": "reasonLogBorSudahAda"
+  },
+  "reasonKedalamanMundur": "Ada bacaan bor yang lebih dangkal dari bacaan sebelumnya",
+  "@reasonKedalamanMundur": {
+    "description": "reasonKedalamanMundur"
+  },
+  "reasonBorKosong": "Log bor belum punya satu pun bacaan kedalaman",
+  "@reasonBorKosong": {
+    "description": "reasonBorKosong"
+  },
+  "reasonEntriGanda": "Ada bacaan bor tercatat dua kali",
+  "@reasonEntriGanda": {
+    "description": "reasonEntriGanda"
+  },
+  "reasonBerkasHilang": "Berkas foto hilang dari HP",
+  "@reasonBerkasHilang": {
+    "description": "reasonBerkasHilang"
+  },
+  "reasonWithDetail": "{reason} ({detail})",
+  "@reasonWithDetail": {
+    "description": "reasonWithDetail",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "entityWorker": "Pekerja",
+  "@entityWorker": {
+    "description": "entityWorker"
+  },
+  "entityAttendance": "Absen",
+  "@entityAttendance": {
+    "description": "entityAttendance"
+  },
+  "entityDrillMark": "Tanda bor",
+  "@entityDrillMark": {
+    "description": "entityDrillMark"
+  },
+  "entityDrillLog": "Log bor",
+  "@entityDrillLog": {
+    "description": "entityDrillLog"
+  },
+  "entityCasting": "Log cor",
+  "@entityCasting": {
+    "description": "entityCasting"
+  },
+  "pauseCabutTremie": "Cabut tremie",
+  "@pauseCabutTremie": {
+    "description": "pauseCabutTremie"
+  },
+  "pauseTungguTm": "Tunggu TM",
+  "@pauseTungguTm": {
+    "description": "pauseTungguTm"
+  },
+  "pauseKendalaAlat": "Kendala alat",
+  "@pauseKendalaAlat": {
+    "description": "pauseKendalaAlat"
+  },
+  "drillLogNotOnPhone": "Log bor tidak ditemukan di HP ini.",
+  "@drillLogNotOnPhone": {
+    "description": "drillLogNotOnPhone"
+  },
+  "pointNotFoundPull": "Titik bor tidak ditemukan. Tarik data terbaru dulu.",
+  "@pointNotFoundPull": {
+    "description": "pointNotFoundPull"
+  },
+  "pointHasDrillLog": "Titik {code} sudah punya log bor{by}. Satu titik hanya boleh satu log bor.",
+  "@pointHasDrillLog": {
+    "description": "pointHasDrillLog",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "by": {
+        "type": "String"
+      }
+    }
+  },
+  "pointAlreadyCast": "Titik {code} sudah dicor.",
+  "@pointAlreadyCast": {
+    "description": "pointAlreadyCast",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "drillHeldByOther": "Log bor ini dipegang {who} — ubah dari HP pemegangnya.",
+  "@drillHeldByOther": {
+    "description": "drillHeldByOther",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "operatorSaved": "Operator bor disimpan.",
+  "@operatorSaved": {
+    "description": "operatorSaved"
+  },
+  "readingDeleted": "Bacaan dihapus.",
+  "@readingDeleted": {
+    "description": "readingDeleted"
+  },
+  "readingRecorded": "Tercatat {depth} jam {time}.",
+  "@readingRecorded": {
+    "description": "readingRecorded",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "drillFinishNotStored": "Status selesai belum tersimpan. Coba tekan \"Selesai bor\" sekali lagi.",
+  "@drillFinishNotStored": {
+    "description": "drillFinishNotStored"
+  },
+  "drillFinished": "{code} selesai dibor {depth}.",
+  "@drillFinished": {
+    "description": "drillFinished",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "drillReopened": "Log bor dibuka lagi.",
+  "@drillReopened": {
+    "description": "drillReopened"
+  },
+  "drillOf": "Bor {code}",
+  "@drillOf": {
+    "description": "drillOf",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "drillHandedOverBody": "Log bor ini dilanjutkan dari HP {who}. Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.",
+  "@drillHandedOverBody": {
+    "description": "drillHandedOverBody",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "drilledToDepth": "Selesai dibor {depth}",
+  "@drilledToDepth": {
+    "description": "drilledToDepth",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "drilledBodyOk": "Titik ini sudah ditandai dibor; log cor bisa dimulai.",
+  "@drilledBodyOk": {
+    "description": "drilledBodyOk"
+  },
+  "readingsSection": "Bacaan",
+  "@readingsSection": {
+    "description": "readingsSection"
+  },
+  "readingsCount": "{n} kali",
+  "@readingsCount": {
+    "description": "readingsCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noReadingsYet": "Belum ada bacaan. Tekan \"Catat kedalaman\" setiap kali kedalaman dibaca.",
+  "@noReadingsYet": {
+    "description": "noReadingsYet"
+  },
+  "finishDrilling": "Selesai bor",
+  "@finishDrilling": {
+    "description": "finishDrilling"
+  },
+  "recordDepth": "Catat kedalaman",
+  "@recordDepth": {
+    "description": "recordDepth"
+  },
+  "drillOperatorLabel": "OPERATOR BOR",
+  "@drillOperatorLabel": {
+    "description": "drillOperatorLabel"
+  },
+  "notPicked": "Belum dipilih",
+  "@notPicked": {
+    "description": "notPicked"
+  },
+  "pick": "Pilih",
+  "@pick": {
+    "description": "pick"
+  },
+  "change": "Ganti",
+  "@change": {
+    "description": "change"
+  },
+  "finalDepthLabel": "KEDALAMAN AKHIR",
+  "@finalDepthLabel": {
+    "description": "finalDepthLabel"
+  },
+  "currentDepthLabel": "KEDALAMAN SEKARANG",
+  "@currentDepthLabel": {
+    "description": "currentDepthLabel"
+  },
+  "planNotComputable": "rencana belum bisa dihitung",
+  "@planNotComputable": {
+    "description": "planNotComputable"
+  },
+  "ofPlanned": "dari {planned} rencana",
+  "@ofPlanned": {
+    "description": "ofPlanned",
+    "placeholders": {
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "startedAt": "mulai {time}",
+  "@startedAt": {
+    "description": "startedAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "runningFor": "sudah {duration}",
+  "@runningFor": {
+    "description": "runningFor",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "deeperThanPlan": "{over} lebih dalam dari rencana.",
+  "@deeperThanPlan": {
+    "description": "deeperThanPlan",
+    "placeholders": {
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursMinutes": "{h} j {m} m",
+  "@hoursMinutes": {
+    "description": "hoursMinutes",
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesOnly": "{m} menit",
+  "@minutesOnly": {
+    "description": "minutesOnly",
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "depthGain": "+{gain} dalam {duration}",
+  "@depthGain": {
+    "description": "depthGain",
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "readingTime": "Jam bacaan",
+  "@readingTime": {
+    "description": "readingTime"
+  },
+  "depthInvalid": "Isi kedalaman (m), lebih dari 0.",
+  "@depthInvalid": {
+    "description": "depthInvalid"
+  },
+  "timeInFuture": "Jamnya di masa depan. Periksa jam bacaan.",
+  "@timeInFuture": {
+    "description": "timeInFuture"
+  },
+  "editReading": "Ubah bacaan",
+  "@editReading": {
+    "description": "editReading"
+  },
+  "lastReadingWas": "Bacaan terakhir {depth} jam {time}",
+  "@lastReadingWas": {
+    "description": "lastReadingWas",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "plannedIs": "rencana {planned}",
+  "@plannedIs": {
+    "description": "plannedIs",
+    "placeholders": {
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "editTime": "Ubah jam",
+  "@editTime": {
+    "description": "editTime"
+  },
+  "depthFromGs": "Kedalaman dari GS",
+  "@depthFromGs": {
+    "description": "depthFromGs"
+  },
+  "noteOptional": "Catatan (boleh kosong)",
+  "@noteOptional": {
+    "description": "noteOptional"
+  },
+  "drillNoteHint": "mis. ketemu batu, ganti mata bor",
+  "@drillNoteHint": {
+    "description": "drillNoteHint"
+  },
+  "deleteThisReading": "Hapus bacaan ini",
+  "@deleteThisReading": {
+    "description": "deleteThisReading"
+  },
+  "finishDrillingOf": "Selesai bor {code}?",
+  "@finishDrillingOf": {
+    "description": "finishDrillingOf",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "finishDrillBody": "Kedalaman akhir {depth} (bacaan terdalam). Titik ditandai sudah dibor dan log cor bisa dimulai.",
+  "@finishDrillBody": {
+    "description": "finishDrillBody",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "shallowerThanPlan": "Masih {short} lebih dangkal dari rencana",
+  "@shallowerThanPlan": {
+    "description": "shallowerThanPlan",
+    "placeholders": {
+      "short": {
+        "type": "String"
+      }
+    }
+  },
+  "shallowerBody": "Rencana {planned}. Pastikan memang berhenti di sini.",
+  "@shallowerBody": {
+    "description": "shallowerBody",
+    "placeholders": {
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "operatorNameRequired": "Isi nama operator.",
+  "@operatorNameRequired": {
+    "description": "operatorNameRequired"
+  },
+  "operatorExists": "Sudah ada \"{name}\". Pilih dari daftar bila orangnya sama, atau tekan Simpan sekali lagi bila memang orang lain.",
+  "@operatorExists": {
+    "description": "operatorExists",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "drillOperator": "Operator bor",
+  "@drillOperator": {
+    "description": "drillOperator"
+  },
+  "newOperator": "Operator baru",
+  "@newOperator": {
+    "description": "newOperator"
+  },
+  "checkFirst": "Periksa dulu",
+  "@checkFirst": {
+    "description": "checkFirst"
+  },
+  "operatorName": "Nama operator",
+  "@operatorName": {
+    "description": "operatorName"
+  },
+  "phoneOptional": "No. HP (boleh kosong)",
+  "@phoneOptional": {
+    "description": "phoneOptional"
+  },
+  "backToList": "Kembali ke daftar",
+  "@backToList": {
+    "description": "backToList"
+  },
+  "searchName": "Cari nama",
+  "@searchName": {
+    "description": "searchName"
+  },
+  "noMatchAddNew": "Belum ada yang cocok. Tambahkan operator baru.",
+  "@noMatchAddNew": {
+    "description": "noMatchAddNew"
+  },
+  "queueTitle": "Antrean kirim",
+  "@queueTitle": {
+    "description": "queueTitle"
+  },
+  "queueLoadError": "Antrean gagal dibaca",
+  "@queueLoadError": {
+    "description": "queueLoadError"
+  },
+  "lastSendFailed": "Kiriman terakhir gagal",
+  "@lastSendFailed": {
+    "description": "lastSendFailed"
+  },
+  "queueCount": "{docs} data · {photos} foto",
+  "@queueCount": {
+    "description": "queueCount",
+    "placeholders": {
+      "docs": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "notSentSinceOpen": "Belum dikirim sejak aplikasi dibuka",
+  "@notSentSinceOpen": {
+    "description": "notSentSinceOpen"
+  },
+  "lastTriedAt": "Terakhir dicoba pukul {time}",
+  "@lastTriedAt": {
+    "description": "lastTriedAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "allSent": "Semua sudah terkirim.",
+  "@allSent": {
+    "description": "allSent"
+  },
+  "photosSection": "Foto",
+  "@photosSection": {
+    "description": "photosSection"
+  },
+  "photoLine": "{kind} · {kb} kB · {time}",
+  "@photoLine": {
+    "description": "photoLine",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "kb": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "photoFace": "Wajah pekerja",
+  "@photoFace": {
+    "description": "photoFace"
+  },
+  "photoCheckIn": "Absen masuk",
+  "@photoCheckIn": {
+    "description": "photoCheckIn"
+  },
+  "photoCheckOut": "Absen pulang",
+  "@photoCheckOut": {
+    "description": "photoCheckOut"
+  },
+  "photoTicketKind": "Surat jalan TM",
+  "@photoTicketKind": {
+    "description": "photoTicketKind"
+  },
+  "photoSlumpKind": "Uji slump TM",
+  "@photoSlumpKind": {
+    "description": "photoSlumpKind"
+  },
+  "changedAt": "Diubah {time} · {id}",
+  "@changedAt": {
+    "description": "changedAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "retryAt": "Dicoba lagi pukul {time}",
+  "@retryAt": {
+    "description": "retryAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "discardTitle": "Buang dari HP?",
+  "@discardTitle": {
+    "description": "discardTitle"
+  },
+  "discardBody": "Data ini tidak akan dikirim lagi. Tidak dapat dibatalkan.",
+  "@discardBody": {
+    "description": "discardBody"
+  },
+  "discard": "Buang",
+  "@discard": {
+    "description": "discard"
+  },
+  "discarded": "Dibuang dari HP.",
+  "@discarded": {
+    "description": "discarded"
+  },
+  "queuedResend": "Masuk antrean, dikirim ulang sekarang.",
+  "@queuedResend": {
+    "description": "queuedResend"
+  },
+  "resend": "Kirim ulang",
+  "@resend": {
+    "description": "resend"
+  },
+  "fillEmailPassword": "Isi email dan kata sandi.",
+  "@fillEmailPassword": {
+    "description": "fillEmailPassword"
+  },
+  "loginNeedsSignal": "Masuk perlu sinyal. Sesudah masuk sekali, aplikasi dapat dipakai tanpa sinyal.",
+  "@loginNeedsSignal": {
+    "description": "loginNeedsSignal"
+  },
+  "accountOnOtherPhone": "Akun ini masih dipakai di HP lain",
+  "@accountOnOtherPhone": {
+    "description": "accountOnOtherPhone"
+  },
+  "oneAccountOnePhone": "Satu akun hanya boleh dipakai di satu HP, supaya catatan lapangan tidak bercabang.{last}",
+  "@oneAccountOnePhone": {
+    "description": "oneAccountOnePhone",
+    "placeholders": {
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "lastActiveSuffix": " HP itu terakhir aktif {when}.",
+  "@lastActiveSuffix": {
+    "description": "lastActiveSuffix",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "oldPhoneKeepsData": "Data di HP lama tidak hilang",
+  "@oldPhoneKeepsData": {
+    "description": "oldPhoneKeepsData"
+  },
+  "oldPhoneKeepsDataBody": "HP itu masih dapat mengirim sisa antreannya, hanya tidak boleh mencatat yang baru. Bila HP itu yang sebenarnya Anda pakai, batalkan saja dan masuk dari sana.",
+  "@oldPhoneKeepsDataBody": {
+    "description": "oldPhoneKeepsDataBody"
+  },
+  "moveToThisPhone": "Pindahkan ke HP ini",
+  "@moveToThisPhone": {
+    "description": "moveToThisPhone"
+  },
+  "minutesAgo": "{n} menit lalu",
+  "@minutesAgo": {
+    "description": "minutesAgo",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{n} jam lalu",
+  "@hoursAgo": {
+    "description": "hoursAgo",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{n} hari lalu",
+  "@daysAgo": {
+    "description": "daysAgo",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "justNow": "barusan",
+  "@justNow": {
+    "description": "justNow"
+  },
+  "loginTagline": "Absensi kru & log pengecoran",
+  "@loginTagline": {
+    "description": "loginTagline"
+  },
+  "dataSafeHere": "Data di HP ini aman",
+  "@dataSafeHere": {
+    "description": "dataSafeHere"
+  },
+  "signInAgainToSend": "Masuk lagi dengan akun yang sama supaya antreannya terkirim.",
+  "@signInAgainToSend": {
+    "description": "signInAgainToSend"
+  },
+  "cannotSignInYet": "Belum dapat masuk",
+  "@cannotSignInYet": {
+    "description": "cannotSignInYet"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "email"
+  },
+  "password": "Kata sandi",
+  "@password": {
+    "description": "password"
+  },
+  "signIn": "Masuk",
+  "@signIn": {
+    "description": "signIn"
+  },
+  "phoneReplacedTitle": "HP ini sudah digantikan",
+  "@phoneReplacedTitle": {
+    "description": "phoneReplacedTitle"
+  },
+  "accountUsedElsewhere": "Akun ini dipakai di HP lain",
+  "@accountUsedElsewhere": {
+    "description": "accountUsedElsewhere"
+  },
+  "phoneReplacedBody": "Akun Anda dipakai masuk di HP lain, jadi HP ini tidak lagi menerima catatan baru. Sisa antrean tetap terkirim dari sini. Bila HP ini yang Anda pakai, masuk lagi di HP ini.",
+  "@phoneReplacedBody": {
+    "description": "phoneReplacedBody"
+  },
+  "accountUsedElsewhereBody": "Akun Anda dipakai masuk di HP lain{who}. Kirim sisa data dari HP ini, lalu lanjutkan di HP itu. Mulai {until} HP ini tidak lagi menerima catatan baru.",
+  "@accountUsedElsewhereBody": {
+    "description": "accountUsedElsewhereBody",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "inParens": " ({what})",
+  "@inParens": {
+    "description": "inParens",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "signInOnThisPhone": "Masuk di HP ini",
+  "@signInOnThisPhone": {
+    "description": "signInOnThisPhone"
+  },
+  "sessionExpired": "Sesi berakhir — masuk lagi",
+  "@sessionExpired": {
+    "description": "sessionExpired"
+  },
+  "sessionExpiredBody": "Data di HP ini AMAN dan tetap dapat diisi. Masuk lagi supaya antreannya dapat dikirim.",
+  "@sessionExpiredBody": {
+    "description": "sessionExpiredBody"
+  },
+  "clockOffTitle": "Jam HP {drift} dari jam server",
+  "@clockOffTitle": {
+    "description": "clockOffTitle",
+    "placeholders": {
+      "drift": {
+        "type": "String"
+      }
+    }
+  },
+  "clockOffBody": "Semua jam bacaan bor dan jam TM diambil dari jam HP ini. Nyalakan \"Tanggal & waktu otomatis\" di pengaturan HP, lalu tarik data lagi.",
+  "@clockOffBody": {
+    "description": "clockOffBody"
+  },
+  "rejectedCount": "{n} data ditolak server",
+  "@rejectedCount": {
+    "description": "rejectedCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rejectedBody": "Buka Antrean untuk melihat sebabnya dan memperbaikinya.",
+  "@rejectedBody": {
+    "description": "rejectedBody"
+  },
+  "view": "Lihat",
+  "@view": {
+    "description": "view"
+  },
+  "sending": "Mengirim…",
+  "@sending": {
+    "description": "sending"
+  },
+  "staleUnsent": "Lebih dari sehari belum terkirim: {docs} data, {photos} foto",
+  "@staleUnsent": {
+    "description": "staleUnsent",
+    "placeholders": {
+      "docs": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "unsent": "Belum terkirim: {docs} data, {photos} foto",
+  "@unsent": {
+    "description": "unsent",
+    "placeholders": {
+      "docs": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "staleUnsentBody": "Cari tempat bersinyal atau WiFi, lalu tekan Kirim. Bila tetap tidak terkirim, hubungi admin TerraBot.",
+  "@staleUnsentBody": {
+    "description": "staleUnsentBody"
+  },
+  "offlineAutoSend": "Tidak ada sinyal. Dikirim otomatis begitu HP mendapat sinyal, walau aplikasi ditutup.",
+  "@offlineAutoSend": {
+    "description": "offlineAutoSend"
+  },
+  "autoSendOnSignal": "Dikirim otomatis begitu ada sinyal.",
+  "@autoSendOnSignal": {
+    "description": "autoSendOnSignal"
+  },
+  "send": "Kirim",
+  "@send": {
+    "description": "send"
+  },
+  "updateTitle": "Perbarui TerraBot Field",
+  "@updateTitle": {
+    "description": "updateTitle"
+  },
+  "updateBody": "Versi di HP ini {current} sudah tidak dilayani server. Pasang versi {min} atau yang lebih baru untuk lanjut bekerja.",
+  "@updateBody": {
+    "description": "updateBody",
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "unsentSafeHere": "{n} data belum terkirim — AMAN di HP ini",
+  "@unsentSafeHere": {
+    "description": "unsentSafeHere",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "installOverBody": "Pasang versi baru DI ATAS app ini. JANGAN uninstall dulu: uninstall menghapus semua data yang belum terkirim. Setelah diperbarui, data langsung terkirim sendiri.",
+  "@installOverBody": {
+    "description": "installOverBody"
+  },
+  "downloadNew": "Unduh versi baru",
+  "@downloadNew": {
+    "description": "downloadNew"
+  },
+  "askAdminApk": "Minta file app terbaru ke admin",
+  "@askAdminApk": {
+    "description": "askAdminApk"
+  },
+  "askAdminApkBody": "Admin TerraBot akan mengirim file APK atau tautannya.",
+  "@askAdminApkBody": {
+    "description": "askAdminApkBody"
+  },
+  "checkAgain": "Periksa lagi",
+  "@checkAgain": {
+    "description": "checkAgain"
+  },
+  "keepRunningTitle": "Biarkan TerraBot Field jalan",
+  "@keepRunningTitle": {
+    "description": "keepRunningTitle"
+  },
+  "keepRunningBody": "HP ini mematikan aplikasi yang tidak sedang dibuka. Tanpa pengaturan di bawah, getar pengingat cor (20 menit, jeda) dan kirim otomatis TIDAK jalan saat layar mati.",
+  "@keepRunningBody": {
+    "description": "keepRunningBody"
+  },
+  "openAutostart": "Buka pengaturan Mulai otomatis",
+  "@openAutostart": {
+    "description": "openAutostart"
+  },
+  "openBattery": "Buka pengaturan Baterai aplikasi",
+  "@openBattery": {
+    "description": "openBattery"
+  },
+  "setBatteryOnce": "Atur baterai HP sekali saja",
+  "@setBatteryOnce": {
+    "description": "setBatteryOnce"
+  },
+  "setBatteryBody": "Supaya getar pengingat cor dan kirim otomatis tetap jalan saat layar mati.",
+  "@setBatteryBody": {
+    "description": "setBatteryBody"
+  },
+  "setUp": "Atur",
+  "@setUp": {
+    "description": "setUp"
+  },
+  "thisPeriod": "Periode ini",
+  "@thisPeriod": {
+    "description": "thisPeriod"
+  },
+  "fullRecap": "Rekap lengkap",
+  "@fullRecap": {
+    "description": "fullRecap"
+  },
+  "fullRecapBody": "Semua titik sejak awal proyek sampai {to}",
+  "@fullRecapBody": {
+    "description": "fullRecapBody",
+    "placeholders": {
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "excelSubject": "Rekapitulasi Data Tiang",
+  "@excelSubject": {
+    "description": "excelSubject"
+  },
+  "excelFailed": "Excel gagal diunduh: {error}",
+  "@excelFailed": {
+    "description": "excelFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsTitle": "Laporan lapangan",
+  "@reportsTitle": {
+    "description": "reportsTitle"
+  },
+  "presetToday": "Hari ini",
+  "@presetToday": {
+    "description": "presetToday"
+  },
+  "presetYesterday": "Kemarin",
+  "@presetYesterday": {
+    "description": "presetYesterday"
+  },
+  "presetWeek": "7 hari",
+  "@presetWeek": {
+    "description": "presetWeek"
+  },
+  "pickDate": "Pilih tanggal",
+  "@pickDate": {
+    "description": "pickDate"
+  },
+  "dateRange": "{from} – {to}",
+  "@dateRange": {
+    "description": "dateRange",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "preparingExcel": "Menyiapkan Excel…",
+  "@preparingExcel": {
+    "description": "preparingExcel"
+  },
+  "downloadExcel": "Unduh Excel (Rekapitulasi Data Tiang)",
+  "@downloadExcel": {
+    "description": "downloadExcel"
+  },
+  "reportLoadError": "Laporan gagal dibaca",
+  "@reportLoadError": {
+    "description": "reportLoadError"
+  },
+  "statDrilledPoints": "Titik dibor",
+  "@statDrilledPoints": {
+    "description": "statDrilledPoints"
+  },
+  "statCastPoints": "Titik dicor",
+  "@statCastPoints": {
+    "description": "statCastPoints"
+  },
+  "statCastSub": "{vol} m³ · {trucks} TM",
+  "@statCastSub": {
+    "description": "statCastSub",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      },
+      "trucks": {
+        "type": "String"
+      }
+    }
+  },
+  "noPointsThatDay": "Belum ada titik yang dibor atau dicor pada tanggal ini.",
+  "@noPointsThatDay": {
+    "description": "noPointsThatDay"
+  },
+  "projectNo": "Proyek #{id}",
+  "@projectNo": {
+    "description": "projectNo",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "pullToReload": "Tarik ke bawah untuk memuat ulang. Data dari semua HP yang sudah terkirim.",
+  "@pullToReload": {
+    "description": "pullToReload"
+  },
+  "pointsSuffix": "{n} titik",
+  "@pointsSuffix": {
+    "description": "pointsSuffix",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "drilledCount": "Dibor ({n})",
+  "@drilledCount": {
+    "description": "drilledCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "castCount": "Dicor ({n})",
+  "@castCount": {
+    "description": "castCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noLog": "tanpa log",
+  "@noLog": {
+    "description": "noLog"
+  },
+  "operatorShort": "op. {name}",
+  "@operatorShort": {
+    "description": "operatorShort",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "statusDone": "Selesai",
+  "@statusDone": {
+    "description": "statusDone"
+  },
+  "statusChecked": "Diperiksa",
+  "@statusChecked": {
+    "description": "statusChecked"
+  },
+  "theoreticalOf": "teoritis {vol} m³{over}",
+  "@theoreticalOf": {
+    "description": "theoreticalOf",
+    "placeholders": {
+      "vol": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "percentParens": " ({sign}{percent}%)",
+  "@percentParens": {
+    "description": "percentParens",
+    "placeholders": {
+      "sign": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "resumePouring": "Lanjutkan cor",
+  "@resumePouring": {
+    "description": "resumePouring"
+  },
+  "pauseReminderMin": "{body} · {min} menit",
+  "@pauseReminderMin": {
+    "description": "pauseReminderMin",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      },
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "idleReminderMin": "{body} · {min} menit sejak TM terakhir",
+  "@idleReminderMin": {
+    "description": "idleReminderMin",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      },
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "drillIdleTitle": "Log bor {code} belum diisi",
+  "@drillIdleTitle": {
+    "description": "drillIdleTitle",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "drillIdleBody": "Sudah {since} sejak bacaan terakhir ({time}). Catat kedalaman sekarang, atau tekan Selesai bor bila sudah selesai.",
+  "@drillIdleBody": {
+    "description": "drillIdleBody",
+    "placeholders": {
+      "since": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursText": "{h} jam",
+  "@hoursText": {
+    "description": "hoursText",
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesText": "{m} menit",
+  "@minutesText": {
+    "description": "minutesText",
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursMinutesText": "{h} jam {m} menit",
+  "@hoursMinutesText": {
+    "description": "hoursMinutesText",
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "unsentTitle": "Ada data belum terkirim",
+  "@unsentTitle": {
+    "description": "unsentTitle"
+  },
+  "unsentBody": "Sejak {since}. Buka TerraBot Field di tempat bersinyal supaya terkirim.",
+  "@unsentBody": {
+    "description": "unsentBody",
+    "placeholders": {
+      "since": {
+        "type": "String"
+      }
+    }
+  },
+  "badgeSent": "Terkirim",
+  "@badgeSent": {
+    "description": "badgeSent"
+  },
+  "badgeRejected": "Ditolak",
+  "@badgeRejected": {
+    "description": "badgeRejected"
+  },
+  "badgeWaiting": "Menunggu data",
+  "@badgeWaiting": {
+    "description": "badgeWaiting"
+  },
+  "badgeFailedRetry": "Gagal, diulang",
+  "@badgeFailedRetry": {
+    "description": "badgeFailedRetry"
+  },
+  "badgeUnsent": "Belum terkirim",
+  "@badgeUnsent": {
+    "description": "badgeUnsent"
+  },
+  "powerXiaomi1": "Mulai otomatis (Autostart): NYALAKAN untuk TerraBot Field.",
+  "@powerXiaomi1": {
+    "description": "powerXiaomi1"
+  },
+  "powerXiaomi2": "Penghemat baterai: pilih \"Tanpa batasan\" (No restrictions).",
+  "@powerXiaomi2": {
+    "description": "powerXiaomi2"
+  },
+  "powerOppo1": "Mulai otomatis / Izinkan auto-launch: NYALAKAN untuk TerraBot Field.",
+  "@powerOppo1": {
+    "description": "powerOppo1"
+  },
+  "powerOppo2": "Penggunaan baterai: izinkan \"Aktivitas latar belakang\" dan \"Mulai otomatis\".",
+  "@powerOppo2": {
+    "description": "powerOppo2"
+  },
+  "powerVivo1": "Auto-start / Latar belakang: IZINKAN untuk TerraBot Field.",
+  "@powerVivo1": {
+    "description": "powerVivo1"
+  },
+  "powerVivo2": "Baterai → Konsumsi daya latar tinggi: IZINKAN.",
+  "@powerVivo2": {
+    "description": "powerVivo2"
+  },
+  "powerHuawei1": "Peluncuran aplikasi: matikan \"Kelola otomatis\", lalu nyalakan Mulai otomatis, Mulai sekunder, dan Jalankan di latar.",
+  "@powerHuawei1": {
+    "description": "powerHuawei1"
+  },
+  "powerSamsung1": "Baterai: pilih \"Tidak dibatasi\" (Unrestricted).",
+  "@powerSamsung1": {
+    "description": "powerSamsung1"
+  },
+  "powerSamsung2": "Pastikan TerraBot Field TIDAK ada di daftar \"Aplikasi tidur\" / \"Aplikasi tidur nyenyak\".",
+  "@powerSamsung2": {
+    "description": "powerSamsung2"
+  },
+  "powerGeneric": "Baterai: pilih \"Tanpa batasan\" / \"Tidak dioptimalkan\" untuk TerraBot Field.",
+  "@powerGeneric": {
+    "description": "powerGeneric"
+  },
+  "soundDeeperThanBottom": "Lebih dalam dari dasar lubang ({bottom} m). Periksa lagi.",
+  "@soundDeeperThanBottom": {
+    "description": "soundDeeperThanBottom",
+    "placeholders": {
+      "bottom": {
+        "type": "String"
+      }
+    }
+  },
+  "soundDeeperThanBefore": "Lebih dalam dari muka beton sebelum TM ini ({before} m). Beton tidak mungkin turun; periksa lagi.",
+  "@soundDeeperThanBefore": {
+    "description": "soundDeeperThanBefore",
+    "placeholders": {
+      "before": {
+        "type": "String"
+      }
+    }
+  },
+  "readingShallower": "Lebih dangkal dari bacaan jam {time} ({depth}). Lubang tidak bisa makin dangkal.",
+  "@readingShallower": {
+    "description": "readingShallower",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "readingDeeperThanNext": "Lebih dalam dari bacaan berikutnya jam {time} ({depth}). Periksa jamnya.",
+  "@readingDeeperThanNext": {
+    "description": "readingDeeperThanNext",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "depthFarFromPlan": "{depth} m terlalu jauh dari rencana {planned} m (paling dalam {max} m). Periksa angkanya, titiknya, atau elevasi GS.",
+  "@depthFarFromPlan": {
+    "description": "depthFarFromPlan",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "numberInvalid": "Isi angka lebih dari 0, paling besar {max}.",
+  "@numberInvalid": {
+    "description": "numberInvalid",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "castAlreadyDone": "Cor titik ini sudah selesai.",
+  "@castAlreadyDone": {
+    "description": "castAlreadyDone"
+  },
+  "noTruckPouring": "Tidak ada TM yang sedang dicor.",
+  "@noTruckPouring": {
+    "description": "noTruckPouring"
+  },
+  "truckAlreadyPaused": "TM #{seq} sudah dijeda.",
+  "@truckAlreadyPaused": {
+    "description": "truckAlreadyPaused",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "truckNotPaused": "TM #{seq} tidak sedang dijeda.",
+  "@truckNotPaused": {
+    "description": "truckNotPaused",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "photoUnreadable": "Foto tidak dapat dibaca.",
+  "@photoUnreadable": {
+    "description": "photoUnreadable"
+  },
+  "photoCompressFailed": "Foto tidak dapat dikompres.",
+  "@photoCompressFailed": {
+    "description": "photoCompressFailed"
+  },
+  "workersTitle": "Pekerja",
+  "@workersTitle": {
+    "description": "workersTitle"
+  },
+  "newWorker": "Pekerja baru",
+  "@newWorker": {
+    "description": "newWorker"
+  },
+  "workersLoadError": "Daftar pekerja gagal dibaca",
+  "@workersLoadError": {
+    "description": "workersLoadError"
+  },
+  "workersAllBody": "Semua pekerja perusahaan. Siapa pun dapat mengabsen dan mengubahnya.",
+  "@workersAllBody": {
+    "description": "workersAllBody"
+  },
+  "workersNoProjectBody": "Tanpa proyek utama dan tidak diabsen di mana pun {days} hari terakhir.",
+  "@workersNoProjectBody": {
+    "description": "workersNoProjectBody",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "workersProjectBody": "Proyek utamanya {code}, atau diabsen di {code} {days} hari terakhir.",
+  "@workersProjectBody": {
+    "description": "workersProjectBody",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "workersCount": "{n} pekerja",
+  "@workersCount": {
+    "description": "workersCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noWorkersYet": "Belum ada pekerja. Daftarkan pekerja baru dengan tombol di bawah.",
+  "@noWorkersYet": {
+    "description": "noWorkersYet"
+  },
+  "searchNameOrPhone": "Cari nama atau no. HP",
+  "@searchNameOrPhone": {
+    "description": "searchNameOrPhone"
+  },
+  "allCount": "Semua ({n})",
+  "@allCount": {
+    "description": "allCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "withoutProject": "Tanpa proyek ({n})",
+  "@withoutProject": {
+    "description": "withoutProject",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noMatchingWorkers": "Tidak ada pekerja yang cocok.",
+  "@noMatchingWorkers": {
+    "description": "noMatchingWorkers"
+  },
+  "mainProjectIs": "Proyek utama {code}",
+  "@mainProjectIs": {
+    "description": "mainProjectIs",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "lastSeenAt": "Terakhir di {code} · {date}",
+  "@lastSeenAt": {
+    "description": "lastSeenAt",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cameraFailed": "Kamera gagal: {error}",
+  "@cameraFailed": {
+    "description": "cameraFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "workerNameRequired": "Isi nama pekerja.",
+  "@workerNameRequired": {
+    "description": "workerNameRequired"
+  },
+  "workerSaved": "{name} disimpan. Terkirim otomatis saat ada sinyal.",
+  "@workerSaved": {
+    "description": "workerSaved",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mainProjectOptional": "Proyek utama (opsional)",
+  "@mainProjectOptional": {
+    "description": "mainProjectOptional"
+  },
+  "noMainProject": "Tanpa proyek utama",
+  "@noMainProject": {
+    "description": "noMainProject"
+  },
+  "andOthers": "\n• dan {n} lainnya",
+  "@andOthers": {
+    "description": "andOthers",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "maybeRegistered": "Mungkin sudah terdaftar",
+  "@maybeRegistered": {
+    "description": "maybeRegistered"
+  },
+  "maybeRegisteredBody": "Nama atau nomor HP ini mirip pekerja yang sudah ada:\n{names}\n\nKalau orangnya sama, batalkan dan pakai pekerja yang sudah ada. Kalau memang orang lain, tekan tombol simpan sekali lagi.",
+  "@maybeRegisteredBody": {
+    "description": "maybeRegisteredBody",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "needsFixing": "Perlu diperbaiki",
+  "@needsFixing": {
+    "description": "needsFixing"
+  },
+  "viewOnlyWorkerBody": "Akun Anda tidak punya izin mendaftarkan atau mengubah pekerja. Minta kantor menambahkan izinnya.",
+  "@viewOnlyWorkerBody": {
+    "description": "viewOnlyWorkerBody"
+  },
+  "noFaceDetected": "Wajah tidak terdeteksi",
+  "@noFaceDetected": {
+    "description": "noFaceDetected"
+  },
+  "facesDetected": "{n} wajah terdeteksi",
+  "@facesDetected": {
+    "description": "facesDetected",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "facePhotoBody": "Foto wajah dipakai kantor untuk mencocokkan kru. Ambil ulang dengan satu wajah, menghadap kamera.",
+  "@facePhotoBody": {
+    "description": "facePhotoBody"
+  },
+  "retake": "Ulang",
+  "@retake": {
+    "description": "retake"
+  },
+  "fullName": "Nama lengkap",
+  "@fullName": {
+    "description": "fullName"
+  },
+  "phoneOptional2": "No. HP (opsional)",
+  "@phoneOptional2": {
+    "description": "phoneOptional2"
+  },
+  "workerNoteHint": "Catatan (mis. tukang besi, operator)",
+  "@workerNoteHint": {
+    "description": "workerNoteHint"
+  },
+  "saveAsNewWorker": "Tetap simpan sebagai pekerja baru",
+  "@saveAsNewWorker": {
+    "description": "saveAsNewWorker"
+  },
+  "attendanceTitle": "Absensi kru",
+  "@attendanceTitle": {
+    "description": "attendanceTitle"
+  },
+  "attendToday": "Absen hari ini",
+  "@attendToday": {
+    "description": "attendToday"
+  },
+  "attendanceLoadError": "Absen gagal dibaca",
+  "@attendanceLoadError": {
+    "description": "attendanceLoadError"
+  },
+  "attendanceHistory": "Riwayat absen",
+  "@attendanceHistory": {
+    "description": "attendanceHistory"
+  },
+  "otherProject": "proyek lain",
+  "@otherProject": {
+    "description": "otherProject"
+  },
+  "attendanceHistoryBody": "Absen yang dibuat dari HP ini",
+  "@attendanceHistoryBody": {
+    "description": "attendanceHistoryBody"
+  },
+  "noAttendanceYet": "Belum ada absen.",
+  "@noAttendanceYet": {
+    "description": "noAttendanceYet"
+  },
+  "failedWith": "Gagal: {error}",
+  "@failedWith": {
+    "description": "failedWith",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "photoInGallery": "Foto tersimpan di galeri HP (album \"{album}\").",
+  "@photoInGallery": {
+    "description": "photoInGallery",
+    "placeholders": {
+      "album": {
+        "type": "String"
+      }
+    }
+  },
+  "galleryDenied": "Absen tersimpan, tapi foto tidak masuk galeri: izin galeri ditolak.",
+  "@galleryDenied": {
+    "description": "galleryDenied"
+  },
+  "galleryFailed": "Absen tersimpan, tapi foto gagal disimpan ke galeri HP.",
+  "@galleryFailed": {
+    "description": "galleryFailed"
+  },
+  "saveCrewTicks": "Simpan centang kru?",
+  "@saveCrewTicks": {
+    "description": "saveCrewTicks"
+  },
+  "saveCrewTicksBody": "Ada perubahan kru yang belum disimpan.",
+  "@saveCrewTicksBody": {
+    "description": "saveCrewTicksBody"
+  },
+  "crewAttendance": "Absen kru",
+  "@crewAttendance": {
+    "description": "crewAttendance"
+  },
+  "saveWithCount": "Simpan · {n} kru",
+  "@saveWithCount": {
+    "description": "saveWithCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rejectedByOffice": "Ditolak kantor",
+  "@rejectedByOffice": {
+    "description": "rejectedByOffice"
+  },
+  "approvedByOffice": "Sudah disetujui kantor",
+  "@approvedByOffice": {
+    "description": "approvedByOffice"
+  },
+  "attendanceLocked": "Absen ini tidak dapat diubah lagi dari HP.",
+  "@attendanceLocked": {
+    "description": "attendanceLocked"
+  },
+  "projectLabel": "Proyek",
+  "@projectLabel": {
+    "description": "projectLabel"
+  },
+  "projectNoLocation": "Lokasi proyek belum diisi kantor",
+  "@projectNoLocation": {
+    "description": "projectNoLocation"
+  },
+  "projectNoLocationBody": "Absen tetap tersimpan; jarak ke proyek tidak dapat diperiksa.",
+  "@projectNoLocationBody": {
+    "description": "projectNoLocationBody"
+  },
+  "checkIn": "Absen masuk",
+  "@checkIn": {
+    "description": "checkIn"
+  },
+  "checkOut": "Absen pulang",
+  "@checkOut": {
+    "description": "checkOut"
+  },
+  "savedWithoutLocation": "Tersimpan tanpa lokasi",
+  "@savedWithoutLocation": {
+    "description": "savedWithoutLocation"
+  },
+  "savedWithoutLocationBody": "{problem} Kantor akan melihat absen ini bertanda \"tanpa lokasi\".",
+  "@savedWithoutLocationBody": {
+    "description": "savedWithoutLocationBody",
+    "placeholders": {
+      "problem": {
+        "type": "String"
+      }
+    }
+  },
+  "crewPresent": "Kru hadir ({n})",
+  "@crewPresent": {
+    "description": "crewPresent",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noWorkersTitle": "Belum ada pekerja",
+  "@noWorkersTitle": {
+    "description": "noWorkersTitle"
+  },
+  "noWorkersBody": "Daftarkan pekerja baru dulu. Pekerja yang didaftarkan di sini langsung dapat diabsen, walau belum terkirim.",
+  "@noWorkersBody": {
+    "description": "noWorkersBody"
+  },
+  "thisProject": "proyek ini",
+  "@thisProject": {
+    "description": "thisProject"
+  },
+  "searchWorkerName": "Cari nama pekerja",
+  "@searchWorkerName": {
+    "description": "searchWorkerName"
+  },
+  "noWorkersForProject": "Belum ada pekerja {code}",
+  "@noWorkersForProject": {
+    "description": "noWorkersForProject",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "noWorkersForProjectBody": "Belum ada yang proyek utamanya {code} atau diabsen di sini {days} hari terakhir. Centang dari daftar semua pekerja di bawah; setelah terkirim, mereka muncul paling atas di sini.",
+  "@noWorkersForProjectBody": {
+    "description": "noWorkersForProjectBody",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownWorker": "Pekerja tidak dikenal",
+  "@unknownWorker": {
+    "description": "unknownWorker"
+  },
+  "otherWorkers": "Pekerja lain ({n})",
+  "@otherWorkers": {
+    "description": "otherWorkers",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "noWorkerByName": "Tidak ada pekerja dengan nama itu.",
+  "@noWorkerByName": {
+    "description": "noWorkerByName"
+  },
+  "flaggedForOffice": "Ditandai untuk diperiksa kantor",
+  "@flaggedForOffice": {
+    "description": "flaggedForOffice"
+  },
+  "flagOutsideRadius": "• Lokasi absen di luar radius proyek",
+  "@flagOutsideRadius": {
+    "description": "flagOutsideRadius"
+  },
+  "flagNoProjectLocation": "• Lokasi proyek belum diisi kantor",
+  "@flagNoProjectLocation": {
+    "description": "flagNoProjectLocation"
+  },
+  "flagNoLocation": "• Absen tanpa lokasi GPS",
+  "@flagNoLocation": {
+    "description": "flagNoLocation"
+  },
+  "flagMockLocation": "• HP melaporkan lokasi palsu",
+  "@flagMockLocation": {
+    "description": "flagMockLocation"
+  },
+  "flagClockOff": "• Jam HP berbeda jauh dari jam server",
+  "@flagClockOff": {
+    "description": "flagClockOff"
+  },
+  "flagClockUnverified": "• Jam HP tidak dapat diverifikasi (HP dinyalakan ulang)",
+  "@flagClockUnverified": {
+    "description": "flagClockUnverified"
+  },
+  "flagClockEdited": "• Jam diubah manual",
+  "@flagClockEdited": {
+    "description": "flagClockEdited"
+  },
+  "flagFaceCountOff": "• Jumlah wajah di foto berbeda dengan jumlah kru",
+  "@flagFaceCountOff": {
+    "description": "flagFaceCountOff"
+  },
+  "flagPhotoPending": "• Foto masih menunggu terkirim",
+  "@flagPhotoPending": {
+    "description": "flagPhotoPending"
+  },
+  "fullDay": "Penuh",
+  "@fullDay": {
+    "description": "fullDay"
+  },
+  "halfDay": "½ hari",
+  "@halfDay": {
+    "description": "halfDay"
+  },
+  "overtime": "Lembur",
+  "@overtime": {
+    "description": "overtime"
+  },
+  "hoursShort": "{h} j",
+  "@hoursShort": {
+    "description": "hoursShort",
+    "placeholders": {
+      "h": {
+        "type": "String"
+      }
+    }
+  },
+  "crewPhotoOf": "Foto kru · {what}",
+  "@crewPhotoOf": {
+    "description": "crewPhotoOf",
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "atTime": "Pukul {time}",
+  "@atTime": {
+    "description": "atTime",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "withinRadius": "{m} m dari proyek ✓",
+  "@withinRadius": {
+    "description": "withinRadius",
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "outsideRadius": "{m} m dari proyek — di luar radius {radius} m",
+  "@outsideRadius": {
+    "description": "outsideRadius",
+    "placeholders": {
+      "m": {
+        "type": "String"
+      },
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "noLocation": "Tanpa lokasi",
+  "@noLocation": {
+    "description": "noLocation"
+  },
+  "mockLocation": "Lokasi palsu terdeteksi",
+  "@mockLocation": {
+    "description": "mockLocation"
+  },
+  "facesInPhoto": "{n} wajah di foto",
+  "@facesInPhoto": {
+    "description": "facesInPhoto",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "longPressRetake": "Tekan lama untuk foto ulang",
+  "@longPressRetake": {
+    "description": "longPressRetake"
+  },
+  "levelRefTitle": "Patokan elevasi",
+  "@levelRefTitle": {
+    "description": "levelRefTitle"
+  },
+  "levelRefColTip": "COL {col} · Tip {tip}",
+  "@levelRefColTip": {
+    "description": "levelRefColTip",
+    "placeholders": {
+      "col": {
+        "type": "String"
+      },
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+  "notSet": "belum ada",
+  "@notSet": {
+    "description": "notSet"
+  },
+  "levelRefNoGs": "Isi GS dulu untuk melihat kedalaman COL dan rencana bor.",
+  "@levelRefNoGs": {
+    "description": "levelRefNoGs"
+  },
+  "levelRefGs": "GS {gs}",
+  "@levelRefGs": {
+    "description": "levelRefGs",
+    "placeholders": {
+      "gs": {
+        "type": "String"
+      }
+    }
+  },
+  "levelRefColBelow": "• COL {d} di bawah GS",
+  "@levelRefColBelow": {
+    "description": "levelRefColBelow",
+    "placeholders": {
+      "d": {
+        "type": "String"
+      }
+    }
+  },
+  "levelRefPlanned": "• Rencana bor {d}",
+  "@levelRefPlanned": {
+    "description": "levelRefPlanned",
+    "placeholders": {
+      "d": {
+        "type": "String"
+      }
+    }
+  },
+  "levelRefFooter": "Kedalaman bor diukur dari GS sampai dasar lubang.",
+  "@levelRefFooter": {
+    "description": "levelRefFooter"
+  },
+  "projectsMissingHome": "Tarik ke bawah untuk mengambilnya dari server. Perlu sinyal sekali saja; sesudahnya dapat dipakai tanpa sinyal.",
+  "@projectsMissingHome": {
+    "description": "projectsMissingHome"
+  },
+  "noFieldAccess": "Akun ini belum punya akses lapangan",
+  "@noFieldAccess": {
+    "description": "noFieldAccess"
+  },
+  "noFieldAccessBody": "Minta admin TerraBot menambahkan divisi Field Engineer ke akun Anda, lalu tarik ke bawah.",
+  "@noFieldAccessBody": {
+    "description": "noFieldAccessBody"
   }
 }

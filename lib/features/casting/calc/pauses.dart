@@ -5,19 +5,27 @@
 /// reason, note. Times are ISO strings with offset.
 library;
 
+import 'package:flutter/widgets.dart';
+
+import '../../../core/i18n.dart';
+
 /// Reason codes as the server spells them, with what the screen shows.
-const pauseReasons = <String, String>{
-  'cabut_tremie': 'Cabut tremie',
-  'tunggu_tm': 'Tunggu TM',
-  'kendala_alat': 'Kendala alat',
-  'lainnya': 'Lainnya',
-};
+///
+/// The CODES are the server's contract and never change; only the
+/// sentences are translated, so this takes a context.
+Map<String, String> pauseReasons(BuildContext context) => {
+      'cabut_tremie': t(context).pauseCabutTremie,
+      'tunggu_tm': t(context).pauseTungguTm,
+      'kendala_alat': t(context).pauseKendalaAlat,
+      'lainnya': t(context).other,
+    };
 
 /// A TM still pouring after this long (pauses not counted) makes the phone
 /// buzz once, and its timer turns red.
 const truckReminderAfter = Duration(minutes: 20);
 
-String pauseReasonLabel(Object? code) => pauseReasons['$code'] ?? 'Lainnya';
+String pauseReasonLabel(BuildContext context, Object? code) =>
+    pauseReasons(context)['$code'] ?? t(context).other;
 
 DateTime? _time(Object? v) => v == null ? null : DateTime.tryParse('$v');
 

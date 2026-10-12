@@ -15,6 +15,7 @@ import '../../core/widgets/view_states.dart';
 import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_badge.dart';
 import '../home/status_banners.dart';
+import '../../core/i18n.dart';
 
 final _queueProvider = StreamProvider<List<DocumentRow>>((ref) {
   final p = ref.watch(userProvider);
@@ -40,28 +41,30 @@ class QueuePage extends ConsumerWidget {
     final syncState = ref.watch(syncProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Antrean kirim')),
+      appBar: AppBar(title: Text(t(context).queueTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(),
         child: doc.when(
           loading: () => const LoadingState(),
-          error: (e, _) => ErrorState(title: 'Antrean gagal dibaca', message: '$e'),
+          error: (e, _) => ErrorState(title: t(context).queueLoadError, message: '$e'),
           data: (items) => ListView(
             padding: const EdgeInsets.all(Dimens.pagePadding),
             children: [
               const StatusBanners(),
               if (syncState.last?.error != null)
-                TerraBanner(kind: BannerKind.danger, title: 'Kiriman terakhir gagal', body: syncState.last!.error),
+                TerraBanner(kind: BannerKind.danger, title: t(context).lastSendFailed, body: syncState.last!.error),
               PageHeader(
-                title: '${items.length} data · ${photos.length} foto',
-                description: syncState.lastRunAt == null ? 'Belum dikirim sejak aplikasi dibuka' : 'Terakhir dicoba pukul ${formatTime(syncState.lastRunAt!)}',
+                title: t(context).queueCount(items.length, photos.length),
+                description: syncState.lastRunAt == null
+                    ? t(context).notSentSinceOpen
+                    : t(context).lastTriedAt(formatTime(syncState.lastRunAt!)),
               ),
               if (items.isEmpty && photos.isEmpty)
-                const EmptyState(message: 'Semua sudah terkirim.', icon: Icons.cloud_done_outlined),
+                EmptyState(message: t(context).allSent, icon: Icons.cloud_done_outlined),
               for (final d in items) _DocumentCard(d: d),
               if (photos.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text('Foto', style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+                Text(t(context).photosSection, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                 const SizedBox(height: 6),
                 for (final f in photos)
                   ListCard(
@@ -72,8 +75,8 @@ class QueuePage extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            '${_photoKindLabel(f.kind)} · ${(f.sizeBytes / 1024).round()} kB · ${formatTime(f.takenAt)}'
-                            '${f.reason == null ? '' : '\n${reasonText(f.reason)}'}',
+                            '${t(context).photoLine(_photoKindLabel(context, f.kind), '${(f.sizeBytes / 1024).round()}', formatTime(f.takenAt))}'
+                            '${f.reason == null ? '' : '\n${reasonText(context, f.reason)}'}',
                             style: TextStyle(color: w.ink, fontSize: 13),
                           ),
                         ),
@@ -89,12 +92,12 @@ class QueuePage extends ConsumerWidget {
     );
   }
 
-  static String _photoKindLabel(String kind) => switch (kind) {
-        'wajah' => 'Wajah pekerja',
-        'absen_masuk' => 'Absen masuk',
-        'absen_pulang' => 'Absen pulang',
-        'tiket_tm' => 'Surat jalan TM',
-        'slump_tm' => 'Uji slump TM',
+  static String _photoKindLabel(BuildContext context, String kind) => switch (kind) {
+        'wajah' => t(context).photoFace,
+        'absen_masuk' => t(context).photoCheckIn,
+        'absen_pulang' => t(context).photoCheckOut,
+        'tiket_tm' => t(context).photoTicketKind,
+        'slump_tm' => t(context).photoSlumpKind,
         _ => kind,
       };
 }
@@ -125,19 +128,19 @@ class _DocumentCard extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: Text('${entityLabel(d.entity)} · v${d.version}',
+                child: Text('${entityLabel(context, d.entity)} · v${d.version}',
                     style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
               ),
               StatusBadge.sendStatus(context, d.sendStatus),
             ],
           ),
-          Text('Diubah ${formatTime(d.updatedAt)} · ${d.uuid.substring(0, 8)}', style: TextStyle(color: w.muted, fontSize: 12)),
+          Text(t(context).changedAt(formatTime(d.updatedAt), d.uuid.substring(0, 8)), style: TextStyle(color: w.muted, fontSize: 12)),
           if (d.reason != null) ...[
             const SizedBox(height: 6),
-            Text(reasonText(d.reason, d.detail), style: TextStyle(color: rejected ? w.badFg : w.warnFg, fontSize: 13)),
+            Text(reasonText(context, d.reason, d.detail), style: TextStyle(color: rejected ? w.badFg : w.warnFg, fontSize: 13)),
           ],
           if (d.retryAfter != null && !rejected)
-            Text('Dicoba lagi pukul ${formatTime(d.retryAfter!)}', style: TextStyle(color: w.muted, fontSize: 12)),
+            Text(t(context).retryAt(formatTime(d.retryAfter!)), style: TextStyle(color: w.muted, fontSize: 12)),
           if (rejected)
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -147,28 +150,28 @@ class _DocumentCard extends ConsumerWidget {
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (c) => AlertDialog(
-                        title: const Text('Buang dari HP?'),
-                        content: const Text('Data ini tidak akan dikirim lagi. Tidak dapat dibatalkan.'),
+                        title: Text(t(c).discardTitle),
+                        content: Text(t(c).discardBody),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
-                          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Buang')),
+                          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).cancel)),
+                          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).discard)),
                         ],
                       ),
                     );
                     if (confirmed == true) {
                       await ref.read(dbProvider).discardDocument(d.uuid);
-                      if (context.mounted) showSnack(context, 'Dibuang dari HP.', icon: Icons.delete_outline);
+                      if (context.mounted) showSnack(context, t(context).discarded, icon: Icons.delete_outline);
                     }
                   },
-                  child: const Text('Buang'),
+                  child: Text(t(context).discard),
                 ),
                 TextButton(
                   onPressed: () async {
                     await ref.read(dbProvider).retryDocument(d.uuid);
                     ref.read(syncProvider.notifier).afterSave();
-                    if (context.mounted) showSnack(context, 'Masuk antrean, dikirim ulang sekarang.', icon: Icons.cloud_upload_outlined);
+                    if (context.mounted) showSnack(context, t(context).queuedResend, icon: Icons.cloud_upload_outlined);
                   },
-                  child: const Text('Kirim ulang'),
+                  child: Text(t(context).resend),
                 ),
               ],
             ),

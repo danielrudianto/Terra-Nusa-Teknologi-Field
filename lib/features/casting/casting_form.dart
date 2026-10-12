@@ -33,6 +33,7 @@ import 'concrete_suppliers.dart';
 import 'handover.dart';
 import 'pile_section_view.dart';
 import 'tremie_string_view.dart';
+import '../../core/i18n.dart';
 
 /// Casting log for one pile point.
 ///
@@ -103,12 +104,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       pilePointUuid = '${doc['pilePointUuid']}';
     }
     if (pilePointUuid == null) {
-      setState(() => _error = 'Log cor tidak ditemukan di HP ini.');
+      setState(() => _error = t(context).castLogNotOnPhone);
       return;
     }
     final pilePoint = await db.getMaster('pile_point', pilePointUuid);
     if (pilePoint == null) {
-      setState(() => _error = 'Titik bor tidak ada di HP ini. Tarik data terbaru saat ada sinyal.');
+      setState(() => _error = t(context).pointNotOnPhone);
       return;
     }
     final project = await db.getMaster('project', '${pilePoint['projectID']}');
@@ -146,25 +147,24 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     // and the server refuses a new casting anyway (GS_KOSONG).
     final groundLevel = localGroundLevel ?? toDoubleOrNull(pilePoint['groundLevel']);
     if (groundLevel == null) {
-      setState(() => _error = 'Elevasi GS titik ${pilePoint['code']} belum diisi. '
-          'Kembali ke daftar titik, pilih "Tandai sudah dibor", lalu isi GS-nya.');
+      setState(() => _error = t(context).gsMissingFor('${pilePoint['code']}'));
       return;
     }
 
     // One point, one casting log: the server refuses a second one.
     final existing = pilePoint['castingUuid'];
     if (doc == null && existing != null && '$existing' != widget.uuid) {
-      setState(() => _error = 'Titik ${pilePoint['code']} sudah punya log cor'
-          '${pilePoint['castingByName'] == null ? '' : ' dari ${pilePoint['castingByName']}'}. '
-          'Satu titik hanya boleh satu log cor.');
+      setState(() => _error = t(context).pointHasCastLog(
+            '${pilePoint['code']}',
+            pilePoint['castingByName'] == null ? '' : t(context).byWhom('${pilePoint['castingByName']}'),
+          ));
       return;
     }
 
     // A new log needs the drilled depth too (the hole bottom). The point list
     // disables "Mulai log cor" until then; this catches any other way in.
     if (doc == null && localDrillDepth == null && toDoubleOrNull(pilePoint['drilledDepthM']) == null) {
-      setState(() => _error = 'Titik ${pilePoint['code']} belum ditandai sudah dibor. '
-          'Kembali ke daftar titik, pilih "Tandai sudah dibor", lalu isi kedalamannya.');
+      setState(() => _error = t(context).pointNotDrilled('${pilePoint['code']}'));
       return;
     }
 
@@ -272,7 +272,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     }
     final p = ref.read(userProvider);
     if (p == null) {
-      if (mounted) showSnack(context, 'Belum masuk akun — tidak ada yang tersimpan.', icon: Icons.error_outline);
+      if (mounted) showSnack(context, t(context).notSignedIn, icon: Icons.error_outline);
       return false;
     }
     setState(() => f(_doc!));
@@ -287,8 +287,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
   /// Why this screen cannot be changed — shown instead of a fake success.
   String get _readOnlyReason => _locked
-      ? 'Log cor sudah diperiksa kantor — tidak dapat diubah lagi.'
-      : 'Log cor ini dipegang ${_holderName ?? 'rekan'} — ubah dari HP pemegangnya.';
+      ? t(context).lockedByOffice
+      : t(context).heldByOther(_holderName ?? t(context).colleague);
 
   // -------------------------------------------------------------------------
   // Tremie
@@ -302,10 +302,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (stickUp > tremieStickUpMaxM + 0.005) {
       await _block(
         icon: Icons.height,
-        title: 'Tremie kepanjangan',
-        body: 'Dengan segmen ${_decimal(lengthM)} m ini, ujung atas tremie ${formatMeters(stickUp)} di atas GS '
-            '(paling tinggi ${formatMeters(tremieStickUpMaxM)}, setinggi hopper). '
-            'Lubang ini cukup ${formatMeters(k.requiredTremieM)} tremie. Periksa lagi segmen yang terpasang.',
+        title: t(context).tremieTooLongTitle,
+        body: t(context).tremieTooLongAdd(_decimal(lengthM), formatMeters(stickUp),
+            formatMeters(tremieStickUpMaxM), formatMeters(k.requiredTremieM)),
       );
       return;
     }
@@ -328,12 +327,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
   Future<void> _addBottom() async {
     final v = (await _askNumber(
-      title: 'Tremie bottom',
-      label: 'Panjang (m)',
+      title: t(context).tremieBottomTitle,
+      label: t(context).lengthM,
       icon: Icons.change_history,
       suffix: 'm',
       maxValue: 12,
-      hint: 'Ujung runcing yang dipasang paling bawah. Ukur panjangnya untuk cor ini.',
+      hint: t(context).tremieBottomHint,
     ))
         ?.$1;
     if (v != null) await _addSegment(v, bottom: true);
@@ -346,11 +345,11 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       final top = s.last;
       (d['tremie'] as List).removeWhere((x) => (x as Map)['uuid'] == top['uuid']);
     });
-    if (saved && mounted) showSnack(context, 'Segmen teratas dihapus dari susunan.');
+    if (saved && mounted) showSnack(context, t(context).topSegmentRemoved);
   }
 
   Future<void> _customSegment() async {
-    final v = (await _askNumber(title: 'Panjang segmen', label: 'Panjang (m)', icon: Icons.straighten, suffix: 'm', maxValue: 12))?.$1;
+    final v = (await _askNumber(title: t(context).segmentLength, label: t(context).lengthM, icon: Icons.straighten, suffix: 'm', maxValue: 12))?.$1;
     if (v != null) await _addSegment(v);
   }
 
@@ -361,7 +360,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           icon: Icon(icon, size: 32, color: c.colors.badFg),
           title: Text(title, textAlign: TextAlign.center),
           content: Text(body, style: TextStyle(color: c.colors.ink, height: 1.4)),
-          actions: [FilledButton(onPressed: () => Navigator.pop(c), child: const Text('Mengerti'))],
+          actions: [FilledButton(onPressed: () => Navigator.pop(c), child: Text(t(c).understood))],
         ),
       );
 
@@ -376,22 +375,21 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       final after = snap.tremieBottomM - (seg?.lengthM ?? 0) - snap.concreteNowM;
       const limits = EmbedmentLimits();
       if (seg != null && after < limits.minimumM) {
-        final text = 'Setelah segmen ${_decimal(seg.lengthM)} m ini dicabut, tremie tinggal tertanam '
-            '${formatMeters(math.max(after, 0))} di beton (paling sedikit ${formatMeters(limits.minimumM)}). '
-            'Beton baru bisa menembus muka beton dan bercampur lumpur.';
+        final text = t(context).embedAfterRemoval(
+            _decimal(seg.lengthM), formatMeters(math.max(after, 0)), formatMeters(limits.minimumM));
         if (snap.concreteMeasured) {
-          await _block(icon: Icons.dangerous_outlined, title: 'Jangan dicabut dulu', body: text);
+          await _block(icon: Icons.dangerous_outlined, title: t(context).dontPullYet, body: text);
           return;
         }
         final goOn = await showDialog<bool>(
           context: context,
           builder: (c) => AlertDialog(
             icon: Icon(Icons.warning_amber_rounded, size: 32, color: c.colors.warnFg),
-            title: const Text('Tertanam terlalu pendek', textAlign: TextAlign.center),
-            content: Text('$text\n\nMuka beton ini perkiraan. Sounding dulu kalau ragu.', style: TextStyle(color: c.colors.ink, height: 1.4)),
+            title: Text(t(c).embedTooShortTitle, textAlign: TextAlign.center),
+            content: Text(t(c).estimateSoundFirst(text), style: TextStyle(color: c.colors.ink, height: 1.4)),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(c, true), child: Text('Tetap centang', style: TextStyle(color: c.colors.badFg))),
-              FilledButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
+              TextButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).tickAnyway, style: TextStyle(color: c.colors.badFg))),
+              FilledButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).cancel)),
             ],
           ),
         );
@@ -400,7 +398,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     }
     await _setRemoved(segmentUuid, seq);
     if (mounted) {
-      showSnack(context, seq == null ? 'Cabut dibatalkan; segmen terpasang lagi.' : 'Segmen tercatat dicabut setelah TM #$seq.');
+      showSnack(context, seq == null ? t(context).pullUndone : t(context).pullRecorded(seq));
     }
   }
 
@@ -478,7 +476,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       });
     });
     if (!saved) return;
-    if (mounted) showSnack(context, 'TM #$seq tersimpan.', icon: Icons.local_shipping_outlined);
+    if (mounted) showSnack(context, t(context).truckSaved(seq), icon: Icons.local_shipping_outlined);
   }
 
   /// Correct a TM that was typed wrong — slump, volume, hull number,
@@ -529,7 +527,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       t['ticketPhotoUuid'] = result['ticketPhotoUuid'];
       t['slumpPhotoUuid'] = result['slumpPhotoUuid'];
     });
-    if (saved && mounted) showSnack(context, 'TM #$seq diperbarui.', icon: Icons.edit_outlined);
+    if (saved && mounted) showSnack(context, t(context).truckUpdated(seq), icon: Icons.edit_outlined);
   }
 
   /// Warn before another truck when the concrete is already at cut-off.
@@ -543,29 +541,31 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         final w = c.colors;
         return AlertDialog(
           icon: Icon(Icons.warning_amber_rounded, size: 32, color: w.warnFg),
-          title: const Text('Beton sudah sampai cut-off', textAlign: TextAlign.center),
+          title: Text(t(c).atCutOffTitle, textAlign: TextAlign.center),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Muka beton ${formatMeters(level.depthM)} dari GS, cut-off ${formatMeters(k.geometry.cutOffDepthM)}'
-                '${over > 0.005 ? ' (lebih ${formatMeters(over)})' : ''}. '
-                'Biasanya cor titik ini sudah cukup.',
+                t(c).atCutOffBody(
+                  formatMeters(level.depthM),
+                  formatMeters(k.geometry.cutOffDepthM),
+                  over > 0.005 ? t(c).overBy(formatMeters(over)) : '',
+                ),
                 style: TextStyle(color: w.ink, height: 1.4),
               ),
               if (!level.measured) ...[
                 const SizedBox(height: 10),
                 Text(
-                  'Angka ini perkiraan dari volume. Sounding dulu untuk memastikan.',
+                  t(c).estimateFromVolume,
                   style: TextStyle(color: w.warnFg, fontWeight: FontWeight.w600, height: 1.4),
                 ),
               ],
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(c, 'finish'), child: const Text('Selesai cor')),
-            FilledButton(onPressed: () => Navigator.pop(c, 'add'), child: const Text('Tetap tambah TM')),
+            TextButton(onPressed: () => Navigator.pop(c, 'finish'), child: Text(t(c).finishCasting)),
+            FilledButton(onPressed: () => Navigator.pop(c, 'add'), child: Text(t(c).addTruckAnyway)),
           ],
         );
       },
@@ -597,24 +597,65 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         }
       });
 
+  /// Project · point, for the notification header.
+  ///
+  /// The point row carries `projectID`, not the code, so the code is looked
+  /// up in the pulled project list — and simply left out when that list is
+  /// not on the phone yet.
+  String get _notifSubText {
+    final id = '${_pilePoint?['projectID']}';
+    final project = (ref.read(projectsProvider).value ?? const <Map<String, Object?>>[])
+        .where((p) => '${p['id']}' == id)
+        .firstOrNull;
+    return [
+      if (project?['code'] != null) '${project!['code']}',
+      'Titik ${_pilePoint!['code']}',
+    ].join(' · ');
+  }
+
+  /// How far the concrete has climbed from the hole bottom toward cut-off,
+  /// 0–100. This is what the QS is actually waiting for, so it is the bar.
+  ///
+  /// Null before anything is poured or when the geometry cannot say — a bar
+  /// stuck at zero reads as "nothing is happening", which is worse than no
+  /// bar at all.
+  int? get _notifProgress {
+    final k = _castingState;
+    final bottom = k.geometry.bottomDepthM;
+    final cutOff = k.geometry.cutOffDepthM;
+    final span = bottom - cutOff;
+    if (span <= 0) return null;
+    final now = k.concreteAfter(k.lastSeq).depthM;
+    final done = ((bottom - now) / span * 100).round();
+    return done <= 0 ? null : done.clamp(0, 100);
+  }
+
+  /// The lines shown when the notification is pulled open.
+  String _notifDetail(Map<String, Object?> truck) {
+    final k = _castingState;
+    final level = k.concreteAfter(k.lastSeq);
+    return [
+      'TM #${truck['seq']} · ${_decimal(truck['volumeM3'])} m³',
+      'Terpakai ${_decimal(k.totalVolumeM3)} m³ dari ${_decimal(k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3)} m³ teoritis',
+      'Muka beton ${formatMeters(level.depthM)}${level.measured ? '' : ' (perkiraan)'} · cut-off ${formatMeters(k.geometry.cutOffDepthM)}',
+    ].join('\n');
+  }
   Future<void> _startTruck(Map<String, Object?> truck) async {
     final k = _castingState;
     if ((toIntOrNull(truck['seq']) ?? 0) == 1 && k.tremieTooLong) {
       await _block(
         icon: Icons.height,
-        title: 'Tremie kepanjangan',
-        body: 'Terpasang ${formatMeters(k.installedLengthAfter(0))}, ujung atasnya ${formatMeters(k.tremieStickUpM)} di atas GS '
-            '(paling tinggi ${formatMeters(tremieStickUpMaxM)}). Lubang ini cukup ${formatMeters(k.requiredTremieM)}. '
-            'Hapus segmen yang berlebih dulu.',
+        title: t(context).tremieTooLongTitle,
+        body: t(context).tremieTooLongNow(formatMeters(k.installedLengthAfter(0)), formatMeters(k.tremieStickUpM),
+            formatMeters(tremieStickUpMaxM), formatMeters(k.requiredTremieM)),
       );
       return;
     }
     if ((toIntOrNull(truck['seq']) ?? 0) == 1 && !k.tremieReachesBottom) {
       await _block(
         icon: Icons.vertical_align_bottom,
-        title: 'Tremie belum sampai dasar',
-        body: 'Terpasang ${formatMeters(k.installedLengthAfter(0))}, perlu ${formatMeters(k.requiredTremieM)} '
-            '(dasar lubang dikurangi celah). Tambah segmen dulu: beton yang jatuh dari atas akan bercampur lumpur.',
+        title: t(context).tremieNotAtBottom,
+        body: t(context).tremieShortBody(formatMeters(k.installedLengthAfter(0)), formatMeters(k.requiredTremieM)),
       );
       return;
     }
@@ -624,12 +665,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     await Notifications.requestPermission();
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
-      title: 'TM #${truck['seq']} dicor · ${_pilePoint!['code']}',
-      body: '${_decimal(truck['volumeM3'])} m³ · ketuk untuk membuka log cor',
+      title: t(context).notifPouring('${truck['seq']}'),
+      body: t(context).notifTapToOpen(_decimal(truck['volumeM3'])),
       start: start,
+      subText: _notifSubText,
+      detail: _notifDetail(truck),
+      progress: _notifProgress,
     );
     await _scheduleReminder(truck, poured: Duration.zero);
-    if (mounted) showSnack(context, 'Cor TM #${truck['seq']} dimulai. Jamnya berjalan di notifikasi.');
+    if (mounted) showSnack(context, t(context).pourStarted('${truck['seq']}'));
   }
 
   /// Vibrating reminder when this TM has poured for [truckReminderAfter]
@@ -638,8 +682,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final left = truckReminderAfter - poured;
     return Notifications.scheduleTruckReminder(
       route: '/casting/log/${widget.uuid}',
-      title: 'TM #${truck['seq']} sudah ${truckReminderAfter.inMinutes} menit · ${_pilePoint!['code']}',
-      body: 'Belum selesai dicor. Cek muka beton dan posisi tremie.',
+      title: t(context).notifTruckLate('${truck['seq']}', truckReminderAfter.inMinutes, '${_pilePoint!['code']}'),
+      body: t(context).notifTruckLateBody,
       at: DateTime.now().add(left),
     );
   }
@@ -658,8 +702,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     await Notifications.cancelTruckReminder();
     await Notifications.schedulePauseReminders(
       route: '/casting/log/${widget.uuid}',
-      title: 'TM #$seq masih dijeda · ${_pilePoint!['code']}',
-      body: 'Sudah lanjut cor? Ketuk Lanjut di log cor',
+      title: t(context).notifStillPaused(seq, '${_pilePoint!['code']}'),
+      body: t(context).notifStillPausedBody,
       from: now,
     );
     if (!await _update((d) {
@@ -678,10 +722,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     }
     await Notifications.showPaused(
       route: '/casting/log/${widget.uuid}',
-      title: 'TM #$seq dijeda · ${_pilePoint!['code']}',
-      body: '${pauseReasonLabel(reason)} · ketuk untuk melanjutkan',
+      title: t(context).notifPausedTitle(seq),
+      body: t(context).notifPausedBody(pauseReasonLabel(context, reason)),
+      subText: _notifSubText,
+      detail: _notifDetail(truck),
     );
-    if (mounted) showSnack(context, 'Cor dijeda: ${pauseReasonLabel(reason)}.', icon: Icons.pause_circle_outline);
+    if (mounted) showSnack(context, t(context).pourPaused(pauseReasonLabel(context, reason)), icon: Icons.pause_circle_outline);
   }
 
   /// Close the open pause of [seq] at [at], if there is one.
@@ -702,12 +748,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final poured = pouringTime(truck, _pauses, now) ?? Duration.zero;
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
-      title: 'TM #$seq dicor · ${_pilePoint!['code']}',
-      body: '${_decimal(truck['volumeM3'])} m³ · ketuk untuk membuka log cor',
+      title: t(context).notifPouring('$seq'),
+      body: t(context).notifTapToOpen(_decimal(truck['volumeM3'])),
       start: now.subtract(poured),
+      subText: _notifSubText,
+      detail: _notifDetail(truck),
+      progress: _notifProgress,
     );
     await _scheduleReminder(truck, poured: poured);
-    if (mounted) showSnack(context, 'Cor TM #$seq dilanjutkan.');
+    if (mounted) showSnack(context, t(context).pourResumed(seq));
   }
 
   Future<void> _finishTruck(Map<String, Object?> truck) async {
@@ -727,12 +776,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     // Waiting too long for the next truck risks a cold joint in the pile.
     await Notifications.scheduleIdleReminders(
       route: '/casting/log/${widget.uuid}',
-      title: 'Belum ada TM berikutnya · ${_pilePoint!['code']}',
-      body: 'Awas sambungan dingin. Cek kapan TM datang',
+      title: t(context).notifNoNextTruck('${_pilePoint!['code']}'),
+      body: t(context).notifNoNextTruckBody,
       from: end,
     );
     if (!mounted) return;
-    showSnack(context, 'TM #$finishedSeq selesai dicor.');
+    showSnack(context, t(context).truckFinished(finishedSeq));
     await _askSoundingAfter(truck);
   }
 
@@ -745,13 +794,13 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final seq = toIntOrNull(truck['seq']) ?? 0;
     final before = toDoubleOrNull(truck['concreteDepthBeforeM']) ?? k.concreteAfter(seq - 1).depthM;
     final v = await _askNumber(
-      title: 'Sounding setelah TM #$seq',
-      label: 'Kedalaman muka beton dari GS (m)',
+      title: t(context).soundingAfter('$seq'),
+      label: t(context).concreteDepthField,
       icon: Icons.local_shipping_outlined,
       suffix: 'm',
       maxValue: 200,
       initial: toDoubleOrNull(truck['concreteDepthAfterM']),
-      hint: 'Wajib diukur. Perkiraan dari volume: ${formatMeters(k.concreteAfter(seq).depthM)}.',
+      hint: t(context).soundingHint(formatMeters(k.concreteAfter(seq).depthM)),
       validate: (v) => soundingProblem(v, before: before, bottom: k.geometry.bottomDepthM),
     );
     final value = v?.$1;
@@ -763,7 +812,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               children: [
                 const Icon(Icons.warning_amber_rounded, color: Colors.white),
                 const SizedBox(width: 10),
-                Expanded(child: Text('Sounding TM #$seq belum diisi. Wajib sebelum TM berikutnya.')),
+                Expanded(child: Text(t(context).soundingMissing(seq))),
               ],
             ),
           ),
@@ -788,7 +837,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final fresh = await showTimeWheel(
       context,
       initial: initial,
-      title: start ? 'Jam mulai TM #${truck['seq']}' : 'Jam selesai TM #${truck['seq']}',
+      title: start ? t(context).truckStartTime('${truck['seq']}') : t(context).truckEndTime('${truck['seq']}'),
     );
     if (fresh == null) return;
     await _updateTruck('${truck['uuid']}', (t) {
@@ -800,8 +849,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _editSounding(Map<String, Object?> truck, {required bool after}) async {
     final key = after ? 'concreteDepthAfterM' : 'concreteDepthBeforeM';
     final v = await _askNumber(
-      title: after ? 'Sounding setelah TM #${truck['seq']}' : 'Sounding sebelum TM #${truck['seq']}',
-      label: 'Kedalaman muka beton dari GS (m)',
+      title: after ? t(context).soundingAfter('${truck['seq']}') : t(context).soundingBefore('${truck['seq']}'),
+      label: t(context).concreteDepthField,
       icon: Icons.local_shipping_outlined,
       suffix: 'm',
       maxValue: 200,
@@ -824,8 +873,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       showSnack(
         context,
         value == null
-            ? 'Sounding TM #${truck['seq']} dikosongkan.'
-            : 'Sounding TM #${truck['seq']} tersimpan: ${formatMeters(value)}.',
+            ? t(context).soundingCleared('${truck['seq']}')
+            : t(context).soundingSaved('${truck['seq']}', formatMeters(value)),
       );
     }
   }
@@ -856,7 +905,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     );
     if (result == null) return;
     if (!await _update((d) => d.addAll(result))) return;
-    if (mounted) showSnack(context, 'Data cor disimpan.');
+    if (mounted) showSnack(context, t(context).castDataSaved);
   }
 
   Future<void> _finishCasting() async {
@@ -905,18 +954,18 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     // over a log that is still running.
     if (!await _storedStatusIs('selesai')) {
       if (mounted) {
-        showSnack(context, 'Status selesai belum tersimpan. Coba tekan "Selesai cor" sekali lagi.', icon: Icons.error_outline);
+        showSnack(context, t(context).finishNotStored, icon: Icons.error_outline);
       }
       return;
     }
     if (!mounted) return;
     await _remindCleaning();
-    if (mounted) showSnack(context, 'Cor ${_pilePoint!['code']} selesai. Terkirim otomatis saat ada sinyal.');
+    if (mounted) showSnack(context, t(context).castFinished('${_pilePoint!['code']}'));
   }
 
   Future<void> _reopenCasting() async {
     if (!await _update((d) => d['status'] = 'berjalan')) return;
-    if (mounted) showSnack(context, 'Log cor dibuka lagi. Jangan lupa Selesai cor setelah beres.', icon: Icons.lock_open_outlined);
+    if (mounted) showSnack(context, t(context).castReopened, icon: Icons.lock_open_outlined);
   }
 
   /// Add [line] to an existing note without losing what is already there.
@@ -958,27 +1007,26 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               );
           return AlertDialog(
             icon: Icon(Icons.cleaning_services_outlined, size: 32, color: w.brand),
-            title: const Text('Bersihkan tremie & hopper', textAlign: TextAlign.center),
+            title: Text(t(c).cleanTremieTitle, textAlign: TextAlign.center),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const TerraBanner(
+                  TerraBanner(
                     kind: BannerKind.warning,
-                    title: 'Sebelum dipakai lagi',
-                    body: 'Sisa beton yang mengeras di dalam pipa atau sambungan bisa menyumbat tremie '
-                        'saat cor berikutnya.',
+                    title: t(c).beforeNextUse,
+                    body: t(c).cleanWhy,
                   ),
-                  step(Icons.water_drop_outlined, 'Siram/semprot hopper dan tiap segmen tremie sampai bersih dari sisa beton.'),
-                  step(Icons.link, 'Bersihkan sambungan dan karet seal; ganti seal yang rusak.'),
-                  step(Icons.schedule, 'Lakukan segera, sebelum sisa beton mengeras.'),
-                  step(Icons.inventory_2_outlined, 'Susun kembali di tempatnya, jangan tergeletak di tanah.'),
+                  step(Icons.water_drop_outlined, t(c).cleanStep1),
+                  step(Icons.link, t(c).cleanStep2),
+                  step(Icons.schedule, t(c).cleanStep3),
+                  step(Icons.inventory_2_outlined, t(c).cleanStep4),
                 ],
               ),
             ),
             actions: [
-              FilledButton(onPressed: () => Navigator.pop(c), child: const Text('Siap, dibersihkan')),
+              FilledButton(onPressed: () => Navigator.pop(c), child: Text(t(c).cleanedOk)),
             ],
           );
         },
@@ -1016,7 +1064,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
-      return Scaffold(appBar: AppBar(title: const Text('Log cor')), body: ErrorState(title: _error!));
+      return Scaffold(appBar: AppBar(title: Text(t(context).castLogTitle)), body: ErrorState(title: _error!));
     }
     if (_doc == null) return const Scaffold(body: LoadingState());
 
@@ -1032,11 +1080,11 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cor ${_pilePoint!['code']}'),
+        title: Text(t(context).castOf('${_pilePoint!['code']}')),
         actions: [
           if (_row != null && !_finished && !_readOnly)
             IconButton(
-              tooltip: 'Oper ke rekan',
+              tooltip: t(context).handOverToMate,
               icon: const Icon(Icons.swap_horiz),
               onPressed: () =>
                   offerHandover(context, ref, entity: 'casting', uuid: widget.uuid, pointCode: '${_pilePoint!['code']}'),
@@ -1053,30 +1101,32 @@ class _CastingFormState extends ConsumerState<CastingForm> {
             TerraBanner(
               kind: BannerKind.info,
               icon: Icons.swap_horiz,
-              title: 'Dioper ke ${_holderName ?? 'rekan'}',
-              body: 'Log cor ini dilanjutkan dari HP ${_holderName ?? 'rekan'}. '
-                  'Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.',
+              title: t(context).handedOverTo(_holderName ?? t(context).colleague),
+              body: t(context).handedOverBody(_holderName ?? t(context).colleague),
             ),
           if (_row?.sendStatus == 'rejected' && !_handedAway)
-            TerraBanner(kind: BannerKind.danger, title: 'Ditolak server', body: reasonText(_row!.reason, _row!.detail)),
+            TerraBanner(kind: BannerKind.danger, title: t(context).rejectedByServer, body: reasonText(context, _row!.reason, _row!.detail)),
           if (_locked)
             TerraBanner(
               kind: BannerKind.ok,
-              title: 'Sudah diperiksa kantor',
-              body: [if (_row!.serverNote != null) 'Catatan: ${_row!.serverNote}', 'Log cor ini tidak dapat diubah lagi.'].join('\n'),
+              title: t(context).reviewedByOffice,
+              body: [
+                if (_row!.serverNote != null) t(context).officeNote('${_row!.serverNote}'),
+                t(context).cannotChangeAnymore,
+              ].join('\n'),
             ),
           if (_grade == null)
             TerraBanner(
               kind: BannerKind.warning,
-              title: "Mutu beton (fc') belum diisi",
-              body: 'Titik dan proyek ini belum punya mutu bawaan. Isi di data cor, atau log cor akan ditolak server.',
-              action: TextButton(onPressed: _editHeader, child: const Text('Isi')),
+              title: t(context).gradeMissingTitle,
+              body: t(context).gradeMissingBody,
+              action: TextButton(onPressed: _editHeader, child: Text(t(context).fill)),
             ),
           if (g.drilledDepthM == null)
-            const TerraBanner(
+            TerraBanner(
               kind: BannerKind.info,
-              title: 'Kedalaman bor belum ditandai',
-              body: 'Hitungan memakai panjang bor RENCANA. Tandai kedalaman aktual dari daftar titik supaya saran potong tepat.',
+              title: t(context).drillDepthUnmarked,
+              body: t(context).drillDepthUnmarkedBody,
             ),
 
           _SummaryCard(geometry: g, castingState: k, grade: _grade, supplier: _doc!['supplierName']?.toString(), onEdit: _readOnly ? null : _editHeader),
@@ -1087,7 +1137,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           ?_overuseBanner(k),
 
           // --- tremie -----------------------------------------------------
-          _SectionTitle('Tremie', 'Segmen bawah → atas. Ujung bawah ${formatMeters(k.bottomGapM)} di atas dasar lubang.'),
+          _SectionTitle(t(context).tremieSection, t(context).tremieSectionBody(formatMeters(k.bottomGapM))),
           _TremieCard(
             castingState: k,
             currentSeq: seq,
@@ -1104,7 +1154,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           if (seq > 0 && !_finished) _suggestionCard(k, seq),
 
           // --- TM ---------------------------------------------------------
-          _SectionTitle('Truk mixer (TM)', '${_trucks.length} TM · ${_decimal(k.totalVolumeM3)} m³'),
+          _SectionTitle(t(context).trucksSection, t(context).trucksSectionBody(_trucks.length, _decimal(k.totalVolumeM3))),
           for (final truck in _trucks..sort((a, b) => (toIntOrNull(a['seq']) ?? 0).compareTo(toIntOrNull(b['seq']) ?? 0)))
             _TruckCard(
               truck: truck,
@@ -1134,14 +1184,14 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Belum ada TM', style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+                        Text(t(context).noTrucksYet, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                         const SizedBox(height: 2),
                         Text(
                           _readOnly
-                              ? 'Log cor ini tidak punya TM.'
+                              ? t(context).noTrucksReadOnly
                               : _tremie.isEmpty
-                                  ? 'Susun tremie dulu, lalu tekan "TM #1 datang" saat truk pertama tiba.'
-                                  : 'Tekan "TM #1 datang" di bawah saat truk pertama tiba.',
+                                  ? t(context).noTrucksTremieFirst
+                                  : t(context).noTrucksTapArrived,
                           style: TextStyle(color: w.muted, height: 1.35),
                         ),
                       ],
@@ -1161,7 +1211,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                   children: [
                     if (!_finished && running == null && _trucks.isNotEmpty)
                       Expanded(
-                        child: OutlinedButton(onPressed: _finishCasting, child: const Text('Selesai cor')),
+                        child: OutlinedButton(onPressed: _finishCasting, child: Text(t(context).finishCasting)),
                       ),
                     if (!_finished && running == null && _trucks.isNotEmpty) const SizedBox(width: 10),
                     if (!_finished && running != null) ...[
@@ -1172,12 +1222,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                               ? OutlinedButton.icon(
                                   onPressed: () => _pauseTruck(running),
                                   icon: const Icon(Icons.pause),
-                                  label: const Text('Jeda'),
+                                  label: Text(t(context).pause),
                                 )
                               : OutlinedButton.icon(
                                   onPressed: () => _resumeTruck(running),
                                   icon: const Icon(Icons.play_arrow),
-                                  label: const Text('Lanjut'),
+                                  label: Text(t(context).resume),
                                 ),
                         ),
                       ),
@@ -1192,18 +1242,18 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                               ? FilledButton.icon(
                                   onPressed: () => _finishTruck(running),
                                   icon: const Icon(Icons.stop_circle_outlined),
-                                  label: Text('Selesai TM #${running['seq']}'),
+                                  label: Text(t(context).finishTruck('${running['seq']}')),
                                 )
                               : lastTruck != null && lastTruck['startAt'] == null
                                   ? FilledButton.icon(
                                       onPressed: () => _startTruck(lastTruck),
                                       icon: const Icon(Icons.play_arrow),
-                                      label: Text('Mulai cor TM #${lastTruck['seq']}'),
+                                      label: Text(t(context).startTruck('${lastTruck['seq']}')),
                                     )
                                   : FilledButton.icon(
                                       onPressed: _tremie.isEmpty ? null : _newTruck,
                                       icon: const Icon(Icons.local_shipping_outlined),
-                                      label: Text(_tremie.isEmpty ? 'Susun tremie dulu' : 'TM #${seq + 1} datang'),
+                                      label: Text(_tremie.isEmpty ? t(context).tremieFirst : t(context).truckArrived(seq + 1)),
                                     ),
                         ),
                       ),
@@ -1211,9 +1261,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                       Expanded(
                         child: TerraBanner(
                           kind: BannerKind.ok,
-                          title: 'Cor selesai',
-                          body: _isNew ? null : 'Tersimpan. Dikirim otomatis.',
-                          action: TextButton(onPressed: _reopenCasting, child: const Text('Buka lagi')),
+                          title: t(context).castDone,
+                          body: _isNew ? null : t(context).savedAutoSend,
+                          action: TextButton(onPressed: _reopenCasting, child: Text(t(context).reopen)),
                         ),
                       ),
                   ],
@@ -1266,10 +1316,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     return TerraBanner(
       kind: BannerKind.warning,
       icon: Icons.trending_up,
-      title: 'Beton terpakai ${over.toStringAsFixed(0)}% di atas teoretis',
-      body: 'Sampai muka beton ${formatMeters(level)}: terpakai ${_decimal(used)} m³, '
-          'teoretis ${_decimal(k.geometry.areaM2 * (k.geometry.bottomDepthM - level))} m³. '
-          'Kemungkinan lubang membesar atau runtuh. Laporkan ke pengawas.',
+      title: t(context).overuseTitle(over.toStringAsFixed(0)),
+      body: t(context).overuseBody(formatMeters(level), _decimal(used),
+          _decimal(k.geometry.areaM2 * (k.geometry.bottomDepthM - level))),
     );
   }
 
@@ -1299,18 +1348,25 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       return TerraBanner(
         kind: r.warnings.isEmpty ? BannerKind.info : BannerKind.warning,
         icon: Icons.tips_and_updates_outlined,
-        title: r.cuts.isEmpty ? 'Rencana TM #$seq: tidak perlu cabut' : 'Rencana TM #$seq',
+        title: r.cuts.isEmpty ? t(context).planNoPull(seq) : t(context).planTitle(seq),
         body: [
           for (final p in r.cuts)
-            '• Setelah ±${_decimal(p.afterM3)} m³: cabut ${p.toRemove.map((s) => '#${position[s.key]} (${_decimal(s.lengthM)} m)').join(' lalu ')} '
-                '→ tertanam ${_decimal(p.embedmentBeforeM)} → ${_decimal(p.embedmentAfterM)} m',
+            t(context).planCutLine(
+              _decimal(p.afterM3),
+              p.toRemove.map((s) => '#${position[s.key]} (${_decimal(s.lengthM)} m)').join(t(context).joinThen),
+              _decimal(p.embedmentBeforeM),
+              _decimal(p.embedmentAfterM),
+            ),
           for (final p in r.warnings)
             p.kind == WarningKind.embedmentTooShort
-                ? '⚠ Tertanam sebelum TM ini hanya ${_decimal(p.embedmentM)} m — periksa sounding.'
-                : '⚠ Setelah ±${_decimal(p.afterM3)} m³ tertanam melewati 6 m dan tidak ada segmen yang aman dicabut.',
-          'Perkiraan akhir TM: muka beton ${formatMeters(r.finalConcreteDepthM)}, tertanam ${formatMeters(r.finalEmbedmentM)}'
-              '${r.cutOffReached ? ' — cut-off tercapai' : ''}.',
-          if (k.averageRatio != 1.0) 'Memakai rasio overbreak ${_decimal(k.averageRatio)} dari sounding TM sebelumnya.',
+                ? t(context).warnEmbedShort(_decimal(p.embedmentM))
+                : t(context).warnNoSafePull(_decimal(p.afterM3)),
+          t(context).planEnd(
+            formatMeters(r.finalConcreteDepthM),
+            formatMeters(r.finalEmbedmentM),
+            r.cutOffReached ? t(context).cutOffReachedSuffix : '',
+          ),
+          if (k.averageRatio != 1.0) t(context).usingOverbreak(_decimal(k.averageRatio)),
         ].join('\n'),
       );
     }
@@ -1328,16 +1384,16 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     return TerraBanner(
       kind: kind,
       icon: Icons.tips_and_updates_outlined,
-      title: 'Tertanam ${formatMeters(embedment)}${concreteAt.measured ? '' : ' (perkiraan)'}',
+      title: t(context).embedTitle(formatMeters(embedment), concreteAt.measured ? '' : t(context).estimateSuffix),
       body: [
-        if (!concreteAt.measured) 'Muka beton belum disounding — angka ini dari volume. Sounding dulu sebelum mencabut.',
+        if (!concreteAt.measured) t(context).notSoundedYet,
         if (suggestion.isEmpty)
-          embedment < limits.minimumM
-              ? 'Kurang dari 1 m: JANGAN cabut. Tremie berisiko keluar dari beton.'
-              : 'Tidak perlu cabut sekarang.'
+          embedment < limits.minimumM ? t(context).dontPullUnderOne : t(context).noPullNeeded
         else
-          'Saran: cabut ${suggestion.map((s) => '#${position[s.key]} (${_decimal(s.lengthM)} m)').join(', ')} '
-              '→ tertanam ${formatMeters(embedment - suggestion.fold(0.0, (a, s) => a + s.lengthM))}. Centang di daftar tremie setelah dicabut.',
+          t(context).pullSuggestion(
+            suggestion.map((s) => '#${position[s.key]} (${_decimal(s.lengthM)} m)').join(', '),
+            formatMeters(embedment - suggestion.fold(0.0, (a, s) => a + s.lengthM)),
+          ),
       ].join('\n'),
       action: suggestion.isEmpty
           ? null
@@ -1347,7 +1403,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                   await _toggleRemoved(s.key, seq);
                 }
               },
-              child: const Text('Centang'),
+              child: Text(t(context).tick),
             ),
     );
   }
@@ -1417,25 +1473,25 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         children: [
           Row(children: [
-            cell('Diameter', 'D${geometry.diameterMm}'),
-            cell("Mutu fc'", grade == null ? '–' : '${_decimal(grade, d: 1)} MPa', colors: grade == null ? w.warnFg : null),
-            cell('Pemasok', supplier ?? '–'),
+            cell(t(context).fieldDiameter, 'D${geometry.diameterMm}'),
+            cell(t(context).cellGrade, grade == null ? '–' : '${_decimal(grade, d: 1)} MPa', colors: grade == null ? w.warnFg : null),
+            cell(t(context).cellSupplier, supplier ?? '–'),
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            cell('Dasar lubang', formatMeters(geometry.bottomDepthM)),
-            cell('Cut-off', formatMeters(geometry.cutOffDepthM)),
-            cell('Muka beton', '${formatMeters(concreteAt.depthM)}${concreteAt.measured || seq == 0 ? '' : '*'}'),
+            cell(t(context).cellHoleBottom, formatMeters(geometry.bottomDepthM)),
+            cell(t(context).cellCutOff, formatMeters(geometry.cutOffDepthM)),
+            cell(t(context).cellConcreteLevel, '${formatMeters(concreteAt.depthM)}${concreteAt.measured || seq == 0 ? '' : '*'}'),
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            cell('Teoritis', '${_decimal(theoretical)} m³'),
-            cell('Terpakai', '${_decimal(castingState.totalVolumeM3)} m³'),
-            cell('Lebih pakai', overuse == null ? '–' : '${overuse >= 0 ? '+' : ''}${_decimal(overuse, d: 1)}%'),
+            cell(t(context).cellTheoretical, '${_decimal(theoretical)} m³'),
+            cell(t(context).cellUsed, '${_decimal(castingState.totalVolumeM3)} m³'),
+            cell(t(context).cellOveruse, overuse == null ? '–' : '${overuse >= 0 ? '+' : ''}${_decimal(overuse, d: 1)}%'),
           ]),
           if (seq > 0 && !concreteAt.measured) ...[
             const SizedBox(height: 6),
-            Align(alignment: Alignment.centerLeft, child: Text('* perkiraan dari volume', style: TextStyle(color: w.faint, fontSize: 12))),
+            Align(alignment: Alignment.centerLeft, child: Text(t(context).estimatedFootnote, style: TextStyle(color: w.faint, fontSize: 12))),
           ],
         ],
       ),
@@ -1496,21 +1552,20 @@ class _TremieCard extends StatelessWidget {
             Icons.straighten,
           )
         : k.segments.isEmpty
-            ? ('Perlu ${formatMeters(requiredLength)}. Mulai dari tremie bottom (ujung runcing).', w.muted, Icons.straighten)
+            ? (t(context).tremieNeedFrom(formatMeters(requiredLength)), w.muted, Icons.straighten)
             : k.tremieTooLong
                 ? (
-                    'Kepanjangan: ujung atas ${formatMeters(stickUp)} di atas GS (paling tinggi '
-                        '${formatMeters(tremieStickUpMaxM)}). Hapus segmen teratas.',
+                    t(context).tremieOverLong(formatMeters(stickUp), formatMeters(tremieStickUpMaxM)),
                     w.badFg,
                     Icons.error_outline,
                   )
                 : k.tremieReachesBottom
                     ? (
-                        'Sudah sampai dasar. Ujung atas ${formatMeters(math.max(stickUp, 0))} di atas GS (hopper).',
+                        t(context).tremieAtBottom(formatMeters(math.max(stickUp, 0))),
                         w.okFg,
                         Icons.check_circle_outline,
                       )
-                    : ('Kurang ${formatMeters(requiredLength - total)} lagi sampai dasar.', w.warnFg, Icons.warning_amber_rounded);
+                    : (t(context).tremieShortBy(formatMeters(requiredLength - total)), w.warnFg, Icons.warning_amber_rounded);
 
     final progress = requiredLength <= 0 ? 0.0 : (total / requiredLength).clamp(0.0, 1.0);
 
@@ -1526,7 +1581,7 @@ class _TremieCard extends StatelessWidget {
               const SizedBox(width: 6),
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
-                child: Text('dari ${formatMeters(requiredLength)} perlu', style: TextStyle(color: w.muted, fontSize: 13)),
+                child: Text(t(context).ofNeeded(formatMeters(requiredLength)), style: TextStyle(color: w.muted, fontSize: 13)),
               ),
             ],
           ),
@@ -1561,7 +1616,7 @@ class _TremieCard extends StatelessWidget {
               child: FilledButton.tonalIcon(
                 onPressed: onAddBottom,
                 icon: const Icon(Icons.change_history),
-                label: const Text('Pasang tremie bottom'),
+                label: Text(t(context).fitBottomPiece),
               ),
             ),
           ],
@@ -1580,18 +1635,18 @@ class _TremieCard extends StatelessWidget {
                     onPressed: () => onAdd(p),
                     backgroundColor: k.stickUpWith(p) > tremieStickUpMaxM + 0.005 ? w.line : null,
                   ),
-                ActionChip(label: const Text('Lainnya'), onPressed: onCustom),
-                ActionChip(avatar: const Icon(Icons.remove, size: 16), label: const Text('Hapus teratas'), onPressed: onRemoveTop),
+                ActionChip(label: Text(t(context).other), onPressed: onCustom),
+                ActionChip(avatar: const Icon(Icons.remove, size: 16), label: Text(t(context).removeTop), onPressed: onRemoveTop),
               ],
             ),
           ],
           if (k.segments.isNotEmpty) const Divider(height: 24),
           // Listed from the TOP, like the tremie in the hole drawn above.
           if (canRemove && k.segments.isNotEmpty)
-            const TerraBanner(
+            TerraBanner(
               kind: BannerKind.info,
-              title: 'Cabut tremie',
-              body: 'Tekan "Cabut" pada segmen yang dicabut setelah TM ini. Gambar di atas ikut berubah.',
+              title: t(context).pullTremieTitle,
+              body: t(context).pullTremieBody,
             ),
           for (final (i, s) in k.segments.reversed.indexed)
             Builder(builder: (context) {
@@ -1607,22 +1662,22 @@ class _TremieCard extends StatelessWidget {
                 removed: removed,
                 lowest: lowest && !removed,
                 number: s.position,
-                title: s.isBottom ? 'Tremie bottom · ${_decimal(s.lengthM)} m' : 'Pipa ${_decimal(s.lengthM)} m',
+                title: s.isBottom ? t(context).tremieBottomOf(_decimal(s.lengthM)) : t(context).pipeOf(_decimal(s.lengthM)),
                 subtitle: removed
-                    ? 'Dicabut setelah TM #${s.removedAfterTruck}'
+                    ? t(context).pulledAfterTruck('${s.removedAfterTruck}')
                     : [
-                        if (at != null) _hangText(at.top, at.bottom),
-                        if (lowest) 'paling bawah',
+                        if (at != null) _hangText(context, at.top, at.bottom),
+                        if (lowest) t(context).lowest,
                       ].join(' · '),
                 onTap: canCheck ? toggle : null,
                 trailing: !canCheck
                     ? null
                     : removed
-                        ? TextButton.icon(onPressed: toggle, icon: const Icon(Icons.undo, size: 18), label: const Text('Batal'))
+                        ? TextButton.icon(onPressed: toggle, icon: const Icon(Icons.undo, size: 18), label: Text(t(context).cancel))
                         : OutlinedButton.icon(
                             onPressed: toggle,
                             icon: const Icon(Icons.north, size: 18),
-                            label: const Text('Cabut'),
+                            label: Text(t(context).pull),
                           ),
               );
             }),
@@ -1712,7 +1767,7 @@ class _TruckCard extends StatelessWidget {
                     child: Row(
                       children: [
                         Flexible(
-                          child: Text('TM #$seq · ${_decimal(truck['volumeM3'])} m³',
+                          child: Text(t(context).truckHeading(seq, _decimal(truck['volumeM3'])),
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
                         ),
@@ -1737,31 +1792,32 @@ class _TruckCard extends StatelessWidget {
           if (running && elapsed != null) _PourClock(elapsed: elapsed, paused: paused),
           Text(
             [
-              if (truck['truckNo'] != null) 'Lambung ${truck['truckNo']}',
-              if (truck['ticketNo'] != null) 'SJ ${truck['ticketNo']}',
+              if (truck['truckNo'] != null) t(context).hullNo('${truck['truckNo']}'),
+              if (truck['ticketNo'] != null) t(context).ticketNo('${truck['ticketNo']}'),
               if (truck['supplierName'] != null) '${truck['supplierName']}',
-              if (truck['slumpCm'] != null) 'Slump ${_decimal(truck['slumpCm'], d: 1)} cm',
+              if (truck['slumpCm'] != null) t(context).slumpOf(_decimal(truck['slumpCm'], d: 1)),
             ].join(' · '),
             style: TextStyle(color: w.muted, fontSize: 13),
           ),
           const SizedBox(height: 6),
-          value('Tremie terpasang', '${_decimal(truck['tremieLengthM'])} m'),
-          value('Mulai', start == null ? '–' : formatTime(start), onTap: start == null ? null : onEditStart, edited: truck['startEdited'] == true),
-          value('Selesai', end == null ? '–' : formatTime(end), onTap: end == null ? null : onEditEnd, edited: truck['endEdited'] == true),
+          value(t(context).tremieFitted, '${_decimal(truck['tremieLengthM'])} m'),
+          value(t(context).start, start == null ? '–' : formatTime(start), onTap: start == null ? null : onEditStart, edited: truck['startEdited'] == true),
+          value(t(context).finish, end == null ? '–' : formatTime(end), onTap: end == null ? null : onEditEnd, edited: truck['endEdited'] == true),
           if (pauses.isNotEmpty) ...[
-            value('Jeda', '${pauses.length}× · ${formatDuration(pausedTotal)}'),
+            value(t(context).pause, t(context).pausesCount(pauses.length, formatDuration(pausedTotal))),
             for (final p in pauses)
               Padding(
                 padding: const EdgeInsets.only(left: 12, bottom: 2),
                 child: Text(
-                  '${pauseReasonLabel(p['reason'])} · ${_clock(p['startAt'])}–${p['endAt'] == null ? 'sekarang' : _clock(p['endAt'])}',
+                  t(context).pauseLine(pauseReasonLabel(context, p['reason']), _clock(p['startAt']),
+                      p['endAt'] == null ? t(context).now : _clock(p['endAt'])),
                   style: TextStyle(color: w.muted, fontSize: 13),
                 ),
               ),
           ],
-          value('Sounding sebelum', truck['concreteDepthBeforeM'] == null ? '–' : formatMeters(toDoubleOrNull(truck['concreteDepthBeforeM'])),
+          value(t(context).soundingBeforeLabel, truck['concreteDepthBeforeM'] == null ? '–' : formatMeters(toDoubleOrNull(truck['concreteDepthBeforeM'])),
               onTap: onSoundingBefore),
-          value('Sounding sesudah', truck['concreteDepthAfterM'] == null ? '–' : formatMeters(toDoubleOrNull(truck['concreteDepthAfterM'])),
+          value(t(context).soundingAfterLabel, truck['concreteDepthAfterM'] == null ? '–' : formatMeters(toDoubleOrNull(truck['concreteDepthAfterM'])),
               onTap: end == null ? null : onSoundingAfter),
           if (end != null && truck['concreteDepthAfterM'] == null && !locked)
             Padding(
@@ -1771,23 +1827,23 @@ class _TruckCard extends StatelessWidget {
                   Icon(Icons.error_outline, size: 16, color: w.badFg),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text('Sounding sesudah wajib diisi. Ketuk baris di atas.',
+                    child: Text(t(context).soundingAfterRequired,
                         style: TextStyle(color: w.badFg, fontWeight: FontWeight.w600, fontSize: 13)),
                   ),
                 ],
               ),
             ),
-          if (ratio != null) value('Rasio overbreak', _decimal(ratio)),
+          if (ratio != null) value(t(context).overbreakRatio, _decimal(ratio)),
           if (truck['ticketPhotoUuid'] != null || truck['slumpPhotoUuid'] != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Row(
                 children: [
                   if (truck['ticketPhotoUuid'] != null)
-                    _CastingPhoto(uuid: '${truck['ticketPhotoUuid']}', label: 'Surat jalan'),
+                    _CastingPhoto(uuid: '${truck['ticketPhotoUuid']}', label: t(context).deliveryNote),
                   if (truck['ticketPhotoUuid'] != null && truck['slumpPhotoUuid'] != null) const SizedBox(width: 8),
                   if (truck['slumpPhotoUuid'] != null)
-                    _CastingPhoto(uuid: '${truck['slumpPhotoUuid']}', label: 'Uji slump'),
+                    _CastingPhoto(uuid: '${truck['slumpPhotoUuid']}', label: t(context).slumpTest),
                 ],
               ),
             ),
@@ -1847,10 +1903,10 @@ class _PourClock extends StatelessWidget {
     final w = context.colors;
     final over = elapsed >= truckReminderAfter;
     final (bg, fg, label) = paused
-        ? (w.surface2, w.muted, 'Dijeda')
+        ? (w.surface2, w.muted, t(context).pausedLabel)
         : over
-            ? (w.badBg, w.badFg, 'Lewat ${truckReminderAfter.inMinutes} menit')
-            : (w.brandSoft, w.brandStrong, 'Waktu tuang');
+            ? (w.badBg, w.badFg, t(context).overMinutes(truckReminderAfter.inMinutes))
+            : (w.brandSoft, w.brandStrong, t(context).pourTime);
     final progress = (elapsed.inSeconds / truckReminderAfter.inSeconds).clamp(0.0, 1.0);
     return AnimatedContainer(
       duration: Dimens.motionMedium,
@@ -1930,11 +1986,11 @@ class _PauseReasonSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Jeda TM #$seq', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+            Text(t(context).pauseTruckTitle(seq), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
             const SizedBox(height: 4),
-            Text('Kenapa dijeda? Jam tuang berhenti, dan HP bergetar tiap 3 menit sampai Anda ketuk Lanjut.', style: TextStyle(color: w.muted)),
+            Text(t(context).pauseTruckBody, style: TextStyle(color: w.muted)),
             const SizedBox(height: 14),
-            for (final e in pauseReasons.entries) ...[
+            for (final e in pauseReasons(context).entries) ...[
               SizedBox(
                 height: Dimens.minTouch + 4,
                 child: OutlinedButton.icon(
@@ -2033,19 +2089,19 @@ class _TruckSheetState extends State<_TruckSheet> {
   void _submit() {
     final volume = parseNumber(_volume.text);
     if (volume == null || volume <= 0 || volume > truckVolumeMaxM3) {
-      setState(() => _error = 'Isi volume TM (m³), paling besar ${decimalText(truckVolumeMaxM3, decimals: 0)}.');
+      setState(() => _error = t(context).volumeInvalid(decimalText(truckVolumeMaxM3, decimals: 0)));
       return;
     }
     if (volume > truckVolumeUsualMaxM3 && !_volumeConfirmed) {
       setState(() {
         _volumeConfirmed = true;
-        _error = '${_decimal(volume)} m³ lebih besar dari biasanya (5–7 m³). Cek surat jalannya; kalau benar, tekan Simpan TM sekali lagi.';
+        _error = t(context).volumeUnusual(_decimal(volume));
       });
       return;
     }
     final slump = _slump.text.trim().isEmpty ? null : parseNumber(_slump.text);
     if (_slump.text.trim().isNotEmpty && (slump == null || slump < 0 || slump > 40)) {
-      setState(() => _error = 'Slump tidak masuk akal (0–40 cm).');
+      setState(() => _error = t(context).slumpInvalid);
       return;
     }
     final sounding = _sounding.text.trim().isEmpty ? null : parseNumber(_sounding.text);
@@ -2074,7 +2130,7 @@ class _TruckSheetState extends State<_TruckSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(_editing ? 'Ubah TM #${widget.seq}' : 'TM #${widget.seq} datang',
+            Text(_editing ? t(context).editTruck(widget.seq) : t(context).truckArrived(widget.seq),
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
             if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
@@ -2087,7 +2143,7 @@ class _TruckSheetState extends State<_TruckSheet> {
                 if (f != null) setState(() => _photo = f);
               },
               icon: Icon(_photo == null ? Icons.receipt_long_outlined : Icons.check_circle),
-              label: Text(_photo == null ? 'Foto surat jalan TM' : 'Foto surat jalan tersimpan · ulang'),
+              label: Text(_photo == null ? t(context).photoTicket : t(context).photoTicketDone),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
@@ -2096,20 +2152,20 @@ class _TruckSheetState extends State<_TruckSheet> {
                 if (f != null) setState(() => _slumpPhoto = f);
               },
               icon: Icon(_slumpPhoto == null ? Icons.science_outlined : Icons.check_circle),
-              label: Text(_slumpPhoto == null ? 'Foto uji slump' : 'Foto uji slump tersimpan · ulang'),
+              label: Text(_slumpPhoto == null ? t(context).photoSlump : t(context).photoSlumpDone),
             ),
             const SizedBox(height: 12),
-            TextField(controller: _truck, decoration: const InputDecoration(labelText: 'Nomor lambung TM')),
+            TextField(controller: _truck, decoration: InputDecoration(labelText: t(context).hullNoField)),
             const SizedBox(height: 12),
             if (widget.suppliers.isNotEmpty) ...[
               DropdownButtonFormField<int?>(
                 initialValue: _supplierChoice,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Pemasok beton TM ini'),
+                decoration: InputDecoration(labelText: t(context).truckSupplier),
                 items: [
                   for (final s in widget.suppliers)
                     DropdownMenuItem<int?>(value: toIntOrNull(s['id']), child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
-                  const DropdownMenuItem<int?>(value: _other, child: Text('Lainnya — ketik nama')),
+                  DropdownMenuItem<int?>(value: _other, child: Text(t(context).otherTypeName)),
                 ],
                 onChanged: (v) => setState(() => _supplierChoice = v),
               ),
@@ -2119,7 +2175,7 @@ class _TruckSheetState extends State<_TruckSheet> {
               TextField(
                 controller: _supplier,
                 decoration: InputDecoration(
-                  labelText: widget.suppliers.isEmpty ? 'Pemasok beton TM ini' : 'Nama pemasok lain',
+                  labelText: widget.suppliers.isEmpty ? t(context).truckSupplier : t(context).otherSupplierName,
                 ),
               ),
               const SizedBox(height: 12),
@@ -2130,7 +2186,7 @@ class _TruckSheetState extends State<_TruckSheet> {
                   controller: _volume,
                   keyboardType: numeric,
                   inputFormatters: decimalInput(maxIntDigits: 2),
-                  decoration: const InputDecoration(labelText: 'Volume', suffixText: 'm³'),
+                  decoration: InputDecoration(labelText: t(context).volumeField, suffixText: 'm³'),
                   onChanged: (_) {
                     if (_volumeConfirmed) setState(() => _volumeConfirmed = false);
                   },
@@ -2142,7 +2198,7 @@ class _TruckSheetState extends State<_TruckSheet> {
                   controller: _slump,
                   keyboardType: numeric,
                   inputFormatters: decimalInput(maxIntDigits: 2, decimals: 1),
-                  decoration: const InputDecoration(labelText: 'Slump', suffixText: 'cm'),
+                  decoration: InputDecoration(labelText: t(context).slumpField, suffixText: 'cm'),
                 ),
               ),
             ]),
@@ -2152,15 +2208,15 @@ class _TruckSheetState extends State<_TruckSheet> {
               keyboardType: numeric,
               inputFormatters: decimalInput(maxIntDigits: 3),
               decoration: InputDecoration(
-                labelText: 'Sounding sebelum (opsional)',
+                labelText: t(context).soundingBeforeOptional,
                 suffixText: 'm',
-                hintText: 'perkiraan ${widget.estimatedConcreteBefore.toStringAsFixed(2).replaceAll('.', ',')}',
+                hintText: t(context).estimateHint(widget.estimatedConcreteBefore.toStringAsFixed(2).replaceAll('.', ',')),
               ),
             ),
             const SizedBox(height: 18),
             SizedBox(
               height: Dimens.minTouch + 4,
-              child: FilledButton(onPressed: _submit, child: Text(_editing ? 'Simpan perubahan' : 'Simpan TM')),
+              child: FilledButton(onPressed: _submit, child: Text(_editing ? t(context).saveChanges : t(context).saveTruck)),
             ),
           ],
         ),
@@ -2227,7 +2283,7 @@ class _HeaderSheetState extends State<_HeaderSheet> {
     }
     final gap = parseNumber(_gap.text);
     if (gap == null || gap < 0 || gap > 5) {
-      setState(() => _error = 'Celah bawah tremie 0–5 m.');
+      setState(() => _error = t(context).gapInvalid);
       return;
     }
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
@@ -2252,37 +2308,31 @@ class _HeaderSheetState extends State<_HeaderSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Data cor', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(t(context).castDataTitle, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
             if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
             if (widget.defaultGrade != null)
               TerraBanner(
                 kind: BannerKind.info,
-                title: "Mutu bawaan fc' ${_decimal(widget.defaultGrade, d: 1)} MPa",
-                body: 'Dari titik/proyek. Isi hanya bila beton yang datang berbeda.',
+                title: t(context).defaultGrade(_decimal(widget.defaultGrade, d: 1)),
+                body: t(context).defaultGradeBody,
               ),
-            TextField(controller: _grade, keyboardType: numeric, inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1), decoration: const InputDecoration(labelText: "Mutu fc'", suffixText: 'MPa')),
+            TextField(controller: _grade, keyboardType: numeric, inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1), decoration: InputDecoration(labelText: t(context).cellGrade, suffixText: 'MPa')),
             const SizedBox(height: 12),
             if (widget.suppliers.isNotEmpty) ...[
               TerraBanner(
                 kind: BannerKind.info,
-                title: widget.suppliersNarrowed
-                    ? 'Pemasok dengan PO beton di proyek ini'
-                    : 'Belum ada PO beton di proyek ini',
-                body: widget.suppliersNarrowed
-                    ? 'Jadi isian awal tiap TM; tiap TM datang masih bisa memilih pemasoknya sendiri. '
-                        'Tidak ada di daftar? Pilih "Lainnya" lalu ketik namanya, dan kabari kantor.'
-                    : 'Menampilkan semua pemasok beton; daftar menyempit sendiri setelah kantor membuat PO. '
-                        'Tiap TM datang masih bisa memilih pemasoknya sendiri.',
+                title: widget.suppliersNarrowed ? t(context).suppliersWithPo : t(context).noPoYet,
+                body: widget.suppliersNarrowed ? t(context).suppliersWithPoBody : t(context).noPoYetBody,
               ),
               DropdownButtonFormField<int?>(
                 initialValue: _supplierChoice,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Pemasok beton bawaan (batching plant)'),
+                decoration: InputDecoration(labelText: t(context).defaultSupplier),
                 items: [
                   for (final s in widget.suppliers)
                     DropdownMenuItem<int?>(value: toIntOrNull(s['id']), child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
-                  const DropdownMenuItem<int?>(value: _other, child: Text('Lainnya — ketik nama')),
+                  DropdownMenuItem<int?>(value: _other, child: Text(t(context).otherTypeName)),
                 ],
                 onChanged: (v) => setState(() => _supplierChoice = v),
               ),
@@ -2291,14 +2341,14 @@ class _HeaderSheetState extends State<_HeaderSheet> {
             if (widget.suppliers.isEmpty || _supplierChoice == _other)
               TextField(
                 controller: _supplier,
-                decoration: InputDecoration(labelText: widget.suppliers.isEmpty ? 'Pemasok beton (batching plant)' : 'Nama pemasok lain'),
+                decoration: InputDecoration(labelText: widget.suppliers.isEmpty ? t(context).concreteSupplier : t(context).otherSupplierName),
               ),
             const SizedBox(height: 12),
-            TextField(controller: _gap, keyboardType: numeric, inputFormatters: decimalInput(maxIntDigits: 1), decoration: const InputDecoration(labelText: 'Celah ujung tremie di atas dasar', suffixText: 'm')),
+            TextField(controller: _gap, keyboardType: numeric, inputFormatters: decimalInput(maxIntDigits: 1), decoration: InputDecoration(labelText: t(context).tremieGapField, suffixText: 'm')),
             const SizedBox(height: 12),
-            TextField(controller: _note, maxLines: 3, decoration: const InputDecoration(labelText: 'Catatan')),
+            TextField(controller: _note, maxLines: 3, decoration: InputDecoration(labelText: t(context).noteField)),
             const SizedBox(height: 18),
-            SizedBox(height: Dimens.minTouch + 4, child: FilledButton(onPressed: _submit, child: const Text('Simpan'))),
+            SizedBox(height: Dimens.minTouch + 4, child: FilledButton(onPressed: _submit, child: Text(t(context).save))),
           ],
         ),
       ),
@@ -2307,11 +2357,11 @@ class _HeaderSheetState extends State<_HeaderSheet> {
 }
 
 /// "kedalaman 3,00–6,00 m", or with the part above ground spelled out.
-String _hangText(double top, double bottom) {
-  String m(double v) => v.abs().toStringAsFixed(2).replaceAll('.', ',');
-  if (bottom <= 0) return '${m(top)}–${m(bottom)}\u00A0m di atas GS';
-  if (top < 0) return '${m(top)}\u00A0m di atas GS sampai kedalaman ${m(bottom)}\u00A0m';
-  return 'kedalaman ${m(top)}–${m(bottom)}\u00A0m';
+String _hangText(BuildContext context, double top, double bottom) {
+  String m(double v) => '${v.abs().toStringAsFixed(2).replaceAll('.', ',')}\u00A0';
+  if (bottom <= 0) return t(context).hangAboveGs(m(top), m(bottom));
+  if (top < 0) return t(context).hangAcrossGs(m(top), m(bottom));
+  return t(context).hangDepth(m(top), m(bottom));
 }
 
 /// What the finish dialog came back with. `note` is the reason a pile was
@@ -2375,13 +2425,13 @@ class _FinishDialog extends StatefulWidget {
 
 class _FinishDialogState extends State<_FinishDialog> {
   /// Codes stay English; only what the foreman reads is Indonesian.
-  static const _reasons = <(String, String, IconData)>[
-    ('tremie_tersumbat', 'Tremie tersumbat / beton macet', Icons.block),
-    ('tm_tidak_datang', 'TM tidak datang / beton habis', Icons.local_shipping_outlined),
-    ('lubang_runtuh', 'Lubang runtuh', Icons.terrain_outlined),
-    ('alat_cuaca', 'Alat rusak atau cuaca', Icons.bolt_outlined),
-    ('lainnya', 'Lainnya', Icons.edit_outlined),
-  ];
+  List<(String, String, IconData)> _reasonList(BuildContext context) => [
+        ('tremie_tersumbat', t(context).stopTremieBlocked, Icons.block),
+        ('tm_tidak_datang', t(context).stopNoTruck, Icons.local_shipping_outlined),
+        ('lubang_runtuh', t(context).stopHoleCollapse, Icons.terrain_outlined),
+        ('alat_cuaca', t(context).stopPlantWeather, Icons.bolt_outlined),
+        ('lainnya', t(context).other, Icons.edit_outlined),
+      ];
 
   String? _reason;
   final _detail = TextEditingController();
@@ -2409,11 +2459,11 @@ class _FinishDialogState extends State<_FinishDialog> {
 
   String? get _note {
     if (!_mustExplain || _reason == null) return null;
-    final label = _reasons.firstWhere((r) => r.$1 == _reason).$2;
+    final label = _reasonList(context).firstWhere((r) => r.$1 == _reason).$2;
     final detail = _detail.text.trim();
-    final why = _reason == 'lainnya' ? detail : (detail.isEmpty ? label : '$label — $detail');
-    return 'Cor dihentikan sebelum cut-off '
-        '(kurang ${formatMeters(widget.missingM)} ≈ ${_decimal(_short.volumeM3)} m³): $why';
+    final why = _reason == 'lainnya' ? detail : (detail.isEmpty ? label : t(context).labelDetail(label, detail));
+    return t(context).stoppedBeforeCutOff(
+        formatMeters(widget.missingM), _decimal(_short.volumeM3), why);
   }
 
   Widget _reasonRow(String code, String label, IconData icon) {
@@ -2460,7 +2510,7 @@ class _FinishDialogState extends State<_FinishDialog> {
       icon: widget.short
           ? Icon(Icons.warning_amber_rounded, size: 32, color: w.badFg)
           : Icon(Icons.check_circle_outline, size: 32, color: w.okFg),
-      title: Text(widget.short ? 'Beton belum sampai cut-off' : 'Selesai cor ${widget.code}?',
+      title: Text(widget.short ? t(context).belowCutOffTitle : t(context).finishCastingOf(widget.code),
           textAlign: TextAlign.center),
       content: SingleChildScrollView(
         child: Column(
@@ -2471,42 +2521,39 @@ class _FinishDialogState extends State<_FinishDialog> {
               TerraBanner(
                 kind: _mustExplain ? BannerKind.danger : BannerKind.warning,
                 icon: Icons.straighten,
-                title: 'Masih kurang ${_decimal(_short.volumeM3)} m³ (±${_short.trucks} TM lagi)',
+                title: t(context).shortfallTitle(_decimal(_short.volumeM3), _short.trucks),
                 body: [
-                  'Muka beton ${formatMeters(widget.levelDepthM)} dari GS, cut-off '
-                      '${formatMeters(widget.cutOffDepthM)} — kurang ${formatMeters(widget.missingM)}.',
-                  'Sudah tercor ${_decimal(widget.pouredM3)} m³ dari ±${_decimal(widget.theoreticalM3)} m³ teoritis'
-                      '${percent == null ? '' : ' (${percent.toStringAsFixed(0)}%)'}.',
-                  if (!widget.measured) 'Angka ini perkiraan dari volume — sounding dulu untuk memastikan.',
+                  t(context).shortfallLine1(formatMeters(widget.levelDepthM),
+                      formatMeters(widget.cutOffDepthM), formatMeters(widget.missingM)),
+                  t(context).shortfallLine2(
+                    _decimal(widget.pouredM3),
+                    _decimal(widget.theoreticalM3),
+                    percent == null ? '' : t(context).percentSuffix(percent.toStringAsFixed(0)),
+                  ),
+                  if (!widget.measured) t(context).estimateSoundToBeSure,
                 ].join('\n'),
               ),
               const SizedBox(height: 12),
             ],
             if (_mustExplain) ...[
-              Text('Tiang yang ditutup di bawah cut-off jadi tiang pendek, dan beton mengeras — '
-                  'tidak bisa dibatalkan. Kalau cor memang dihentikan, pilih alasannya; kantor perlu tahu. '
-                  'Kalau cuma salah tekan, pilih "Belum — lanjut cor".',
-                  style: TextStyle(color: w.ink, height: 1.4)),
+              Text(t(context).shortPileWarning, style: TextStyle(color: w.ink, height: 1.4)),
               const SizedBox(height: 12),
-              for (final (code, label, icon) in _reasons) _reasonRow(code, label, icon),
+              for (final (code, label, icon) in _reasonList(context)) _reasonRow(code, label, icon),
               if (_reason != null)
                 TextField(
                   controller: _detail,
                   maxLength: 150,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    labelText: _reason == 'lainnya' ? 'Alasan (wajib)' : 'Keterangan (boleh kosong)',
-                    hintText: 'mis. tremie mampet di segmen ke-3, beton sudah mengeras',
+                    labelText: _reason == 'lainnya' ? t(context).reasonRequired : t(context).detailOptional,
+                    hintText: t(context).reasonHint,
                     counterText: '',
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
             ] else
               Text(
-                widget.short
-                    ? 'Kurang sedikit saja dari cut-off — kelebihan di atas cut-off memang dipotong nanti. '
-                        'Titik ditandai sudah dicor; log cor masih dapat diperbaiki sampai diperiksa kantor.'
-                    : 'Titik ditandai sudah dicor. Log cor masih dapat diperbaiki sampai diperiksa kantor.',
+                widget.short ? t(context).shortABitBody : t(context).finishedBody,
                 style: TextStyle(color: w.muted, height: 1.4),
               ),
           ],
@@ -2518,15 +2565,15 @@ class _FinishDialogState extends State<_FinishDialog> {
           ? [
               TextButton(
                 onPressed: _canFinish ? () => Navigator.pop(context, _FinishResult(note: _note)) : null,
-                child: Text('Tetap selesai', style: TextStyle(color: _canFinish ? w.badFg : w.faint)),
+                child: Text(t(context).finishAnyway, style: TextStyle(color: _canFinish ? w.badFg : w.faint)),
               ),
-              FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Belum — lanjut cor')),
+              FilledButton(onPressed: () => Navigator.pop(context), child: Text(t(context).notYetKeepPouring)),
             ]
           : [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Belum')),
+              TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).notYet)),
               FilledButton(
                 onPressed: () => Navigator.pop(context, const _FinishResult()),
-                child: Text(widget.short ? 'Tetap selesai' : 'Selesai'),
+                child: Text(widget.short ? t(context).finishAnyway : t(context).finish),
               ),
             ],
     );

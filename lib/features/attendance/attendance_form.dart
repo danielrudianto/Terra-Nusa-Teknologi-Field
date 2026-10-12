@@ -20,6 +20,7 @@ import '../../core/widgets/list_card.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/view_states.dart';
 import 'attendance_stamp.dart';
+import '../../core/i18n.dart';
 
 /// Crew attendance for one project, one day.
 ///
@@ -227,7 +228,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
       });
       await _save();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(context).failedWith('$e'))));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -238,9 +239,9 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
   void _announceGalleryCopy(GalleryCopy copy) {
     if (!mounted || copy == GalleryCopy.notRequested) return;
     final text = switch (copy) {
-      GalleryCopy.saved => 'Foto tersimpan di galeri HP (album "$galleryAlbum").',
-      GalleryCopy.denied => 'Absen tersimpan, tapi foto tidak masuk galeri: izin galeri ditolak.',
-      _ => 'Absen tersimpan, tapi foto gagal disimpan ke galeri HP.',
+      GalleryCopy.saved => t(context).photoInGallery(galleryAlbum),
+      GalleryCopy.denied => t(context).galleryDenied,
+      _ => t(context).galleryFailed,
     };
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -277,11 +278,11 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
         final shouldSave = await showDialog<bool>(
           context: context,
           builder: (c) => AlertDialog(
-            title: const Text('Simpan centang kru?'),
-            content: const Text('Ada perubahan kru yang belum disimpan.'),
+            title: Text(t(c).saveCrewTicks),
+            content: Text(t(c).saveCrewTicksBody),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Buang')),
-              FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Simpan')),
+              TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).discard)),
+              FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).save)),
             ],
           ),
         );
@@ -295,7 +296,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Absen kru'),
+          title: Text(t(context).crewAttendance),
           actions: [if (_doc != null) Padding(padding: const EdgeInsets.only(right: 12), child: StatusBadge.sendStatus(context, _doc!.sendStatus))],
         ),
         bottomNavigationBar: _locked || _projectId == null
@@ -308,7 +309,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
                     child: FilledButton.icon(
                       onPressed: _busy ? null : () => _save(close: true),
                       icon: const Icon(Icons.save_outlined),
-                      label: Text('Simpan · $present kru'),
+                      label: Text(t(context).saveWithCount(present)),
                     ),
                   ),
                 ),
@@ -319,27 +320,27 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
             if (_doc?.sendStatus == 'rejected')
               TerraBanner(
                 kind: BannerKind.danger,
-                title: 'Ditolak server',
-                body: reasonText(_doc!.reason, _doc!.detail),
+                title: t(context).rejectedByServer,
+                body: reasonText(context, _doc!.reason, _doc!.detail),
               ),
             if (_doc?.serverStatus != null && _doc!.serverStatus != 'dikirim')
               TerraBanner(
                 kind: _doc!.serverStatus == 'ditolak' ? BannerKind.danger : BannerKind.ok,
-                title: _doc!.serverStatus == 'ditolak' ? 'Ditolak kantor' : 'Sudah disetujui kantor',
+                title: _doc!.serverStatus == 'ditolak' ? t(context).rejectedByOffice : t(context).approvedByOffice,
                 body: [
-                  if (_doc!.serverNote != null && _doc!.serverNote!.isNotEmpty) 'Catatan: ${_doc!.serverNote}',
-                  'Absen ini tidak dapat diubah lagi dari HP.',
+                  if (_doc!.serverNote != null && _doc!.serverNote!.isNotEmpty) t(context).officeNote('${_doc!.serverNote}'),
+                  t(context).attendanceLocked,
                 ].join('\n'),
               ),
             ..._flagBanners(),
 
             // --- project --------------------------------------------------
-            Text('Proyek', style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+            Text(t(context).projectLabel, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
             const SizedBox(height: 6),
             DropdownButtonFormField<int>(
               initialValue: _projectId,
               isExpanded: true,
-              hint: const Text('Pilih proyek'),
+              hint: Text(t(context).pickProject),
               items: [
                 for (final p in allProjects)
                   DropdownMenuItem(value: toIntOrNull(p['id']), child: Text('${p['code']} · ${p['name']}', overflow: TextOverflow.ellipsis)),
@@ -356,15 +357,15 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
             Text(longDate(DateTime.parse(_date)), style: TextStyle(color: w.muted)),
             const SizedBox(height: 16),
             if (_projectId != null && project != null && (project['latitude'] == null || project['longitude'] == null))
-              const TerraBanner(
+              TerraBanner(
                 kind: BannerKind.info,
-                title: 'Lokasi proyek belum diisi kantor',
-                body: 'Absen tetap tersimpan; jarak ke proyek tidak dapat diperiksa.',
+                title: t(context).projectNoLocation,
+                body: t(context).projectNoLocationBody,
               ),
 
             if (_projectId != null) ...[
               _EventCard(
-                title: 'Absen masuk',
+                title: t(context).checkIn,
                 event: _checkIn,
                 project: project,
                 busy: _busy,
@@ -372,7 +373,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
                 onCapture: () => _recordEvent(isCheckIn: true),
               ),
               _EventCard(
-                title: 'Absen pulang',
+                title: t(context).checkOut,
                 event: _checkOut,
                 project: project,
                 busy: _busy,
@@ -383,18 +384,18 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
                 TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.location_off_outlined,
-                  title: 'Tersimpan tanpa lokasi',
-                  body: '$_locationProblem Kantor akan melihat absen ini bertanda "tanpa lokasi".',
+                  title: t(context).savedWithoutLocation,
+                  body: t(context).savedWithoutLocationBody('$_locationProblem'),
                 ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(child: Text('Kru hadir ($present)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: w.ink))),
+                  Expanded(child: Text(t(context).crewPresent(present), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: w.ink))),
                   if (!_locked)
                     TextButton.icon(
                       onPressed: () => context.push('/workers/new?project=$_projectId'),
                       icon: const Icon(Icons.person_add_alt_1, size: 18),
-                      label: const Text('Pekerja baru'),
+                      label: Text(t(context).newWorker),
                     ),
                 ],
               ),
@@ -413,11 +414,11 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
   List<Widget> _crewSection(List<Worker> workers, Map<String, Object?>? project) {
     final w = context.colors;
     if (workers.isEmpty) {
-      return const [
+      return [
         TerraBanner(
           kind: BannerKind.info,
-          title: 'Belum ada pekerja',
-          body: 'Daftarkan pekerja baru dulu. Pekerja yang didaftarkan di sini langsung dapat diabsen, walau belum terkirim.',
+          title: t(context).noWorkersTitle,
+          body: t(context).noWorkersBody,
         ),
       ];
     }
@@ -431,11 +432,11 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
       (_lines.containsKey(k.uuid) || k.belongsTo(_projectId!, day) ? here : others).add(k);
     }
     final showOthers = _showOthers || query.isNotEmpty || here.isEmpty;
-    final code = project?['code'] ?? 'proyek ini';
+    final code = project?['code'] ?? t(context).thisProject;
     return [
       if (workers.length > 8) ...[
         TextField(
-          decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Cari nama pekerja'),
+          decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: t(context).searchWorkerName),
           onChanged: (v) => setState(() => _crewSearch = v),
         ),
         const SizedBox(height: 10),
@@ -443,27 +444,26 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
       if (here.isEmpty && query.isEmpty)
         TerraBanner(
           kind: BannerKind.info,
-          title: 'Belum ada pekerja $code',
-          body: 'Belum ada yang proyek utamanya $code atau diabsen di sini ${Worker.recentDays} hari terakhir. '
-              'Centang dari daftar semua pekerja di bawah; setelah terkirim, mereka muncul paling atas di sini.',
+          title: t(context).noWorkersForProject('$code'),
+          body: t(context).noWorkersForProjectBody('$code', '${Worker.recentDays}'),
         ),
       for (final k in here) _crewRow(k),
       // A crew member who is ticked but no longer in the list (deleted by the
       // office) is still shown, so that it can be unticked.
       for (final u in _lines.keys.where((u) => !workers.any((k) => k.uuid == u)).toList())
-        _crewRow(Worker(uuid: u, name: 'Pekerja tidak dikenal')),
+        _crewRow(Worker(uuid: u, name: t(context).unknownWorker)),
       if (others.isNotEmpty) ...[
         const SizedBox(height: 6),
         if (here.isNotEmpty || query.isNotEmpty)
           TextButton.icon(
             onPressed: query.isNotEmpty ? null : () => setState(() => _showOthers = !_showOthers),
             icon: Icon(showOthers ? Icons.expand_less : Icons.expand_more),
-            label: Text('Pekerja lain (${others.length})', style: TextStyle(color: w.ink)),
+            label: Text(t(context).otherWorkers(others.length), style: TextStyle(color: w.ink)),
           ),
         if (showOthers) for (final k in others) _crewRow(k),
       ],
       if (query.isNotEmpty && here.isEmpty && others.isEmpty)
-        const EmptyState(message: 'Tidak ada pekerja dengan nama itu.'),
+        EmptyState(message: t(context).noWorkerByName),
     ];
   }
 
@@ -481,22 +481,22 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
       TerraBanner(
         kind: BannerKind.warning,
         icon: Icons.flag_outlined,
-        title: 'Ditandai untuk diperiksa kantor',
+        title: t(context).flaggedForOffice,
         body: text,
       ),
     ];
   }
 
   String _flagText(String k) => switch (k) {
-        'DI_LUAR_RADIUS' => '• Lokasi absen di luar radius proyek',
-        'LOKASI_PROYEK_KOSONG' => '• Lokasi proyek belum diisi kantor',
-        'TANPA_LOKASI' => '• Absen tanpa lokasi GPS',
-        'GPS_PALSU' => '• HP melaporkan lokasi palsu',
-        'JAM_HP_SELISIH' => '• Jam HP berbeda jauh dari jam server',
-        'JAM_TAK_TERVERIFIKASI' => '• Jam HP tidak dapat diverifikasi (HP dinyalakan ulang)',
-        'JAM_DIEDIT' => '• Jam diubah manual',
-        'JUMLAH_WAJAH_BEDA' => '• Jumlah wajah di foto berbeda dengan jumlah kru',
-        'FOTO_BELUM_MASUK' => '• Foto masih menunggu terkirim',
+        'DI_LUAR_RADIUS' => t(context).flagOutsideRadius,
+        'LOKASI_PROYEK_KOSONG' => t(context).flagNoProjectLocation,
+        'TANPA_LOKASI' => t(context).flagNoLocation,
+        'GPS_PALSU' => t(context).flagMockLocation,
+        'JAM_HP_SELISIH' => t(context).flagClockOff,
+        'JAM_TAK_TERVERIFIKASI' => t(context).flagClockUnverified,
+        'JAM_DIEDIT' => t(context).flagClockEdited,
+        'JUMLAH_WAJAH_BEDA' => t(context).flagFaceCountOff,
+        'FOTO_BELUM_MASUK' => t(context).flagPhotoPending,
         _ => '• $k',
       };
 
@@ -530,9 +530,9 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
             Row(
               children: [
                 SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'hadir', label: Text('Penuh')),
-                    ButtonSegment(value: 'setengah', label: Text('½ hari')),
+                  segments: [
+                    ButtonSegment(value: 'hadir', label: Text(t(context).fullDay)),
+                    ButtonSegment(value: 'setengah', label: Text(t(context).halfDay)),
                   ],
                   selected: {b.status},
                   showSelectedIcon: false,
@@ -544,7 +544,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
                           }),
                 ),
                 const Spacer(),
-                Text('Lembur', style: TextStyle(color: w.muted, fontSize: 13)),
+                Text(t(context).overtime, style: TextStyle(color: w.muted, fontSize: 13)),
                 IconButton(
                   onPressed: _locked || b.overtime <= 0
                       ? null
@@ -554,7 +554,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
                           }),
                   icon: const Icon(Icons.remove_circle_outline),
                 ),
-                Text('${b.overtime.toStringAsFixed(1).replaceAll('.', ',')} j',
+                Text(t(context).hoursShort(b.overtime.toStringAsFixed(1).replaceAll('.', ',')),
                     style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                 IconButton(
                   onPressed: _locked || b.overtime >= 24
@@ -609,7 +609,7 @@ class _EventCard extends StatelessWidget {
             icon: busy
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.photo_camera_outlined),
-            label: Text('Foto kru · $title', style: const TextStyle(fontSize: 16)),
+            label: Text(t(context).crewPhotoOf(title), style: const TextStyle(fontSize: 16)),
           ),
         ),
       );
@@ -636,18 +636,20 @@ class _EventCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
-                Text(at == null ? '–' : 'Pukul ${formatTime(at)}', style: TextStyle(color: w.ink)),
+                Text(at == null ? '–' : t(context).atTime(formatTime(at)), style: TextStyle(color: w.ink)),
                 const SizedBox(height: 4),
                 if (distance != null)
                   Text(
-                    distance <= radius ? '${distance.round()} m dari proyek ✓' : '${distance.round()} m dari proyek — di luar radius ${radius.round()} m',
+                    distance <= radius
+                        ? t(context).withinRadius('${distance.round()}')
+                        : t(context).outsideRadius('${distance.round()}', '${radius.round()}'),
                     style: TextStyle(color: distance <= radius ? w.okFg : w.warnFg, fontSize: 13, fontWeight: FontWeight.w600),
                   )
                 else if (lat == null)
-                  Text('Tanpa lokasi', style: TextStyle(color: w.warnFg, fontSize: 13)),
-                if (k['isMocked'] == true) Text('Lokasi palsu terdeteksi', style: TextStyle(color: w.badFg, fontSize: 13)),
-                if (faces != null) Text('$faces wajah di foto', style: TextStyle(color: w.muted, fontSize: 13)),
-                if (active) Text('Tekan lama untuk foto ulang', style: TextStyle(color: w.faint, fontSize: 12)),
+                  Text(t(context).noLocation, style: TextStyle(color: w.warnFg, fontSize: 13)),
+                if (k['isMocked'] == true) Text(t(context).mockLocation, style: TextStyle(color: w.badFg, fontSize: 13)),
+                if (faces != null) Text(t(context).facesInPhoto(faces), style: TextStyle(color: w.muted, fontSize: 13)),
+                if (active) Text(t(context).longPressRetake, style: TextStyle(color: w.faint, fontSize: 12)),
               ],
             ),
           ),

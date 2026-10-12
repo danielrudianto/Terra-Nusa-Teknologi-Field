@@ -11,6 +11,7 @@ import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_badge.dart';
+import '../../core/i18n.dart';
 
 /// Every worker of the company, filterable by project.
 ///
@@ -49,7 +50,7 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
       _project = mine.value;
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Pekerja')),
+      appBar: AppBar(title: Text(t(context).workersTitle)),
       floatingActionButton: canAdd
           ? FloatingActionButton.extended(
               onPressed: () {
@@ -57,12 +58,12 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
                 context.push('/workers/new$project');
               },
               icon: const Icon(Icons.person_add_alt_1),
-              label: const Text('Pekerja baru'),
+              label: Text(t(context).newWorker),
             )
           : null,
       body: workers.when(
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(title: 'Daftar pekerja gagal dibaca', message: '$e'),
+        error: (e, _) => ErrorState(title: t(context).workersLoadError, message: '$e'),
         data: (all) => _list(all, codes),
       ),
     );
@@ -94,20 +95,20 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
     ];
 
     final description = switch (project) {
-      null => 'Semua pekerja perusahaan. Siapa pun dapat mengabsen dan mengubahnya.',
-      _noProject => 'Tanpa proyek utama dan tidak diabsen di mana pun ${Worker.recentDays} hari terakhir.',
-      _ => 'Proyek utamanya ${codes[project]}, atau diabsen di ${codes[project]} ${Worker.recentDays} hari terakhir.',
+      null => t(context).workersAllBody,
+      _noProject => t(context).workersNoProjectBody('${Worker.recentDays}'),
+      _ => t(context).workersProjectBody('${codes[project]}', '${Worker.recentDays}'),
     };
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 96),
       children: [
-        PageHeader(title: '${items.length} pekerja', description: description),
+        PageHeader(title: t(context).workersCount(items.length), description: description),
         if (all.isEmpty)
-          const EmptyState(message: 'Belum ada pekerja. Daftarkan pekerja baru dengan tombol di bawah.')
+          EmptyState(message: t(context).noWorkersYet)
         else ...[
           TextField(
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Cari nama atau no. HP'),
+            decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: t(context).searchNameOrPhone),
             onChanged: (v) => setState(() => _search = v),
           ),
           const SizedBox(height: 10),
@@ -115,16 +116,16 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _chip('Semua (${all.length})', project == null, () => setState(() => _project = null)),
+                _chip(t(context).allCount(all.length), project == null, () => setState(() => _project = null)),
                 for (final id in chipIds)
                   _chip('${codes[id]} (${counts[id]})', project == id, () => setState(() => _project = id)),
                 if (withoutProject > 0)
-                  _chip('Tanpa proyek ($withoutProject)', project == _noProject, () => setState(() => _project = _noProject)),
+                  _chip(t(context).withoutProject(withoutProject), project == _noProject, () => setState(() => _project = _noProject)),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          if (items.isEmpty) const EmptyState(message: 'Tidak ada pekerja yang cocok.'),
+          if (items.isEmpty) EmptyState(message: t(context).noMatchingWorkers),
           for (final k in items) _card(k, codes),
         ],
       ],
@@ -139,9 +140,9 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
   Widget _card(Worker k, Map<int, String> codes) {
     final w = context.colors;
     final details = <String>[
-      if (k.projectId != null && codes[k.projectId] != null) 'Proyek utama ${codes[k.projectId]}',
+      if (k.projectId != null && codes[k.projectId] != null) t(context).mainProjectIs('${codes[k.projectId]}'),
       if (k.lastProjectId != null && k.lastSeenDate != null)
-        'Terakhir di ${codes[k.lastProjectId] ?? 'proyek lain'} · ${_shortDate.format(k.lastSeenDate!)}',
+        t(context).lastSeenAt(codes[k.lastProjectId] ?? t(context).otherProject, _shortDate.format(k.lastSeenDate!)),
       if (k.phone != null && k.phone!.isNotEmpty) k.phone!,
     ];
     return ListCard(

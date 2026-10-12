@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// Signed elevation, e.g. "+12,50" / "-3,25".
 String formatElevation(double v, {int decimals = 2}) =>
@@ -32,22 +33,25 @@ class LevelReferenceBanner extends StatelessWidget {
     final gs = groundLevel;
     const nb = '\u00A0';
     final lines = <String>[
-      'COL ${col == null ? 'belum ada' : formatElevation(col)}$nb·${nb}Tip ${tip == null ? 'belum ada' : formatElevation(tip)}',
+      t(context)
+          .levelRefColTip(col == null ? t(context).notSet : formatElevation(col),
+              tip == null ? t(context).notSet : formatElevation(tip))
+          .replaceAll(' · ', '$nb·$nb'),
     ];
     if (gs == null) {
-      lines.add('Isi GS dulu untuk melihat kedalaman COL dan rencana bor.');
+      lines.add(t(context).levelRefNoGs);
     } else {
-      lines.add('GS ${formatElevation(gs)}');
-      if (col != null) lines.add('• COL ${formatMeters(gs - col)} di bawah GS');
-      if (tip != null) lines.add('• Rencana bor ${formatMeters(gs - tip)}');
+      lines.add(t(context).levelRefGs(formatElevation(gs)));
+      if (col != null) lines.add(t(context).levelRefColBelow(formatMeters(gs - col)));
+      if (tip != null) lines.add(t(context).levelRefPlanned(formatMeters(gs - tip)));
     }
     return TerraBanner(
       kind: BannerKind.info,
       icon: Icons.height,
-      title: 'Patokan elevasi',
+      title: t(context).levelRefTitle,
       body: [
         ...lines,
-        'Kedalaman bor diukur dari GS sampai dasar lubang.',
+        t(context).levelRefFooter,
       ].join('\n'),
     );
   }

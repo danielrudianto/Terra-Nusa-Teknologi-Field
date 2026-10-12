@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import '../db/app_database.dart';
 import '../util/format.dart';
 import 'photo_stamp.dart';
+import '../i18n.dart';
 
 /// Size limits per photo kind, after compression.
 ///
@@ -101,7 +102,7 @@ Future<SavedPhoto?> takePhoto({
       quality: 95,
       format: CompressFormat.jpeg,
     );
-    if (upright == null) throw StateError('Foto tidak dapat dibaca.');
+    if (upright == null) throw StateError(L10n.current?.photoUnreadable ?? 'Foto tidak dapat dibaca.');
     final stamped = await stampPhoto(upright, await caption(takenAt));
     bytes = await _compressBytes(stamped, target.width, target.kb * 1024);
   }
@@ -176,7 +177,7 @@ Future<Uint8List> _compressBytes(Uint8List image, int width, int maxBytes) async
     }
     w = (w * 0.75).round();
   }
-  if (result == null) throw StateError('Foto tidak dapat dikompres.');
+  if (result == null) throw StateError(L10n.current?.photoCompressFailed ?? 'Foto tidak dapat dikompres.');
   return result;
 }
 

@@ -1,4 +1,5 @@
 import '../../core/util/format.dart';
+import '../../core/i18n.dart';
 
 /// One drilling reading: at [at] the hole was [depthM] deep (from GS).
 class DrillReading {
@@ -41,11 +42,15 @@ double? deepestM(List<DrillReading> readings) =>
 String? readingProblem(List<DrillReading> readings, DateTime at, double depthM, {String? replacing}) {
   for (final r in readings) {
     if (r.uuid == replacing) continue;
+    // The RULE never depends on the language; only its sentence does, and
+    // that falls back to Indonesian when there is no screen (tests).
     if (!r.at.isAfter(at) && r.depthM > depthM + 0.0005) {
-      return 'Lebih dangkal dari bacaan jam ${formatTime(r.at)} (${formatMeters(r.depthM)}). Lubang tidak bisa makin dangkal.';
+      return L10n.current?.readingShallower(formatTime(r.at), formatMeters(r.depthM)) ??
+          'Lebih dangkal dari bacaan jam ${formatTime(r.at)} (${formatMeters(r.depthM)}). Lubang tidak bisa makin dangkal.';
     }
     if (r.at.isAfter(at) && r.depthM < depthM - 0.0005) {
-      return 'Lebih dalam dari bacaan berikutnya jam ${formatTime(r.at)} (${formatMeters(r.depthM)}). Periksa jamnya.';
+      return L10n.current?.readingDeeperThanNext(formatTime(r.at), formatMeters(r.depthM)) ??
+          'Lebih dalam dari bacaan berikutnya jam ${formatTime(r.at)} (${formatMeters(r.depthM)}). Periksa jamnya.';
     }
   }
   return null;
@@ -80,18 +85,21 @@ bool farBeyondPlan(double depthM, double? plannedM) =>
     plannedM != null && plannedM > 0 && depthM - plannedM > overPlanLimitM(plannedM);
 
 /// The sentence for a refused depth.
-String farBeyondPlanText(double depthM, double plannedM) =>
-    '${depthM.toStringAsFixed(2).replaceAll('.', ',')} m terlalu jauh dari rencana '
-    '${plannedM.toStringAsFixed(2).replaceAll('.', ',')} m '
-    '(paling dalam ${(plannedM + overPlanLimitM(plannedM)).toStringAsFixed(2).replaceAll('.', ',')} m). '
-    'Periksa angkanya, titiknya, atau elevasi GS.';
+String farBeyondPlanText(double depthM, double plannedM) {
+  String two(double v) => v.toStringAsFixed(2).replaceAll('.', ',');
+  final max = two(plannedM + overPlanLimitM(plannedM));
+  return L10n.current?.depthFarFromPlan(two(depthM), two(plannedM), max) ??
+      '${two(depthM)} m terlalu jauh dari rencana ${two(plannedM)} m '
+          '(paling dalam $max m). Periksa angkanya, titiknya, atau elevasi GS.';
+}
 
 /// Why a typed depth can never be saved, or null. Checked while typing so the
 /// save button can be disabled with the reason shown.
 String? depthRefusal(double? depthM, double? plannedM) {
   if (depthM == null) return null;
   if (depthM > maxDrillDepthM) {
-    return 'Kedalaman paling dalam ${formatMeters(maxDrillDepthM, decimals: 0)}. Periksa angkanya.';
+    return L10n.current?.drillDepthTooDeep(formatMeters(maxDrillDepthM, decimals: 0)) ??
+        'Kedalaman paling dalam ${formatMeters(maxDrillDepthM, decimals: 0)}. Periksa angkanya.';
   }
   if (plannedM != null && farBeyondPlan(depthM, plannedM)) return farBeyondPlanText(depthM, plannedM);
   return null;

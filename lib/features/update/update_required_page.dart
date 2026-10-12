@@ -7,6 +7,7 @@ import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// Shown INSTEAD of the whole app while the server refuses this version
 /// (`FIELD_MIN_APP_VERSION`). Nothing can be entered in the old format any
@@ -55,12 +56,11 @@ class _UpdateRequiredPageState extends ConsumerState<UpdateRequiredPage> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Perbarui TerraBot Field',
+            Text(t(context).updateTitle,
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: w.ink)),
             const SizedBox(height: 8),
             Text(
-              'Versi di HP ini ${Env.appVersion} sudah tidak dilayani server. '
-              'Pasang versi ${widget.info.minVersion} atau yang lebih baru untuk lanjut bekerja.',
+              t(context).updateBody(Env.appVersion, '${widget.info.minVersion}'),
               textAlign: TextAlign.center,
               style: TextStyle(color: w.muted, height: 1.45),
             ),
@@ -68,9 +68,8 @@ class _UpdateRequiredPageState extends ConsumerState<UpdateRequiredPage> {
             TerraBanner(
               kind: pending > 0 ? BannerKind.warning : BannerKind.info,
               icon: Icons.lock_outline,
-              title: pending > 0 ? '$pending data belum terkirim — AMAN di HP ini' : 'Data di HP ini aman',
-              body: 'Pasang versi baru DI ATAS app ini. JANGAN uninstall dulu: uninstall menghapus semua data '
-                  'yang belum terkirim. Setelah diperbarui, data langsung terkirim sendiri.',
+              title: pending > 0 ? t(context).unsentSafeHere(pending) : t(context).dataSafeHere,
+              body: t(context).installOverBody,
             ),
             const SizedBox(height: 16),
             if (hasLink)
@@ -79,14 +78,14 @@ class _UpdateRequiredPageState extends ConsumerState<UpdateRequiredPage> {
                 child: FilledButton.icon(
                   onPressed: _open,
                   icon: const Icon(Icons.download),
-                  label: const Text('Unduh versi baru'),
+                  label: Text(t(context).downloadNew),
                 ),
               )
             else
-              const TerraBanner(
+              TerraBanner(
                 kind: BannerKind.info,
-                title: 'Minta file app terbaru ke admin',
-                body: 'Admin TerraBot akan mengirim file APK atau tautannya.',
+                title: t(context).askAdminApk,
+                body: t(context).askAdminApkBody,
               ),
             const SizedBox(height: 10),
             SizedBox(
@@ -96,7 +95,7 @@ class _UpdateRequiredPageState extends ConsumerState<UpdateRequiredPage> {
                 icon: _checking
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.refresh),
-                label: const Text('Periksa lagi'),
+                label: Text(t(context).checkAgain),
               ),
             ),
           ],

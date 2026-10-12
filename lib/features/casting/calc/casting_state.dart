@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../../../core/util/format.dart';
 import 'volume.dart';
+import '../../../core/i18n.dart';
 
 /// Casting state RIGHT NOW, read from the casting log document on the phone.
 ///
@@ -219,12 +220,18 @@ class TruckRecord {
 /// DEEPER than the level before it (10 cm of slack for the tape), and never
 /// below the hole bottom.
 String? soundingProblem(double afterM, {required double before, required double bottom}) {
+  // Pure logic with a sentence attached: the message is read from the
+  // language the app is showing, falling back to Indonesian when there is no
+  // screen yet (tests, the background isolate). The RULE never depends on it.
+  final l = L10n.current;
   if (afterM > bottom + 0.05) {
-    return 'Lebih dalam dari dasar lubang (${bottom.toStringAsFixed(2).replaceAll('.', ',')} m). Periksa lagi.';
+    final b = bottom.toStringAsFixed(2).replaceAll('.', ',');
+    return l?.soundDeeperThanBottom(b) ?? 'Lebih dalam dari dasar lubang ($b m). Periksa lagi.';
   }
   if (afterM > before + 0.10) {
-    return 'Lebih dalam dari muka beton sebelum TM ini (${before.toStringAsFixed(2).replaceAll('.', ',')} m). '
-        'Beton tidak mungkin turun; periksa lagi.';
+    final b = before.toStringAsFixed(2).replaceAll('.', ',');
+    return l?.soundDeeperThanBefore(b) ??
+        'Lebih dalam dari muka beton sebelum TM ini ($b m). Beton tidak mungkin turun; periksa lagi.';
   }
   return null;
 }

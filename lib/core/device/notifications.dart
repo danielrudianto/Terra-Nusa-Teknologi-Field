@@ -1,6 +1,9 @@
 import 'dart:typed_data';
+import 'dart:ui' show Color;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../i18n.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -22,6 +25,23 @@ class Notifications {
   static const _pauseReminderCount = 20;
   static const pauseReminderEvery = Duration(minutes: 3);
   static const actionFinishTruck = 'finish_truck';
+
+  /// Translations for code with no widget tree.
+  ///
+  /// Null only before the first build (a cold start in the background
+  /// isolate), so every use falls back to Indonesian — the language of the
+  /// site, and the one every foreman reads.
+  ///
+  /// CHANNEL names and descriptions are NOT translated. Android freezes them
+  /// when the channel is first created and never re-reads them, so a
+  /// translated name would simply be whatever language the app happened to
+  /// be in on the very first run — worse than one consistent language.
+
+  /// TerraBot blue, and the amber of a paused pour. Android tints the small
+  /// icon and the app name with it — the only colouring a plain ongoing
+  /// notification is allowed.
+  static const _brand = Color(0xFF154DEC);
+  static const _paused = Color(0xFFB4690E);
 
   /// `onTapped(payload, action)` — the payload holds the destination route.
   static Future<void> init(void Function(String? payload, String? action) onTapped) async {
@@ -54,11 +74,31 @@ class Notifications {
     return d.notificationResponse?.payload;
   }
 
+  /// The casting notification, dressed like the phone's own stopwatch.
+  ///
+  /// Everything here earns its place on a lock screen seen through a glove,
+  /// at arm's length, in daylight:
+  ///
+  ///   * the running clock is Android's own chronometer — counted by the OS,
+  ///     so it keeps ticking with the screen off and the app killed;
+  ///   * [subText] rides in the header next to the app name, so the project
+  ///     and point are readable while the notification is collapsed;
+  ///   * the progress bar is the concrete climbing toward cut-off — the one
+  ///     number the QS actually watches, and the reason to glance at all;
+  ///   * the large icon makes it look like a running job, not a message.
+  ///
+  /// What is deliberately NOT used: `colorized`. Android only honours a
+  /// coloured background for foreground-service and media notifications, and
+  /// MediaStyle — the one style that would colour it — cannot show a
+  /// chronometer. A pretty box is not worth losing the clock.
   static Future<void> showStopwatch({
     required String route,
     required String title,
     required String body,
     required DateTime start,
+    String? subText,
+    String? detail,
+    int? progress,
   }) {
     return _plugin.show(
       id: _stopwatchId,
@@ -79,8 +119,19 @@ class Notifications {
           when: start.millisecondsSinceEpoch,
           usesChronometer: true,
           category: AndroidNotificationCategory.stopwatch,
-          actions: const [
-            AndroidNotificationAction(actionFinishTruck, 'Selesai TM', showsUserInterface: true),
+          color: _brand,
+          largeIcon: const DrawableResourceAndroidBitmap('splash_mark'),
+          subText: subText,
+          // Pulled down, the notification tells the whole story without
+          // opening the app — which is the point when both hands are busy.
+          styleInformation: detail == null
+              ? null
+              : BigTextStyleInformation(detail, contentTitle: title, summaryText: subText),
+          showProgress: progress != null,
+          maxProgress: 100,
+          progress: progress ?? 0,
+          actions: [
+            AndroidNotificationAction(actionFinishTruck, L10n.current?.openCastLog ?? 'Buka log cor', showsUserInterface: true),
           ],
         ),
       ),
@@ -93,13 +144,15 @@ class Notifications {
     required String route,
     required String title,
     required String body,
+    String? subText,
+    String? detail,
   }) {
     return _plugin.show(
       id: _stopwatchId,
       title: title,
       body: body,
       payload: route,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'casting',
           'Pengecoran berjalan',
@@ -111,11 +164,19 @@ class Notifications {
           onlyAlertOnce: true,
           showWhen: false,
           category: AndroidNotificationCategory.stopwatch,
+          color: _paused,
+          largeIcon: const DrawableResourceAndroidBitmap('splash_mark'),
+          subText: subText,
+          styleInformation: detail == null
+              ? null
+              : BigTextStyleInformation(detail, contentTitle: title, summaryText: subText),
+          actions: [
+            AndroidNotificationAction(actionFinishTruck, L10n.current?.resumePouring ?? 'Lanjutkan cor', showsUserInterface: true),
+          ],
         ),
       ),
     );
   }
-
   static Future<void> clearStopwatch() => _plugin.cancel(id: _stopwatchId);
 
   /// Long buzz-pause-buzz: noticeable in a pocket next to a running rig.
@@ -177,7 +238,8 @@ class Notifications {
       await _plugin.zonedSchedule(
         id: _pauseReminderBase + i,
         title: title,
-        body: '$body · ${(pauseReminderEvery * i).inMinutes} menit',
+        body: L10n.current?.pauseReminderMin(body, (pauseReminderEvery * i).inMinutes) ??
+            '$body · ${(pauseReminderEvery * i).inMinutes} menit',
         payload: route,
         scheduledDate: tz.TZDateTime.from(at.toUtc(), tz.UTC),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -207,7 +269,7 @@ class Notifications {
       await _plugin.zonedSchedule(
         id: _idleBase + i,
         title: title,
-        body: '$body · ${wait.inMinutes} menit sejak TM terakhir',
+        body: L10n.current?.idleReminderMin(body, wait.inMinutes) ?? '$body · ${wait.inMinutes} menit sejak TM terakhir',
         payload: route,
         scheduledDate: tz.TZDateTime.from(at.toUtc(), tz.UTC),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -260,9 +322,10 @@ class Notifications {
       if (!at.isAfter(now)) continue;
       await _plugin.zonedSchedule(
         id: _drillIdleId(logUuid, i),
-        title: 'Log bor $pointCode belum diisi',
-        body: 'Sudah ${_minutesText(wait)} sejak bacaan terakhir (${_dayTime(lastReadingAt).split(' ').last}). '
-            'Catat kedalaman sekarang, atau tekan Selesai bor bila sudah selesai.',
+        title: L10n.current?.drillIdleTitle(pointCode) ?? 'Log bor $pointCode belum diisi',
+        body: L10n.current?.drillIdleBody(_minutesText(wait), _dayTime(lastReadingAt).split(' ').last) ??
+            'Sudah ${_minutesText(wait)} sejak bacaan terakhir (${_dayTime(lastReadingAt).split(' ').last}). '
+                'Catat kedalaman sekarang, atau tekan Selesai bor bila sudah selesai.',
         payload: '/drilling/log/$logUuid',
         scheduledDate: tz.TZDateTime.from(at.toUtc(), tz.UTC),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -291,8 +354,10 @@ class Notifications {
   static String _minutesText(Duration d) {
     final h = d.inHours;
     final m = d.inMinutes % 60;
-    if (m == 0) return '$h jam';
-    return h == 0 ? '$m menit' : '$h jam $m menit';
+    final l = L10n.current;
+    if (m == 0) return l?.hoursText(h) ?? '$h jam';
+    if (h == 0) return l?.minutesText(m) ?? '$m menit';
+    return l?.hoursMinutesText(h, m) ?? '$h jam $m menit';
   }
 
   // -------------------------------------------------------------------------
@@ -314,8 +379,9 @@ class Notifications {
     if (!at.isAfter(now)) at = now.add(unsentRepeat);
     await _plugin.zonedSchedule(
       id: _unsentId,
-      title: 'Ada data belum terkirim',
-      body: 'Sejak ${_dayTime(oldestPending)}. Buka TerraBot Field di tempat bersinyal supaya terkirim.',
+      title: L10n.current?.unsentTitle ?? 'Ada data belum terkirim',
+      body: L10n.current?.unsentBody(_dayTime(oldestPending)) ??
+          'Sejak ${_dayTime(oldestPending)}. Buka TerraBot Field di tempat bersinyal supaya terkirim.',
       payload: '/queue',
       scheduledDate: tz.TZDateTime.from(at.toUtc(), tz.UTC),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

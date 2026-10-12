@@ -11,6 +11,7 @@ library;
 
 import '../../../core/util/format.dart';
 import 'pauses.dart';
+import '../../../core/i18n.dart';
 
 /// A TM that lives on the server is never deleted — it can only be stopped.
 enum TruckCommand {
@@ -88,11 +89,11 @@ TruckCommandResult applyTruckCommand(
   String pauseReason = 'lainnya',
 }) {
   if (body['status'] == 'selesai') {
-    return const TruckCommandResult.refused('Cor titik ini sudah selesai.');
+    return TruckCommandResult.refused(L10n.current?.castAlreadyDone ?? 'Cor titik ini sudah selesai.');
   }
   final truck = runningTruckOf(body);
   if (truck == null) {
-    return const TruckCommandResult.refused('Tidak ada TM yang sedang dicor.');
+    return TruckCommandResult.refused(L10n.current?.noTruckPouring ?? 'Tidak ada TM yang sedang dicor.');
   }
   final seq = toIntOrNull(truck['seq']) ?? 0;
   final raw = _pausesListOf(body);
@@ -102,7 +103,7 @@ TruckCommandResult applyTruckCommand(
 
   switch (command) {
     case TruckCommand.pause:
-      if (open != null) return TruckCommandResult.refused('TM #$seq sudah dijeda.');
+      if (open != null) return TruckCommandResult.refused(L10n.current?.truckAlreadyPaused(seq) ?? 'TM #$seq sudah dijeda.');
       raw.add(<String, Object?>{
         'uuid': pauseUuid,
         'truckSeq': seq,
@@ -114,7 +115,7 @@ TruckCommandResult applyTruckCommand(
       return TruckCommandResult.applied(seq: seq, needsSounding: false);
 
     case TruckCommand.resume:
-      if (open == null) return TruckCommandResult.refused('TM #$seq tidak sedang dijeda.');
+      if (open == null) return TruckCommandResult.refused(L10n.current?.truckNotPaused(seq) ?? 'TM #$seq tidak sedang dijeda.');
       open['endAt'] = isoWithOffset(at);
       return TruckCommandResult.applied(seq: seq, needsSounding: false);
 

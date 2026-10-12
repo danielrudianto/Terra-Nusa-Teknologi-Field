@@ -7,6 +7,7 @@ import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// Log in with the same TerraBot account as the web app.
 class LoginPage extends ConsumerStatefulWidget {
@@ -40,7 +41,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _checkIn() async {
     if (_email.text.trim().isEmpty || _password.text.isEmpty) {
-      setState(() => _error = 'Isi email dan kata sandi.');
+      setState(() => _error = t(context).fillEmailPassword);
       return;
     }
     setState(() {
@@ -57,9 +58,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         await _askMoveDevice(e);
         return;
       }
-      setState(() => _error = e.offline
-          ? 'Masuk perlu sinyal. Sesudah masuk sekali, aplikasi dapat dipakai tanpa sinyal.'
-          : e.message);
+      setState(() => _error = e.offline ? t(context).loginNeedsSignal : e.message);
     } catch (e) {
       setState(() => _error = '$e');
     } finally {
@@ -79,28 +78,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       context: context,
       builder: (c) => AlertDialog(
         icon: Icon(Icons.phonelink_lock, size: 32, color: w.warnFg),
-        title: const Text('Akun ini masih dipakai di HP lain', textAlign: TextAlign.center),
+        title: Text(t(c).accountOnOtherPhone, textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Satu akun hanya boleh dipakai di satu HP, supaya catatan lapangan tidak bercabang.'
-              '${last == null ? '' : ' HP itu terakhir aktif $last.'}',
+              t(c).oneAccountOnePhone(last == null ? '' : t(c).lastActiveSuffix(last)),
               style: TextStyle(color: w.ink, height: 1.4),
             ),
             const SizedBox(height: 12),
-            const TerraBanner(
+            TerraBanner(
               kind: BannerKind.info,
               icon: Icons.cloud_upload_outlined,
-              title: 'Data di HP lama tidak hilang',
-              body: 'HP itu masih dapat mengirim sisa antreannya, hanya tidak boleh mencatat yang baru. Bila HP itu yang sebenarnya Anda pakai, batalkan saja dan masuk dari sana.',
+              title: t(c).oldPhoneKeepsData,
+              body: t(c).oldPhoneKeepsDataBody,
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Pindahkan ke HP ini')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).cancel)),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).moveToThisPhone)),
         ],
       ),
     );
@@ -123,16 +121,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   /// "12 menit lalu" dari waktu ISO yang dikirim server; null bila tidak ada.
-  static String? _lastSeenText(String? iso) {
+  String? _lastSeenText(String? iso) {
     if (iso == null) return null;
-    final t = DateTime.tryParse(iso);
-    if (t == null) return null;
-    final d = DateTime.now().difference(t);
+    final at = DateTime.tryParse(iso);
+    if (at == null) return null;
+    final d = DateTime.now().difference(at);
     if (d.isNegative) return null;
-    if (d.inMinutes < 1) return 'barusan';
-    if (d.inMinutes < 60) return '${d.inMinutes} menit lalu';
-    if (d.inHours < 24) return '${d.inHours} jam lalu';
-    return '${d.inDays} hari lalu';
+    if (d.inMinutes < 1) return t(context).justNow;
+    if (d.inMinutes < 60) return t(context).minutesAgo(d.inMinutes);
+    if (d.inHours < 24) return t(context).hoursAgo(d.inHours);
+    return t(context).daysAgo(d.inDays);
   }
 
   @override
@@ -155,22 +153,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Text('TerraBot Field',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: w.ink)),
-                    Text('Absensi kru & log pengecoran',
+                    Text(t(context).loginTagline,
                         textAlign: TextAlign.center, style: TextStyle(color: w.muted)),
                     const SizedBox(height: 28),
                     if (sessionExpired)
-                      const TerraBanner(
+                      TerraBanner(
                         kind: BannerKind.info,
-                        title: 'Data di HP ini aman',
-                        body: 'Masuk lagi dengan akun yang sama supaya antreannya terkirim.',
+                        title: t(context).dataSafeHere,
+                        body: t(context).signInAgainToSend,
                       ),
-                    if (_error != null) TerraBanner(kind: BannerKind.danger, title: 'Belum dapat masuk', body: _error),
+                    if (_error != null) TerraBanner(kind: BannerKind.danger, title: t(context).cannotSignInYet, body: _error),
                     TextField(
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: InputDecoration(labelText: t(context).email),
                     ),
                     const SizedBox(height: 14),
                     TextField(
@@ -179,7 +177,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       autofillHints: const [AutofillHints.password],
                       onSubmitted: (_) => _checkIn(),
                       decoration: InputDecoration(
-                        labelText: 'Kata sandi',
+                        labelText: t(context).password,
                         suffixIcon: IconButton(
                           onPressed: () => setState(() => _showPassword = !_showPassword),
                           icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
@@ -193,7 +191,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         onPressed: _busy ? null : _checkIn,
                         child: _busy
                             ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4))
-                            : const Text('Masuk', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                            : Text(t(context).signIn, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ],

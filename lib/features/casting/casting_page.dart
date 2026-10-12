@@ -9,6 +9,7 @@ import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/widgets/page_header.dart';
 import '../home/status_banners.dart';
+import '../../core/i18n.dart';
 
 /// Choose a project → list of pile points.
 class CastingPage extends ConsumerWidget {
@@ -20,12 +21,12 @@ class CastingPage extends ConsumerWidget {
     final projects = ref.watch(castingProjectsProvider);
     final mine = ref.watch(myProjectProvider).value;
     return Scaffold(
-      appBar: AppBar(title: const Text('Log pengecoran')),
+      appBar: AppBar(title: Text(t(context).castingTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(),
         child: projects.when(
           loading: () => const LoadingState(),
-          error: (e, _) => ErrorState(title: 'Proyek gagal dibaca', message: '$e'),
+          error: (e, _) => ErrorState(title: t(context).projectsLoadError, message: '$e'),
           data: (all) {
             // The user's own project on top, marked.
             final items = [
@@ -36,10 +37,10 @@ class CastingPage extends ConsumerWidget {
             padding: const EdgeInsets.all(Dimens.pagePadding),
             children: [
               const StatusBanners(showPending: false),
-              const PageHeader(title: 'Pilih proyek', description: 'Titik bor diisi kantor dari gambar kerja'),
+              PageHeader(title: t(context).pickProject, description: t(context).pickProjectBody),
               if (items.isEmpty)
-                const EmptyState(
-                  message: 'Belum ada proyek cor di HP. Tarik ke bawah saat ada sinyal.',
+                EmptyState(
+                  message: t(context).noCastingProjects,
                   icon: Icons.domain_disabled,
                 ),
               for (final p in items)
@@ -58,7 +59,7 @@ class CastingPage extends ConsumerWidget {
                               if (isMine)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 4),
-                                  child: Text('PROYEK SAYA',
+                                  child: Text(t(context).myProjectTag,
                                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: w.brand)),
                                 ),
                               Text('${p['code']}', style: TextStyle(fontWeight: FontWeight.w800, color: w.brandStrong)),
@@ -66,7 +67,7 @@ class CastingPage extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        Text(count == null ? '' : '$count titik', style: TextStyle(color: w.muted)),
+                        Text(count == null ? '' : t(context).pointCount(count), style: TextStyle(color: w.muted)),
                         Icon(Icons.chevron_right, color: w.muted),
                       ],
                     ),

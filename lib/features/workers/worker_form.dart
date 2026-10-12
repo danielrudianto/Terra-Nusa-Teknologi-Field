@@ -12,6 +12,7 @@ import '../../core/theme/dimens.dart';
 import '../../core/util/reasons.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// Register a new worker, or correct an existing one.
 ///
@@ -66,7 +67,7 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
       Map<String, Object?>? body;
       if (doc != null) {
         body = (jsonDecode(doc.body) as Map).cast<String, Object?>();
-        if (doc.sendStatus == 'rejected') _rejectReason = reasonText(doc.reason, doc.detail);
+        if (doc.sendStatus == 'rejected') _rejectReason = reasonText(context, doc.reason, doc.detail);
       } else {
         body = await db.getMaster('worker', _uuid);
         _serverOnly = body != null;
@@ -110,14 +111,14 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
         _faceCount = f.faceCount;
       });
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Kamera gagal: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(context).cameraFailed('$e'))));
     }
   }
 
   Future<void> _save() async {
     final name = _name.text.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (name.isEmpty) {
-      setState(() => _rejectReason = 'Isi nama pekerja.');
+      setState(() => _rejectReason = t(context).workerNameRequired);
       return;
     }
     final phone = _phone.text.trim();
@@ -155,7 +156,7 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
           children: [
             const Icon(Icons.check_circle_outline, color: Colors.white),
             const SizedBox(width: 10),
-            Expanded(child: Text('$name disimpan. Terkirim otomatis saat ada sinyal.')),
+            Expanded(child: Text(t(context).workerSaved(name))),
           ],
         ),
       ),
@@ -175,9 +176,9 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
     return DropdownButtonFormField<int?>(
       initialValue: known ? _projectId : null,
       isExpanded: true,
-      decoration: const InputDecoration(labelText: 'Proyek utama (opsional)'),
+      decoration: InputDecoration(labelText: t(context).mainProjectOptional),
       items: [
-        const DropdownMenuItem<int?>(value: null, child: Text('Tanpa proyek utama')),
+        DropdownMenuItem<int?>(value: null, child: Text(t(context).noMainProject)),
         for (final p in choices)
           DropdownMenuItem<int?>(
             value: toIntOrNull(p['id']),
@@ -193,14 +194,12 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
       final phone = d.phone == null || d.phone!.isEmpty ? '' : ' (${d.phone})';
       return '• ${d.name}$phone';
     }).join('\n');
-    final more = _duplicates!.length > 5 ? '\n• dan ${_duplicates!.length - 5} lainnya' : '';
+    final more = _duplicates!.length > 5 ? t(context).andOthers(_duplicates!.length - 5) : '';
     return TerraBanner(
       kind: BannerKind.warning,
       icon: Icons.people_alt_outlined,
-      title: 'Mungkin sudah terdaftar',
-      body: 'Nama atau nomor HP ini mirip pekerja yang sudah ada:\n$names$more\n\n'
-          'Kalau orangnya sama, batalkan dan pakai pekerja yang sudah ada. '
-          'Kalau memang orang lain, tekan tombol simpan sekali lagi.',
+      title: t(context).maybeRegistered,
+      body: t(context).maybeRegisteredBody('$names$more'),
     );
   }
 
@@ -209,18 +208,18 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
     final w = context.colors;
     final canEdit = !_loading && _canEdit;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.uuid == null ? 'Pekerja baru' : 'Pekerja')),
+      appBar: AppBar(title: Text(widget.uuid == null ? t(context).newWorker : t(context).workersTitle)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(Dimens.pagePadding),
               children: [
-                if (_rejectReason != null) TerraBanner(kind: BannerKind.danger, title: 'Perlu diperbaiki', body: _rejectReason),
+                if (_rejectReason != null) TerraBanner(kind: BannerKind.danger, title: t(context).needsFixing, body: _rejectReason),
                 if (!_loading && !canEdit)
-                  const TerraBanner(
+                  TerraBanner(
                     kind: BannerKind.info,
-                    title: 'Hanya dapat dilihat',
-                    body: 'Akun Anda tidak punya izin mendaftarkan atau mengubah pekerja. Minta kantor menambahkan izinnya.',
+                    title: t(context).viewOnlyTitle,
+                    body: t(context).viewOnlyWorkerBody,
                   ),
                 Center(
                   child: GestureDetector(
@@ -243,16 +242,16 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
                 if (_faceCount != null && _faceCount != 1)
                   TerraBanner(
                     kind: BannerKind.warning,
-                    title: _faceCount == 0 ? 'Wajah tidak terdeteksi' : '$_faceCount wajah terdeteksi',
-                    body: 'Foto wajah dipakai kantor untuk mencocokkan kru. Ambil ulang dengan satu wajah, menghadap kamera.',
-                    action: TextButton(onPressed: _takePhoto, child: const Text('Ulang')),
+                    title: _faceCount == 0 ? t(context).noFaceDetected : t(context).facesDetected(_faceCount!),
+                    body: t(context).facePhotoBody,
+                    action: TextButton(onPressed: _takePhoto, child: Text(t(context).retake)),
                   ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _name,
                   enabled: canEdit,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(labelText: 'Nama lengkap'),
+                  decoration: InputDecoration(labelText: t(context).fullName),
                   onChanged: (_) {
                     if (_duplicates != null) setState(() => _duplicates = null);
                   },
@@ -264,7 +263,7 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
                   controller: _phone,
                   enabled: canEdit,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'No. HP (opsional)'),
+                  decoration: InputDecoration(labelText: t(context).phoneOptional2),
                   onChanged: (_) {
                     if (_duplicates != null) setState(() => _duplicates = null);
                   },
@@ -273,7 +272,7 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
                 TextField(
                   controller: _note,
                   enabled: canEdit,
-                  decoration: const InputDecoration(labelText: 'Catatan (mis. tukang besi, operator)'),
+                  decoration: InputDecoration(labelText: t(context).workerNoteHint),
                 ),
                 const SizedBox(height: 24),
                 if (_duplicates != null) _duplicateBanner(),
@@ -283,7 +282,7 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
                     child: FilledButton.icon(
                       onPressed: _saving ? null : _save,
                       icon: const Icon(Icons.save_outlined),
-                      label: Text(_duplicates == null ? 'Simpan' : 'Tetap simpan sebagai pekerja baru'),
+                      label: Text(_duplicates == null ? t(context).save : t(context).saveAsNewWorker),
                     ),
                   ),
               ],

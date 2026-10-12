@@ -6,6 +6,7 @@ import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// Pick the rig operator of a drill log from the company's workers, or
 /// register a new one on the spot. Returns the worker uuid.
@@ -47,7 +48,7 @@ class _OperatorSheetState extends ConsumerState<_OperatorSheet> {
   Future<void> _addNew(List<Worker> all) async {
     final name = _name.text.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (name.length < 2) {
-      setState(() => _problem = 'Isi nama operator.');
+      setState(() => _problem = t(context).operatorNameRequired);
       return;
     }
     final phone = _phone.text.trim();
@@ -55,8 +56,7 @@ class _OperatorSheetState extends ConsumerState<_OperatorSheet> {
     // A worker with the same name or phone is most likely the same person.
     final same = possibleDuplicates(all, uuid: uuid, name: name, phone: phone.isEmpty ? null : phone);
     if (same.isNotEmpty && _problem == null) {
-      setState(() => _problem = 'Sudah ada "${same.first.name}". Pilih dari daftar bila orangnya sama, '
-          'atau tekan Simpan sekali lagi bila memang orang lain.');
+      setState(() => _problem = t(context).operatorExists(same.first.name));
       return;
     }
     final p = ref.read(userProvider);
@@ -95,37 +95,37 @@ class _OperatorSheetState extends ConsumerState<_OperatorSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(_adding ? 'Operator baru' : 'Operator bor', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+            Text(_adding ? t(context).newOperator : t(context).drillOperator, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
             const SizedBox(height: 10),
             if (_adding) ...[
-              if (_problem != null) TerraBanner(kind: BannerKind.warning, title: 'Periksa dulu', body: _problem),
+              if (_problem != null) TerraBanner(kind: BannerKind.warning, title: t(context).checkFirst, body: _problem),
               const SizedBox(height: 8),
               TextField(
                 controller: _name,
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Nama operator'),
+                decoration: InputDecoration(labelText: t(context).operatorName),
                 onChanged: (_) => setState(() => _problem = null),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _phone,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'No. HP (boleh kosong)'),
+                decoration: InputDecoration(labelText: t(context).phoneOptional),
               ),
               const Spacer(),
-              SizedBox(height: Dimens.minTouch + 4, child: FilledButton(onPressed: () => _addNew(all), child: const Text('Simpan'))),
-              TextButton(onPressed: () => setState(() => _adding = false), child: const Text('Kembali ke daftar')),
+              SizedBox(height: Dimens.minTouch + 4, child: FilledButton(onPressed: () => _addNew(all), child: Text(t(context).save))),
+              TextButton(onPressed: () => setState(() => _adding = false), child: Text(t(context).backToList)),
             ] else ...[
               TextField(
                 controller: _search,
-                decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Cari nama'),
+                decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: t(context).searchName),
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 8),
               Expanded(
                 child: shown.isEmpty
-                    ? Center(child: Text('Belum ada yang cocok. Tambahkan operator baru.', style: TextStyle(color: w.muted)))
+                    ? Center(child: Text(t(context).noMatchAddNew, style: TextStyle(color: w.muted)))
                     : ListView(
                         children: [
                           for (final k in shown)

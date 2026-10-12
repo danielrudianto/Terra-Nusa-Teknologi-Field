@@ -6,6 +6,7 @@ import '../../features/casting/calc/pauses.dart';
 import '../../features/casting/calc/truck_command.dart';
 import '../../features/drilling/drill_readings.dart';
 import 'notifications.dart';
+import '../i18n.dart';
 
 /// Put the time-based reminders back from what is STORED, not from what a
 /// screen happens to know.
@@ -54,8 +55,8 @@ Future<void> _rearmCasting(AppDatabase db, int userId) async {
       if (open != null) {
         await Notifications.schedulePauseReminders(
           route: route,
-          title: 'TM #$seq masih dijeda · $code',
-          body: 'Sudah lanjut cor? Ketuk Lanjut di log cor',
+          title: L10n.current?.notifStillPaused(seq, code) ?? 'TM #$seq masih dijeda · $code',
+          body: L10n.current?.notifStillPausedBody ?? 'Sudah lanjut cor? Ketuk Lanjut di log cor',
           from: DateTime.parse('${open['startAt']}').toLocal(),
         );
         continue;
@@ -65,8 +66,9 @@ Future<void> _rearmCasting(AppDatabase db, int userId) async {
       final due = start.add(truckReminderAfter + pausedTime(pauses, seq, now));
       await Notifications.scheduleTruckReminder(
         route: route,
-        title: 'TM #$seq sudah ${truckReminderAfter.inMinutes} menit · $code',
-        body: 'Belum selesai dicor. Cek muka beton dan posisi tremie.',
+        title: L10n.current?.notifTruckLate('$seq', truckReminderAfter.inMinutes, code) ??
+            'TM #$seq sudah ${truckReminderAfter.inMinutes} menit · $code',
+        body: L10n.current?.notifTruckLateBody ?? 'Belum selesai dicor. Cek muka beton dan posisi tremie.',
         // Already past: the TM is overdue and the alarm is gone. One buzz
         // shortly after the phone is put down says so; firing it this
         // second, with the screen in the foreman's hand, would not.
@@ -84,8 +86,8 @@ Future<void> _rearmCasting(AppDatabase db, int userId) async {
     if (lastEnd != null) {
       await Notifications.scheduleIdleReminders(
         route: route,
-        title: 'Belum ada TM berikutnya · $code',
-        body: 'Awas sambungan dingin. Cek kapan TM datang',
+        title: L10n.current?.notifNoNextTruck(code) ?? 'Belum ada TM berikutnya · $code',
+        body: L10n.current?.notifNoNextTruckBody ?? 'Awas sambungan dingin. Cek kapan TM datang',
         from: lastEnd,
       );
     }

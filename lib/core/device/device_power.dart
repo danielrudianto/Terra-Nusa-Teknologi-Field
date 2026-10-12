@@ -1,4 +1,7 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
+import '../i18n.dart';
 
 /// Battery saving / auto-start state of this phone (see MainActivity.kt).
 class PowerStatus {
@@ -15,28 +18,21 @@ class PowerStatus {
       .contains(manufacturer);
 
   /// What to switch on, in the words of that brand's settings.
-  List<String> get steps => switch (manufacturer) {
-        'xiaomi' || 'redmi' || 'poco' => const [
-            'Mulai otomatis (Autostart): NYALAKAN untuk TerraBot Field.',
-            'Penghemat baterai: pilih "Tanpa batasan" (No restrictions).',
-          ],
-        'oppo' || 'realme' || 'oneplus' => const [
-            'Mulai otomatis / Izinkan auto-launch: NYALAKAN untuk TerraBot Field.',
-            'Penggunaan baterai: izinkan "Aktivitas latar belakang" dan "Mulai otomatis".',
-          ],
-        'vivo' || 'iqoo' => const [
-            'Auto-start / Latar belakang: IZINKAN untuk TerraBot Field.',
-            'Baterai → Konsumsi daya latar tinggi: IZINKAN.',
-          ],
-        'huawei' || 'honor' => const [
-            'Peluncuran aplikasi: matikan "Kelola otomatis", lalu nyalakan Mulai otomatis, Mulai sekunder, dan Jalankan di latar.',
-          ],
-        'samsung' => const [
-            'Baterai: pilih "Tidak dibatasi" (Unrestricted).',
-            'Pastikan TerraBot Field TIDAK ada di daftar "Aplikasi tidur" / "Aplikasi tidur nyenyak".',
-          ],
-        _ => const ['Baterai: pilih "Tanpa batasan" / "Tidak dioptimalkan" untuk TerraBot Field.'],
-      };
+  ///
+  /// These name the labels the PHONE shows, so they follow the app language
+  /// the person picked — someone reading the app in English is reading an
+  /// English phone.
+  List<String> steps(BuildContext context) {
+    final l = t(context);
+    return switch (manufacturer) {
+      'xiaomi' || 'redmi' || 'poco' => [l.powerXiaomi1, l.powerXiaomi2],
+      'oppo' || 'realme' || 'oneplus' => [l.powerOppo1, l.powerOppo2],
+      'vivo' || 'iqoo' => [l.powerVivo1, l.powerVivo2],
+      'huawei' || 'honor' => [l.powerHuawei1],
+      'samsung' => [l.powerSamsung1, l.powerSamsung2],
+      _ => [l.powerGeneric],
+    };
+  }
 }
 
 abstract final class DevicePower {

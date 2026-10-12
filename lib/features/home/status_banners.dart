@@ -41,60 +41,56 @@ class StatusBanners extends ConsumerWidget {
           TerraBanner(
             kind: lock.graceOver ? BannerKind.danger : BannerKind.warning,
             icon: Icons.phonelink_lock,
-            title: lock.graceOver
-                ? 'HP ini sudah digantikan'
-                : 'Akun ini dipakai di HP lain',
+            title: lock.graceOver ? t(context).phoneReplacedTitle : t(context).accountUsedElsewhere,
             body: lock.graceOver
-                ? 'Akun Anda dipakai masuk di HP lain, jadi HP ini tidak lagi menerima catatan baru. '
-                    'Sisa antrean tetap terkirim dari sini. Bila HP ini yang Anda pakai, masuk lagi di HP ini.'
-                : 'Akun Anda dipakai masuk di HP lain'
-                    '${lock.byName == null ? '' : ' (${lock.byName})'}. '
-                    'Kirim sisa data dari HP ini, lalu lanjutkan di HP itu. '
-                    'Mulai ${longDate(lock.until)} HP ini tidak lagi menerima catatan baru.',
-            action: FilledButton(onPressed: () => context.go('/login'), child: const Text('Masuk di HP ini')),
+                ? t(context).phoneReplacedBody
+                : t(context).accountUsedElsewhereBody(
+                    lock.byName == null ? '' : t(context).inParens(lock.byName!),
+                    longDate(lock.until),
+                  ),
+            action: FilledButton(onPressed: () => context.go('/login'), child: Text(t(context).signInOnThisPhone)),
           ),
         if (session?.sessionExpired ?? false)
           TerraBanner(
             kind: BannerKind.danger,
             icon: Icons.lock_clock_outlined,
-            title: 'Sesi berakhir — masuk lagi',
-            body: 'Data di HP ini AMAN dan tetap dapat diisi. Masuk lagi supaya antreannya dapat dikirim.',
-            action: FilledButton(onPressed: () => context.go('/login'), child: const Text('Masuk')),
+            title: t(context).sessionExpired,
+            body: t(context).sessionExpiredBody,
+            action: FilledButton(onPressed: () => context.go('/login'), child: Text(t(context).signIn)),
           ),
         if (clockOff)
           TerraBanner(
             kind: BannerKind.danger,
             icon: Icons.schedule,
-            title: 'Jam HP ${clockDriftText(drift)} dari jam server',
-            body: 'Semua jam bacaan bor dan jam TM diambil dari jam HP ini. '
-                'Nyalakan "Tanggal & waktu otomatis" di pengaturan HP, lalu tarik data lagi.',
+            title: t(context).clockOffTitle(clockDriftText(drift)),
+            body: t(context).clockOffBody,
           ),
         if (rejected > 0)
           TerraBanner(
             kind: BannerKind.danger,
-            title: '$rejected data ditolak server',
-            body: 'Buka Antrean untuk melihat sebabnya dan memperbaikinya.',
-            action: TextButton(onPressed: () => context.go('/queue'), child: const Text('Lihat')),
+            title: t(context).rejectedCount(rejected),
+            body: t(context).rejectedBody,
+            action: TextButton(onPressed: () => context.go('/queue'), child: Text(t(context).view)),
           ),
         if (showPending && (pending > 0 || pendingPhotos > 0) && !(session?.sessionExpired ?? false))
           TerraBanner(
             kind: stale ? BannerKind.danger : BannerKind.warning,
             icon: stale ? Icons.history_toggle_off : Icons.cloud_upload_outlined,
             title: syncState.running
-                ? 'Mengirim…'
+                ? t(context).sending
                 : stale
-                    ? 'Lebih dari sehari belum terkirim: $pending data, $pendingPhotos foto'
-                    : 'Belum terkirim: $pending data, $pendingPhotos foto',
+                    ? t(context).staleUnsent(pending, pendingPhotos)
+                    : t(context).unsent(pending, pendingPhotos),
             body: stale
-                ? 'Cari tempat bersinyal atau WiFi, lalu tekan Kirim. Bila tetap tidak terkirim, hubungi admin TerraBot.'
+                ? t(context).staleUnsentBody
                 : syncState.last?.offline ?? false
-                    ? 'Tidak ada sinyal. Dikirim otomatis begitu HP mendapat sinyal, walau aplikasi ditutup.'
-                    : 'Dikirim otomatis begitu ada sinyal.',
+                    ? t(context).offlineAutoSend
+                    : t(context).autoSendOnSignal,
             action: syncState.running
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : TextButton(
                     onPressed: () => ref.read(syncProvider.notifier).run(),
-                    child: const Text('Kirim'),
+                    child: Text(t(context).send),
                   ),
           ),
       ],

@@ -42,7 +42,7 @@ class HomePage extends ConsumerWidget {
         title: const Text('TerraBot Field'),
         actions: [
           IconButton(
-            tooltip: 'Pengaturan',
+            tooltip: t(context).settingsTitle,
             onPressed: () => context.push('/settings'),
             icon: CircleAvatar(
               radius: 16,
@@ -63,16 +63,16 @@ class HomePage extends ConsumerWidget {
             const PowerBanner(),
             const _WatchedCard(),
             if (projects.isEmpty)
-              const TerraBanner(
+              TerraBanner(
                 kind: BannerKind.info,
-                title: 'Daftar proyek belum ada di HP',
-                body: 'Tarik ke bawah untuk mengambilnya dari server. Perlu sinyal sekali saja; sesudahnya dapat dipakai tanpa sinyal.',
+                title: t(context).projectsMissingTitle,
+                body: t(context).projectsMissingHome,
               ),
             if (!canAttend && !canCast)
-              const TerraBanner(
+              TerraBanner(
                 kind: BannerKind.warning,
-                title: 'Akun ini belum punya akses lapangan',
-                body: 'Minta admin TerraBot menambahkan divisi Field Engineer ke akun Anda, lalu tarik ke bawah.',
+                title: t(context).noFieldAccess,
+                body: t(context).noFieldAccessBody,
               ),
             if (canAttend)
               _Shortcut(

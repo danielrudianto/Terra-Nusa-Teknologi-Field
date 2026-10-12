@@ -13,6 +13,7 @@ import '../../core/widgets/page_header.dart';
 import '../../core/widgets/status_badge.dart';
 import '../home/status_banners.dart';
 import 'review_badge.dart';
+import '../../core/i18n.dart';
 
 class AttendancePage extends ConsumerWidget {
   const AttendancePage({super.key});
@@ -25,23 +26,23 @@ class AttendancePage extends ConsumerWidget {
     final allows = ref.watch(sessionProvider).value?.allows('field_attendance', 'create') ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Absensi kru')),
+      appBar: AppBar(title: Text(t(context).attendanceTitle)),
       floatingActionButton: allows
           ? FloatingActionButton.extended(
               onPressed: () => context.push('/attendance/new'),
               icon: const Icon(Icons.add),
-              label: const Text('Absen hari ini'),
+              label: Text(t(context).attendToday),
             )
           : null,
       body: doc.when(
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(title: 'Absen gagal dibaca', message: '$e'),
+        error: (e, _) => ErrorState(title: t(context).attendanceLoadError, message: '$e'),
         data: (items) => ListView(
           padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 96),
           children: [
             const StatusBanners(showPending: false),
-            const PageHeader(title: 'Riwayat absen', description: 'Absen yang dibuat dari HP ini'),
-            if (items.isEmpty) const EmptyState(message: 'Belum ada absen.', icon: Icons.how_to_reg_outlined),
+            PageHeader(title: t(context).attendanceHistory, description: t(context).attendanceHistoryBody),
+            if (items.isEmpty) EmptyState(message: t(context).noAttendanceYet, icon: Icons.how_to_reg_outlined),
             for (final d in items)
               Builder(builder: (context) {
                 final body = (jsonDecode(d.body) as Map).cast<String, Object?>();

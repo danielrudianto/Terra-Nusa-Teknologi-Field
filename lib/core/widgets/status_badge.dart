@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/color_tokens.dart';
 import '../theme/dimens.dart';
+import '../i18n.dart';
 
 /// Small colored badge — push status / review status.
 class StatusBadge extends StatelessWidget {
@@ -15,11 +16,11 @@ class StatusBadge extends StatelessWidget {
   factory StatusBadge.sendStatus(BuildContext context, String status) {
     final w = context.colors;
     return switch (status) {
-      'sent' => StatusBadge(text: 'Terkirim', bg: w.okBg, fg: w.okFg, icon: Icons.cloud_done_outlined),
-      'rejected' => StatusBadge(text: 'Ditolak', bg: w.badBg, fg: w.badFg, icon: Icons.block),
-      'deferred' => StatusBadge(text: 'Menunggu data', bg: w.warnBg, fg: w.warnFg, icon: Icons.hourglass_empty),
-      'failed' => StatusBadge(text: 'Gagal, diulang', bg: w.warnBg, fg: w.warnFg, icon: Icons.sync_problem),
-      _ => StatusBadge(text: 'Belum terkirim', bg: w.brandSoft, fg: w.brandStrong, icon: Icons.cloud_upload_outlined),
+      'sent' => StatusBadge(text: t(context).badgeSent, bg: w.okBg, fg: w.okFg, icon: Icons.cloud_done_outlined),
+      'rejected' => StatusBadge(text: t(context).badgeRejected, bg: w.badBg, fg: w.badFg, icon: Icons.block),
+      'deferred' => StatusBadge(text: t(context).badgeWaiting, bg: w.warnBg, fg: w.warnFg, icon: Icons.hourglass_empty),
+      'failed' => StatusBadge(text: t(context).badgeFailedRetry, bg: w.warnBg, fg: w.warnFg, icon: Icons.sync_problem),
+      _ => StatusBadge(text: t(context).badgeUnsent, bg: w.brandSoft, fg: w.brandStrong, icon: Icons.cloud_upload_outlined),
     };
   }
 

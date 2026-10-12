@@ -17,6 +17,7 @@ import '../drilling/drill_readings.dart';
 import 'handover.dart';
 import 'level_reference.dart';
 import 'pile_point_data.dart';
+import '../../core/i18n.dart';
 
 /// Pile points of one project.
 class PilePointsPage extends ConsumerStatefulWidget {
@@ -75,17 +76,17 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     final project = (ref.watch(projectsProvider).value ?? const []).where((p) => '${p['id']}' == '${widget.projectId}').firstOrNull;
 
     return Scaffold(
-      appBar: AppBar(title: Text(project == null ? 'Titik bor' : '${project['code']} · titik bor')),
+      appBar: AppBar(title: Text(project == null ? t(context).pointsTitle : t(context).pointsTitleOf('${project['code']}'))),
       floatingActionButton: _showTop
           ? FloatingActionButton.small(
-              tooltip: 'Ke atas',
+              tooltip: t(context).toTop,
               onPressed: _toTop,
               child: const Icon(Icons.keyboard_arrow_up),
             )
           : null,
       body: data.when(
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(title: 'Titik gagal dibaca', message: '$e'),
+        error: (e, _) => ErrorState(title: t(context).pointsLoadError, message: '$e'),
         data: (all) {
           final matching = _search.isEmpty
               ? all
@@ -94,12 +95,12 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
           final castCount = all.where((t) => t.stage == 'selesai' || t.stage == 'sudah_cor').length;
 
           if (all.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.all(Dimens.pagePadding),
+            return Padding(
+              padding: const EdgeInsets.all(Dimens.pagePadding),
               child: TerraBanner(
                 kind: BannerKind.info,
-                title: 'Belum ada titik bor',
-                body: 'Titik bor diisi kantor (impor Excel di TerraBot web). Tarik ke bawah di halaman sebelumnya untuk mengambil yang terbaru.',
+                title: t(context).noPointsTitle,
+                body: t(context).noPointsBody,
               ),
             );
           }
@@ -120,11 +121,11 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                         textInputAction: TextInputAction.search,
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
-                          hintText: 'Cari kode titik',
+                          hintText: t(context).searchPointCode,
                           suffixIcon: _search.isEmpty
                               ? null
                               : IconButton(
-                                  tooltip: 'Hapus',
+                                  tooltip: t(context).clear,
                                   icon: const Icon(Icons.close),
                                   onPressed: () {
                                     _searchInput.clear();
@@ -144,11 +145,11 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            for (final (k, l) in const [
-                              ('all', 'Semua'),
-                              ('undrilled', 'Belum bor'),
-                              ('drilled', 'Dibor'),
-                              ('cast', 'Dicor'),
+                            for (final (k, l) in [
+                              ('all', t(context).filterAll),
+                              ('undrilled', t(context).filterUndrilled),
+                              ('drilled', t(context).filterDrilled),
+                              ('cast', t(context).filterCast),
                             ]) ...[
                               ChoiceChip(
                                 label: Text('$l (${matching.where((t) => _inFilter(t, k)).length})'),
@@ -176,9 +177,9 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: Text('$castCount dari ${all.length} titik sudah dicor', style: TextStyle(color: w.muted)),
+                      child: Text(t(context).castProgress(castCount, all.length), style: TextStyle(color: w.muted)),
                     ),
-                    if (items.isEmpty) const EmptyState(message: 'Tidak ada titik yang cocok.'),
+                    if (items.isEmpty) EmptyState(message: t(context).noMatchingPoints),
                     for (final t in items) _card(t),
                   ],
                 ),
@@ -195,11 +196,11 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     // Each stage its own colour, in the order of the work: grey → amber
     // (drilling) → blue (drilled) → purple (casting) → green (cast).
     final (text, bg, fg) = switch (t.stage) {
-      'berjalan' => ('Sedang dicor', w.checkedBg, w.checkedFg),
-      'selesai' || 'sudah_cor' => ('Sudah dicor', w.okBg, w.okFg),
-      'sudah_bor' => ('Dibor ${formatMeters(t.drillDepthM)}', w.infoBg, w.infoFg),
-      'sedang_bor' => ('Sedang dibor', w.warnBg, w.warnFg),
-      _ => ('Belum dibor', w.surface2, w.muted),
+      'berjalan' => (t(context).stageCasting, w.checkedBg, w.checkedFg),
+      'selesai' || 'sudah_cor' => (t(context).stageCast, w.okBg, w.okFg),
+      'sudah_bor' => (t(context).stageDrilled(formatMeters(t.drillDepthM)), w.infoBg, w.infoFg),
+      'sedang_bor' => (t(context).stageDrilling, w.warnBg, w.warnFg),
+      _ => (t(context).stageUndrilled, w.surface2, w.muted),
     };
     final busy = t.stage == 'berjalan' || t.stage == 'sedang_bor';
     return ListCard(
@@ -216,7 +217,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 Text('D${t.diameterMm} · efektif ${formatMeters(t.plannedEffectiveLengthM)} · ${t.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³',
                     style: TextStyle(color: w.muted, fontSize: 13)),
                 if (t.groundLevel == null && t.stage != 'sudah_cor')
-                  Text('GS belum diisi', style: TextStyle(color: w.warnFg, fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(t(context).gsMissingShort, style: TextStyle(color: w.warnFg, fontSize: 13, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -257,42 +258,37 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Titik ${t.code}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+              Text(t(context).pointHeading(t.code), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
               const SizedBox(height: 8),
-              _InfoRow('Diameter', '${t.diameterMm} mm'),
-              _InfoRow('GS / cut-off / tip', '${_elevation(t.groundLevel)} / ${_elevation(t.cutOffLevel)} / ${_elevation(t.tipLevel)}'),
-              _InfoRow('Kedalaman cut-off dari GS', formatMeters(g?.cutOffDepthM)),
-              _InfoRow('Panjang bor rencana', formatMeters(g?.plannedDrillLengthM)),
-              _InfoRow('Panjang efektif rencana', formatMeters(t.plannedEffectiveLengthM)),
-              _InfoRow('Volume teoritis rencana', '${t.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³'),
-              if (t.drillDepthM != null) _InfoRow('Kedalaman bor aktual', formatMeters(t.drillDepthM)),
+              _InfoRow(t(context).fieldDiameter, '${t.diameterMm} mm'),
+              _InfoRow(t(context).fieldLevels, '${_elevation(t.groundLevel)} / ${_elevation(t.cutOffLevel)} / ${_elevation(t.tipLevel)}'),
+              _InfoRow(t(context).fieldCutOffDepth, formatMeters(g?.cutOffDepthM)),
+              _InfoRow(t(context).fieldPlannedDrill, formatMeters(g?.plannedDrillLengthM)),
+              _InfoRow(t(context).fieldPlannedEff, formatMeters(t.plannedEffectiveLengthM)),
+              _InfoRow(t(context).fieldPlannedVol, '${t.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³'),
+              if (t.drillDepthM != null) _InfoRow(t(context).fieldActualDrill, formatMeters(t.drillDepthM)),
               const SizedBox(height: 14),
               if (g == null && t.stage != 'sudah_cor')
-                const TerraBanner(
+                TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.terrain_outlined,
-                  title: 'Elevasi GS belum diisi',
-                  body: 'Kedalaman dari GS belum dapat dihitung, dan log cor baru bisa dimulai setelah GS terisi. '
-                      'Isi GS saat menandai titik ini sudah dibor.',
+                  title: t(context).gsMissingTitle,
+                  body: t(context).gsMissingBody,
                 ),
               if (elsewhere) ...[
                 TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.block,
                   title: !t.castingHeldElsewhere
-                      ? 'Titik ini sudah punya log cor'
+                      ? t(context).castLogExists
                       : castingIsMine
-                          ? 'Log cornya ada di HP Anda yang lain'
-                          : 'Sedang dicor dari HP lain',
+                          ? t(context).castLogOnMyOther
+                          : t(context).castLogElsewhere,
                   body: !t.castingHeldElsewhere
-                      ? '${t.castingHolderName ?? t.serverCastingBy ?? 'Rekan'} yang memegang log cornya. '
-                          'Satu titik hanya boleh satu log cor. Bila log itu salah, minta kantor menghapusnya dulu.'
+                      ? t(context).castLogHeldBody(t.castingHolderName ?? t.serverCastingBy ?? t(context).colleague)
                       : castingIsMine
-                          ? 'Log cor ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. '
-                              'Ambil langsung ke sini tanpa kode oper.'
-                          : '${t.castingHolderName ?? t.serverCastingBy ?? 'Rekan'} yang memegang log cornya. '
-                              'Satu titik hanya boleh satu log cor. Untuk melanjutkan dari HP ini, '
-                              'minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.',
+                          ? t(context).logIsMineBody
+                          : t(context).castLogHandoverBody(t.castingHolderName ?? t.serverCastingBy ?? t(context).colleague),
                 ),
                 if (t.castingHeldElsewhere && allows && t.serverCastingUuid != null) ...[
                   const SizedBox(height: 10),
@@ -301,7 +297,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                         ? _resumeOwn(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t)
                         : _redeem(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t),
                     icon: Icon(castingIsMine ? Icons.phonelink_setup : Icons.swap_horiz),
-                    label: Text(castingIsMine ? 'Ambil ke HP ini' : 'Lanjutkan di HP ini (kode oper)'),
+                    label: Text(castingIsMine ? t(context).takeToThisPhone : t(context).continueHereCode),
                   ),
                 ],
               ],
@@ -309,13 +305,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 TerraBanner(
                   kind: BannerKind.info,
                   icon: Icons.construction,
-                  title: drillLogIsMine ? 'Log bornya ada di HP Anda yang lain' : 'Sedang dibor dari HP lain',
+                  title: drillLogIsMine ? t(context).drillLogOnMyOther : t(context).drillLogElsewhere,
                   body: drillLogIsMine
-                      ? 'Log bor ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. '
-                          'Ambil langsung ke sini tanpa kode oper.'
-                      : 'Log bornya dipegang ${t.drillLogHolderName ?? t.serverDrillLogBy ?? 'rekan'}. '
-                          'Satu titik hanya boleh satu log bor. Untuk melanjutkan dari HP ini, '
-                          'minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.',
+                      ? t(context).logIsMineBody
+                      : t(context).drillLogHandoverBody(t.drillLogHolderName ?? t.serverDrillLogBy ?? t(context).colleague),
                 ),
                 if (allows && t.serverDrillLogUuid != null) ...[
                   const SizedBox(height: 10),
@@ -324,7 +317,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                         ? _resumeOwn(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t)
                         : _redeem(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t),
                     icon: Icon(drillLogIsMine ? Icons.phonelink_setup : Icons.swap_horiz),
-                    label: Text(drillLogIsMine ? 'Ambil ke HP ini' : 'Lanjutkan di HP ini (kode oper)'),
+                    label: Text(drillLogIsMine ? t(context).takeToThisPhone : t(context).continueHereCode),
                   ),
                 ],
               ]
@@ -332,13 +325,11 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 TerraBanner(
                   kind: BannerKind.info,
                   icon: Icons.straighten,
-                  title: drillLogOpen ? 'Sedang dibor' : 'Catat bor dulu',
-                  body: drillLogOpen
-                      ? 'Log cor bisa dimulai setelah log bor ditutup dengan "Selesai bor".'
-                      : 'Log cor baru bisa dimulai setelah titik ini selesai dibor: lewat log bor, atau tandai langsung.',
+                  title: drillLogOpen ? t(context).stageDrilling : t(context).drillFirstTitle,
+                  body: drillLogOpen ? t(context).castAfterDrillLog : t(context).castAfterDrilled,
                 ),
               if (!allows)
-                const TerraBanner(kind: BannerKind.info, title: 'Hanya dapat dilihat', body: 'Akun ini tidak berhak mencatat log cor.')
+                TerraBanner(kind: BannerKind.info, title: t(context).viewOnlyTitle, body: t(context).viewOnlyCastBody)
               else ...[
                 // Not drilled yet: drilling is THE next step, so it gets the
                 // filled button and "Mulai log cor" below stays disabled.
@@ -349,7 +340,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       context.push('/drilling/log/${t.drillLog!.uuid}');
                     },
                     icon: const Icon(Icons.construction),
-                    label: const Text('Lanjutkan log bor'),
+                    label: Text(t(context).continueDrillLog),
                   )
                 else if (t.drillLog != null)
                   OutlinedButton.icon(
@@ -358,7 +349,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       context.push('/drilling/log/${t.drillLog!.uuid}');
                     },
                     icon: const Icon(Icons.construction),
-                    label: const Text('Lihat log bor'),
+                    label: Text(t(context).viewDrillLog),
                   )
                 else if (!drilled && !drillingElsewhere) ...[
                   FilledButton.icon(
@@ -367,7 +358,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       context.push('/drilling/log/${newUuid()}?pilePoint=${t.uuid}');
                     },
                     icon: const Icon(Icons.construction),
-                    label: const Text('Mulai log bor'),
+                    label: Text(t(context).startDrillLog),
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
@@ -376,7 +367,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       _markDrilled(t);
                     },
                     icon: const Icon(Icons.straighten),
-                    label: const Text('Tandai sudah dibor (tanpa log)'),
+                    label: Text(t(context).markDrilledNoLog),
                   ),
                 ],
                 if (t.stage == 'sudah_bor') ...[
@@ -387,7 +378,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       _markDrilled(t);
                     },
                     icon: const Icon(Icons.straighten),
-                    label: const Text('Koreksi kedalaman bor / GS'),
+                    label: Text(t(context).correctDrillGs),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -398,7 +389,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       context.push('/casting/log/${t.casting!.uuid}');
                     },
                     icon: const Icon(Icons.open_in_new),
-                    label: const Text('Buka log cor'),
+                    label: Text(t(context).openCastLog),
                   )
                 else if (t.stage != 'sudah_cor' && !elsewhere)
                   FilledButton.icon(
@@ -409,7 +400,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                             context.push('/casting/log/${newUuid()}?pilePoint=${t.uuid}');
                           },
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Mulai log cor'),
+                    label: Text(t(context).startCastLog),
                   ),
               ],
             ],
@@ -439,7 +430,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
   }
 
   String _elevation(double? v) =>
-      v == null ? 'belum diisi' : '${v >= 0 ? '+' : ''}${v.toStringAsFixed(2).replaceAll('.', ',')}';
+      v == null ? t(context).notFilled : '${v >= 0 ? '+' : ''}${v.toStringAsFixed(2).replaceAll('.', ',')}';
 
   /// Mark drilled, with the ground level (GS) measured at the hole.
   ///
@@ -486,7 +477,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
           children: [
             const Icon(Icons.check_circle_outline, color: Colors.white),
             const SizedBox(width: 10),
-            Expanded(child: Text('${t.code} ditandai sudah dibor ${formatMeters(result.depth)}.')),
+            Expanded(child: Text(t(context).markedDrilled(t.code, formatMeters(result.depth)))),
           ],
         ),
       ),
@@ -535,19 +526,19 @@ class _DrillDialogState extends State<_DrillDialog> {
     final gsText = _gsInput.text.trim();
     final gs = gsText.isEmpty ? null : parseNumber(gsText);
     if (gsText.isNotEmpty && (gs == null || gs < -500 || gs > 5000)) {
-      setState(() => _problem = 'Elevasi GS tidak sah.');
+      setState(() => _problem = t(context).gsInvalid);
       return;
     }
     if (widget.gsRequired && gs == null) {
-      setState(() => _problem = 'Isi elevasi GS titik ini. Log cor tidak dapat dimulai tanpanya.');
+      setState(() => _problem = t(context).gsRequiredMsg);
       return;
     }
     if (depth == null || depth <= 0) {
-      setState(() => _problem = 'Isi kedalaman bor (m), lebih dari 0.');
+      setState(() => _problem = t(context).drillDepthInvalid);
       return;
     }
     if (depth > maxDrillDepthM) {
-      setState(() => _problem = 'Kedalaman paling dalam ${formatMeters(maxDrillDepthM, decimals: 0)}. Periksa angkanya.');
+      setState(() => _problem = t(context).drillDepthTooDeep(formatMeters(maxDrillDepthM, decimals: 0)));
       return;
     }
     final planned = _plannedFor(gs);
@@ -571,14 +562,14 @@ class _DrillDialogState extends State<_DrillDialog> {
     final cutOffAboveGs = typedGs != null && typedGs < widget.cutOffLevel;
     return AlertDialog(
       icon: Icon(Icons.straighten, size: 32, color: w.brand),
-      title: Text('Tandai dibor ${widget.code}', textAlign: TextAlign.center),
+      title: Text(t(context).markDrilledTitle(widget.code), textAlign: TextAlign.center),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (problem != null) ...[
-              TerraBanner(kind: BannerKind.danger, title: 'Periksa isian', body: problem),
+              TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: problem),
               const SizedBox(height: 8),
             ],
             LevelReferenceBanner(
@@ -593,7 +584,7 @@ class _DrillDialogState extends State<_DrillDialog> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
               inputFormatters: decimalInput(maxIntDigits: 4, decimals: 3, signed: true),
               decoration: InputDecoration(
-                labelText: widget.gsRequired ? 'Elevasi GS (m) — wajib' : 'Elevasi GS (m)',
+                labelText: widget.gsRequired ? t(context).gsFieldRequired : t(context).gsField,
                 suffixText: 'm',
               ),
               onChanged: (_) => setState(() => _problem = null),
@@ -603,9 +594,8 @@ class _DrillDialogState extends State<_DrillDialog> {
                 padding: const EdgeInsets.only(top: 8),
                 child: TerraBanner(
                   kind: BannerKind.warning,
-                  title: 'Cut-off di atas GS',
-                  body: 'COL ${formatElevation(widget.cutOffLevel)} lebih tinggi dari GS ini. '
-                      'Pastikan angka GS benar sebelum menyimpan.',
+                  title: t(context).cutOffAboveGsTitle,
+                  body: t(context).cutOffAboveGsBody(formatElevation(widget.cutOffLevel)),
                 ),
               ),
             const SizedBox(height: 18),
@@ -613,23 +603,23 @@ class _DrillDialogState extends State<_DrillDialog> {
               controller: _depthInput,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: decimalInput(maxIntDigits: 3),
-              decoration: const InputDecoration(labelText: 'Kedalaman bor (m)', suffixText: 'm'),
+              decoration: InputDecoration(labelText: t(context).drillDepthField, suffixText: 'm'),
               onChanged: (_) => setState(() => _problem = null),
             ),
             if (overPlan != null) ...[
               const SizedBox(height: 8),
               TerraBanner(
                 kind: BannerKind.warning,
-                title: 'Sudah lewat ${formatMeters(overPlan)} dari rencana',
-                body: 'Rencana ${formatMeters(planned)}. Lewat sedikit boleh; pastikan memang perlu dibor lebih dalam.',
+                title: t(context).beyondPlanTitle(formatMeters(overPlan)),
+                body: t(context).beyondPlanBody(formatMeters(planned)),
               ),
             ],
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        FilledButton(onPressed: refusal == null ? _submit : null, child: const Text('Simpan')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
+        FilledButton(onPressed: refusal == null ? _submit : null, child: Text(t(context).save)),
       ],
     );
   }

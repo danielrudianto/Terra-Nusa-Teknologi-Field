@@ -23,6 +23,7 @@ import '../casting/handover.dart';
 import '../casting/level_reference.dart';
 import 'drill_readings.dart';
 import 'operator_picker.dart';
+import '../../core/i18n.dart';
 
 /// Drill log of one pile point: "at this time the hole was this deep".
 ///
@@ -62,25 +63,26 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       pilePointUuid = '${doc['pilePointUuid']}';
     }
     if (pilePointUuid == null) {
-      setState(() => _error = 'Log bor tidak ditemukan di HP ini.');
+      setState(() => _error = t(context).drillLogNotOnPhone);
       return;
     }
     final point = await db.getMaster('pile_point', pilePointUuid);
     if (point == null) {
-      setState(() => _error = 'Titik bor tidak ditemukan. Tarik data terbaru dulu.');
+      setState(() => _error = t(context).pointNotFoundPull);
       return;
     }
     if (doc == null) {
       // One point, one drill log: the server refuses a second one.
       final existing = point['drillLogUuid'];
       if (existing != null && '$existing' != widget.uuid) {
-        setState(() => _error = 'Titik ${point['code']} sudah punya log bor'
-            '${point['drillLogByName'] == null ? '' : ' dari ${point['drillLogByName']}'}. '
-            'Satu titik hanya boleh satu log bor.');
+        setState(() => _error = t(context).pointHasDrillLog(
+              '${point['code']}',
+              point['drillLogByName'] == null ? '' : t(context).byWhom('${point['drillLogByName']}'),
+            ));
         return;
       }
       if (point['status'] == 'sudah_cor') {
-        setState(() => _error = 'Titik ${point['code']} sudah dicor.');
+        setState(() => _error = t(context).pointAlreadyCast('${point['code']}'));
         return;
       }
       // Not saved until the first reading, so opening and leaving again
@@ -170,12 +172,12 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   /// caller never reports success over unchanged data.
   Future<bool> _update(void Function(Map<String, Object?> d) f) async {
     if (_handedAway) {
-      if (mounted) _snack('Log bor ini dipegang ${_holderName ?? 'rekan'} — ubah dari HP pemegangnya.');
+      if (mounted) _snack(t(context).drillHeldByOther(_holderName ?? t(context).colleague));
       return false;
     }
     final p = ref.read(userProvider);
     if (p == null) {
-      if (mounted) _snack('Belum masuk akun — tidak ada yang tersimpan.');
+      if (mounted) _snack(t(context).notSignedIn);
       return false;
     }
     setState(() => f(_doc!));
@@ -205,7 +207,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       setState(() => _doc!['operatorUuid'] = picked);
     } else {
       if (!await _update((d) => d['operatorUuid'] = picked)) return false;
-      if (mounted) _snack('Operator bor disimpan.');
+      if (mounted) _snack(t(context).operatorSaved);
     }
     return true;
   }
@@ -236,7 +238,9 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       d['entries'] = list;
     });
     if (!saved || !mounted) return;
-    _snack(result.delete ? 'Bacaan dihapus.' : 'Tercatat ${formatMeters(result.depthM)} jam ${formatTime(result.at)}.');
+    _snack(result.delete
+        ? t(context).readingDeleted
+        : t(context).readingRecorded(formatMeters(result.depthM), formatTime(result.at)));
   }
 
   Future<void> _finish() async {
@@ -267,16 +271,16 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     if (!saved) return;
     final stored = await ref.read(dbProvider).getDocument(widget.uuid);
     if (stored == null || (jsonDecode(stored.body) as Map)['status'] != 'selesai') {
-      if (mounted) _snack('Status selesai belum tersimpan. Coba tekan "Selesai bor" sekali lagi.');
+      if (mounted) _snack(t(context).drillFinishNotStored);
       return;
     }
     if (!mounted) return;
-    _snack('$_code selesai dibor ${formatMeters(deepest)}.');
+    _snack(t(context).drillFinished(_code, formatMeters(deepest)));
   }
 
   Future<void> _reopen() async {
     if (!await _update((d) => d['status'] = 'berjalan')) return;
-    _snack('Log bor dibuka lagi.');
+    _snack(t(context).drillReopened);
   }
 
   void _snack(String text) {
@@ -300,7 +304,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
-      return Scaffold(appBar: AppBar(title: const Text('Log bor')), body: ErrorState(title: _error!));
+      return Scaffold(appBar: AppBar(title: Text(t(context).entityDrillLog)), body: ErrorState(title: _error!));
     }
     if (_doc == null) return const Scaffold(body: LoadingState());
     final w = context.colors;
@@ -311,11 +315,11 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bor $_code'),
+        title: Text(t(context).drillOf(_code)),
         actions: [
           if (canOffer)
             IconButton(
-              tooltip: 'Oper ke rekan',
+              tooltip: t(context).handOverToMate,
               icon: const Icon(Icons.swap_horiz),
               onPressed: () => offerHandover(context, ref, entity: 'drill_log', uuid: widget.uuid, pointCode: _code),
             ),
@@ -331,32 +335,31 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
             TerraBanner(
               kind: BannerKind.info,
               icon: Icons.swap_horiz,
-              title: 'Dioper ke ${_holderName ?? 'rekan'}',
-              body: 'Log bor ini dilanjutkan dari HP ${_holderName ?? 'rekan'}. '
-                  'Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.',
+              title: t(context).handedOverTo(_holderName ?? t(context).colleague),
+              body: t(context).drillHandedOverBody(_holderName ?? t(context).colleague),
             ),
           if (_row?.sendStatus == 'rejected' && !_handedAway)
-            TerraBanner(kind: BannerKind.danger, title: 'Ditolak server', body: reasonText(_row!.reason, _row!.detail)),
+            TerraBanner(kind: BannerKind.danger, title: t(context).rejectedByServer, body: reasonText(context, _row!.reason, _row!.detail)),
           _DepthHero(readings: readings, plannedM: _plannedM, diameterMm: toIntOrNull(_pilePoint!['diameterMm']), finished: _finished),
           _OperatorRow(uuid: _operatorUuid, onChange: canEdit ? _chooseOperator : null),
           if (_finished)
             TerraBanner(
               kind: BannerKind.ok,
-              title: 'Selesai dibor ${formatMeters(deepestM(readings))}',
-              body: 'Titik ini sudah ditandai dibor; log cor bisa dimulai.',
-              action: cast ? null : TextButton(onPressed: _reopen, child: const Text('Buka lagi')),
+              title: t(context).drilledToDepth(formatMeters(deepestM(readings))),
+              body: t(context).drilledBodyOk,
+              action: cast ? null : TextButton(onPressed: _reopen, child: Text(t(context).reopen)),
             ),
           Padding(
             padding: const EdgeInsets.only(top: 14, bottom: 8),
             child: Row(
               children: [
-                Expanded(child: Text('Bacaan', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: w.ink))),
-                Text('${readings.length} kali', style: TextStyle(color: w.muted, fontSize: 13)),
+                Expanded(child: Text(t(context).readingsSection, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: w.ink))),
+                Text(t(context).readingsCount(readings.length), style: TextStyle(color: w.muted, fontSize: 13)),
               ],
             ),
           ),
           if (readings.isEmpty)
-            const EmptyState(message: 'Belum ada bacaan. Tekan "Catat kedalaman" setiap kali kedalaman dibaca.'),
+            EmptyState(message: t(context).noReadingsYet),
           // Newest first: the one just written is the one being looked at.
           for (var i = readings.length - 1; i >= 0; i--)
             _ReadingCard(
@@ -377,7 +380,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                         ? null
                         : () => context.pushReplacement('/casting/log/${newUuid()}?pilePoint=${_doc!['pilePointUuid']}'),
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Mulai log cor'),
+                    label: Text(t(context).startCastLog),
                   ),
                 )
               : Row(
@@ -386,7 +389,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                       Expanded(
                         child: SizedBox(
                           height: Dimens.minTouch + 4,
-                          child: OutlinedButton(onPressed: canEdit ? _finish : null, child: const Text('Selesai bor')),
+                          child: OutlinedButton(onPressed: canEdit ? _finish : null, child: Text(t(context).finishDrilling)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -398,7 +401,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                         child: FilledButton.icon(
                           onPressed: canEdit ? () => _addOrEdit() : null,
                           icon: const Icon(Icons.add),
-                          label: const Text('Catat kedalaman'),
+                          label: Text(t(context).recordDepth),
                         ),
                       ),
                     ),
@@ -431,12 +434,12 @@ class _OperatorRow extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('OPERATOR BOR', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.9, color: w.faint)),
-                Text(name ?? 'Belum dipilih', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: name == null ? w.warnFg : w.ink)),
+                Text(t(context).drillOperatorLabel, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.9, color: w.faint)),
+                Text(name ?? t(context).notPicked, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: name == null ? w.warnFg : w.ink)),
               ],
             ),
           ),
-          if (onChange != null) Text(name == null ? 'Pilih' : 'Ganti', style: TextStyle(color: w.brand, fontWeight: FontWeight.w700)),
+          if (onChange != null) Text(name == null ? t(context).pick : t(context).change, style: TextStyle(color: w.brand, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -464,7 +467,7 @@ class _DepthHero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(finished ? 'KEDALAMAN AKHIR' : 'KEDALAMAN SEKARANG',
+          Text(finished ? t(context).finalDepthLabel : t(context).currentDepthLabel,
               style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.9, color: w.faint)),
           const SizedBox(height: 4),
           Row(
@@ -475,7 +478,7 @@ class _DepthHero extends StatelessWidget {
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 3),
-                child: Text(planned == null ? 'rencana belum bisa dihitung' : 'dari ${formatMeters(planned)} rencana',
+                child: Text(planned == null ? t(context).planNotComputable : t(context).ofPlanned(formatMeters(planned)),
                     style: TextStyle(color: w.muted, fontSize: 13)),
               ),
             ],
@@ -503,16 +506,17 @@ class _DepthHero extends StatelessWidget {
           Text(
             [
               if (diameterMm != null) 'D$diameterMm',
-              if (started != null) 'mulai ${formatTime(started)}',
-              if (started != null && last != null && last.isAfter(started)) 'sudah ${_hoursMinutes(last.difference(started))}',
-              if (planned == null) 'GS belum diisi',
+              if (started != null) t(context).startedAt(formatTime(started)),
+              if (started != null && last != null && last.isAfter(started))
+                t(context).runningFor(_hoursMinutes(context, last.difference(started))),
+              if (planned == null) t(context).gsMissingShort,
             ].join(' · '),
             style: TextStyle(color: w.muted, fontSize: 13),
           ),
           if (planned != null && over > 0.5)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text('${formatMeters(over)} lebih dalam dari rencana.',
+              child: Text(t(context).deeperThanPlan(formatMeters(over)),
                   style: TextStyle(color: w.warnFg, fontWeight: FontWeight.w600, fontSize: 13)),
             ),
         ],
@@ -521,7 +525,8 @@ class _DepthHero extends StatelessWidget {
   }
 }
 
-String _hoursMinutes(Duration d) => d.inHours > 0 ? '${d.inHours} j ${d.inMinutes % 60} m' : '${d.inMinutes} menit';
+String _hoursMinutes(BuildContext context, Duration d) =>
+    d.inHours > 0 ? t(context).hoursMinutes(d.inHours, d.inMinutes % 60) : t(context).minutesOnly(d.inMinutes);
 
 class _ReadingCard extends StatelessWidget {
   const _ReadingCard({required this.reading, required this.previous, this.onTap});
@@ -536,7 +541,7 @@ class _ReadingCard extends StatelessWidget {
     final p = previous;
     final progress = p == null
         ? null
-        : '+${formatMeters(reading.depthM - p.depthM)} dalam ${_hoursMinutes(reading.at.difference(p.at))}';
+        : t(context).depthGain(formatMeters(reading.depthM - p.depthM), _hoursMinutes(context, reading.at.difference(p.at)));
     return ListCard(
       onTap: onTap,
       child: Row(
@@ -623,13 +628,14 @@ class _ReadingSheetState extends State<_ReadingSheet> {
   }
 
   Future<void> _pickTime() async {
-    final t = await showTimeWheel(context, initial: _followNow ? DateTime.now() : _at, title: 'Jam bacaan');
-    if (t == null) return;
+    final picked = await showTimeWheel(context, initial: _followNow ? DateTime.now() : _at, title: t(context).readingTime);
+    if (picked == null) return;
     final now = DateTime.now();
     setState(() {
       // Picking the current minute (e.g. "Sekarang") keeps following the clock.
-      _followNow = widget.editing == null && t.hour == now.hour && t.minute == now.minute && t.day == now.day;
-      _at = _followNow ? now : t;
+      _followNow =
+          widget.editing == null && picked.hour == now.hour && picked.minute == now.minute && picked.day == now.day;
+      _at = _followNow ? now : picked;
       _problem = null;
     });
   }
@@ -638,15 +644,15 @@ class _ReadingSheetState extends State<_ReadingSheet> {
     if (_followNow) _at = DateTime.now();
     final depth = parseNumber(_depth.text);
     if (depth == null || depth <= 0) {
-      setState(() => _problem = 'Isi kedalaman (m), lebih dari 0.');
+      setState(() => _problem = t(context).depthInvalid);
       return;
     }
     if (depth > maxDrillDepthM) {
-      setState(() => _problem = 'Kedalaman paling dalam ${formatMeters(maxDrillDepthM, decimals: 0)}. Periksa angkanya.');
+      setState(() => _problem = t(context).drillDepthTooDeep(formatMeters(maxDrillDepthM, decimals: 0)));
       return;
     }
     if (_at.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
-      setState(() => _problem = 'Jamnya di masa depan. Periksa jam bacaan.');
+      setState(() => _problem = t(context).timeInFuture);
       return;
     }
     final wrong = readingProblem(widget.readings, _at, depth, replacing: widget.editing?.uuid);
@@ -679,17 +685,18 @@ class _ReadingSheetState extends State<_ReadingSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(widget.editing == null ? 'Catat kedalaman' : 'Ubah bacaan',
+          Text(widget.editing == null ? t(context).recordDepth : t(context).editReading,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
           Text(
             [
-              if (widget.editing == null && last != null) 'Bacaan terakhir ${formatMeters(last.depthM)} jam ${formatTime(last.at)}',
-              if (widget.plannedM != null) 'rencana ${formatMeters(widget.plannedM)}',
+              if (widget.editing == null && last != null)
+                t(context).lastReadingWas(formatMeters(last.depthM), formatTime(last.at)),
+              if (widget.plannedM != null) t(context).plannedIs(formatMeters(widget.plannedM)),
             ].join(' · '),
             style: TextStyle(color: w.muted, fontSize: 13),
           ),
           const SizedBox(height: 12),
-          if (problem != null) TerraBanner(kind: BannerKind.danger, title: 'Periksa isian', body: problem),
+          if (problem != null) TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: problem),
           // The time is filled in; changing it is the exception.
           Material(
             color: w.surface2,
@@ -712,10 +719,10 @@ class _ReadingSheetState extends State<_ReadingSheet> {
                         )),
                     if (_followNow) ...[
                       const SizedBox(width: 8),
-                      Text('sekarang', style: TextStyle(color: w.muted, fontWeight: FontWeight.w600)),
+                      Text(t(context).now, style: TextStyle(color: w.muted, fontWeight: FontWeight.w600)),
                     ],
                     const Spacer(),
-                    Text('Ubah jam', style: TextStyle(color: w.brand, fontWeight: FontWeight.w700)),
+                    Text(t(context).editTime, style: TextStyle(color: w.brand, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -728,8 +735,8 @@ class _ReadingSheetState extends State<_ReadingSheet> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: decimalInput(maxIntDigits: 3),
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-            decoration: const InputDecoration(
-              labelText: 'Kedalaman dari GS',
+            decoration: InputDecoration(
+              labelText: t(context).depthFromGs,
               suffixText: 'm',
             ),
             onChanged: (_) => setState(() => _problem = null),
@@ -739,20 +746,20 @@ class _ReadingSheetState extends State<_ReadingSheet> {
             const SizedBox(height: 8),
             TerraBanner(
               kind: BannerKind.warning,
-              title: 'Sudah lewat ${formatMeters(overPlan)} dari rencana',
-              body: 'Rencana ${formatMeters(widget.plannedM)}. Lewat sedikit boleh; pastikan memang perlu dibor lebih dalam.',
+              title: t(context).beyondPlanTitle(formatMeters(overPlan)),
+              body: t(context).beyondPlanBody(formatMeters(widget.plannedM)),
             ),
           ],
           const SizedBox(height: 12),
           TextField(
             controller: _note,
             maxLength: 255,
-            decoration: const InputDecoration(labelText: 'Catatan (boleh kosong)', hintText: 'mis. ketemu batu, ganti mata bor'),
+            decoration: InputDecoration(labelText: t(context).noteOptional, hintText: t(context).drillNoteHint),
           ),
           const SizedBox(height: 8),
           SizedBox(
             height: Dimens.minTouch + 4,
-            child: FilledButton(onPressed: refusal == null ? _submit : null, child: const Text('Simpan')),
+            child: FilledButton(onPressed: refusal == null ? _submit : null, child: Text(t(context).save)),
           ),
           if (widget.editing != null) ...[
             const SizedBox(height: 8),
@@ -762,7 +769,7 @@ class _ReadingSheetState extends State<_ReadingSheet> {
                 _ReadingResult(at: widget.editing!.at, depthM: widget.editing!.depthM, delete: true),
               ),
               icon: Icon(Icons.delete_outline, color: w.badFg),
-              label: Text('Hapus bacaan ini', style: TextStyle(color: w.badFg)),
+              label: Text(t(context).deleteThisReading, style: TextStyle(color: w.badFg)),
             ),
           ],
         ],
@@ -818,7 +825,7 @@ class _FinishDialogState extends State<_FinishDialog> {
     if (widget.gsRequired) {
       gs = parseNumber(_gs.text);
       if (gs == null || gs < -500 || gs > 5000) {
-        setState(() => _problem = 'Isi elevasi GS titik ini. Log cor tidak dapat dimulai tanpanya.');
+        setState(() => _problem = t(context).gsRequiredMsg);
         return;
       }
     }
@@ -832,21 +839,20 @@ class _FinishDialogState extends State<_FinishDialog> {
     final short = planned == null ? 0.0 : planned - widget.deepestM;
     return AlertDialog(
       icon: Icon(Icons.flag_outlined, size: 32, color: w.brand),
-      title: Text('Selesai bor ${widget.code}?', textAlign: TextAlign.center),
+      title: Text(t(context).finishDrillingOf(widget.code), textAlign: TextAlign.center),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Kedalaman akhir ${formatMeters(widget.deepestM)} (bacaan terdalam). '
-                'Titik ditandai sudah dibor dan log cor bisa dimulai.',
+            Text(t(context).finishDrillBody(formatMeters(widget.deepestM)),
                 style: TextStyle(color: w.ink, height: 1.4)),
             if (short > 0.5) ...[
               const SizedBox(height: 10),
               TerraBanner(
                 kind: BannerKind.warning,
-                title: 'Masih ${formatMeters(short)} lebih dangkal dari rencana',
-                body: 'Rencana ${formatMeters(planned)}. Pastikan memang berhenti di sini.',
+                title: t(context).shallowerThanPlan(formatMeters(short)),
+                body: t(context).shallowerBody(formatMeters(planned)),
               ),
             ],
             const SizedBox(height: 10),
@@ -858,14 +864,14 @@ class _FinishDialogState extends State<_FinishDialog> {
             if (widget.gsRequired) ...[
               if (_problem != null) ...[
                 const SizedBox(height: 8),
-                TerraBanner(kind: BannerKind.danger, title: 'Periksa isian', body: _problem),
+                TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: _problem),
               ],
               const SizedBox(height: 16),
               TextField(
                 controller: _gs,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
                 inputFormatters: decimalInput(maxIntDigits: 4, decimals: 3, signed: true),
-                decoration: const InputDecoration(labelText: 'Elevasi GS (m) — wajib', suffixText: 'm'),
+                decoration: InputDecoration(labelText: t(context).gsFieldRequired, suffixText: 'm'),
                 onChanged: (_) => setState(() => _problem = null),
               ),
             ],
@@ -873,8 +879,8 @@ class _FinishDialogState extends State<_FinishDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        FilledButton(onPressed: _submit, child: const Text('Selesai bor')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
+        FilledButton(onPressed: _submit, child: Text(t(context).finishDrilling)),
       ],
     );
   }

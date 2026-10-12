@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/color_tokens.dart';
 import '../util/decimal_input.dart';
 import '../util/format.dart';
+import '../i18n.dart';
 
 /// Ask for one number in a dialog.
 ///
@@ -90,7 +91,7 @@ class _NumberDialogState extends State<_NumberDialog> {
     }
     final v = parseNumber(t);
     if (v == null || v <= 0 || v > widget.maxValue) {
-      setState(() => _problem = 'Isi angka lebih dari 0, paling besar ${decimalText(widget.maxValue, decimals: 0)}.');
+      setState(() => _problem = t(context).numberInvalid(decimalText(widget.maxValue, decimals: 0)));
       return;
     }
     final wrong = widget.validate?.call(v);
@@ -140,8 +141,8 @@ class _NumberDialogState extends State<_NumberDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        FilledButton(onPressed: _submit, child: const Text('Simpan')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
+        FilledButton(onPressed: _submit, child: Text(t(context).save)),
       ],
     );
   }

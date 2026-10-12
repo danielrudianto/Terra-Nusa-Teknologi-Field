@@ -9,6 +9,7 @@ import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/widgets/app_snack.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/i18n.dart';
 
 /// Oper: hand a RUNNING log (bor or cor) to a colleague with a 6-digit code.
 ///
@@ -21,7 +22,8 @@ import '../../core/widgets/terra_banner.dart';
 ///
 /// `entity` is 'drill_log' or 'casting' everywhere here — the server's names.
 
-String _logLabel(String entity) => entity == 'drill_log' ? 'log bor' : 'log cor';
+String _logLabel(BuildContext context, String entity) =>
+    entity == 'drill_log' ? t(context).drillLogWord : t(context).castLogWord;
 
 /// Holder taps "Oper ke rekan": push, ask the server for a code, show it big.
 Future<void> offerHandover(
@@ -31,10 +33,10 @@ Future<void> offerHandover(
   required String uuid,
   required String pointCode,
 }) async {
-  final label = _logLabel(entity);
+  final label = _logLabel(context, entity);
   // Everything typed so far must reach the server first — the body the
   // colleague receives comes from there, not from this phone.
-  await _busy(context, 'Mengirim $label dulu…', () => ref.read(syncProvider.notifier).run());
+  await _busy(context, t(context).sendingFirst(label), () => ref.read(syncProvider.notifier).run());
   final row = await ref.read(dbProvider).getDocument(uuid);
   if (!context.mounted) return;
   if (row == null || row.version > row.syncedVersion || row.sendStatus != 'sent') {
@@ -42,13 +44,12 @@ Future<void> offerHandover(
       context: context,
       builder: (c) => AlertDialog(
         icon: Icon(Icons.cloud_off, size: 32, color: c.colors.warnFg),
-        title: const Text('Kirim dulu sebelum oper', textAlign: TextAlign.center),
+        title: Text(t(c).sendBeforeHandoverTitle, textAlign: TextAlign.center),
         content: Text(
-          'Isi $label ini belum sampai ke server, jadi belum bisa dioper. '
-          'Cari sinyal sebentar, lalu coba lagi — rekan menerima persis isi terakhir.',
+          t(c).sendBeforeHandoverBody(label),
           style: TextStyle(color: c.colors.ink, height: 1.4),
         ),
-        actions: [FilledButton(onPressed: () => Navigator.pop(c), child: const Text('Mengerti'))],
+        actions: [FilledButton(onPressed: () => Navigator.pop(c), child: Text(t(c).understood))],
       ),
     );
     return;
@@ -56,7 +57,7 @@ Future<void> offerHandover(
 
   final ({String code, int validMinutes}) answer;
   try {
-    answer = await _busy(context, 'Meminta kode oper…', () => ref.read(apiProvider).handoverCode(entity, uuid));
+    answer = await _busy(context, t(context).askingCode, () => ref.read(apiProvider).handoverCode(entity, uuid));
   } on ApiError catch (e) {
     if (context.mounted) showSnack(context, e.message, icon: Icons.error_outline);
     return;
@@ -68,14 +69,12 @@ Future<void> offerHandover(
       final w = c.colors;
       return AlertDialog(
         icon: Icon(Icons.swap_horiz, size: 32, color: w.brand),
-        title: Text('Oper ${_logLabel(entity)} $pointCode', textAlign: TextAlign.center),
+        title: Text(t(c).handoverTitle(label, pointCode), textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Minta rekan membuka titik $pointCode di HP-nya dan memilih '
-                '"Lanjutkan di HP ini", lalu sebutkan kode ini:',
-                style: TextStyle(color: w.ink, height: 1.4)),
+            Text(t(c).handoverBody(pointCode), style: TextStyle(color: w.ink, height: 1.4)),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -100,13 +99,12 @@ Future<void> offerHandover(
             TerraBanner(
               kind: BannerKind.info,
               icon: Icons.timer_outlined,
-              title: 'Berlaku ${answer.validMinutes} menit, sekali pakai',
-              body: 'Begitu rekan memasukkannya, log pindah ke dia dan '
-                  'HP ini hanya bisa melihat. Foto yang diambil di HP ini tetap terkirim dari sini.',
+              title: t(c).codeValidFor(answer.validMinutes),
+              body: t(c).codeValidBody,
             ),
           ],
         ),
-        actions: [FilledButton(onPressed: () => Navigator.pop(c), child: const Text('Selesai'))],
+        actions: [FilledButton(onPressed: () => Navigator.pop(c), child: Text(t(c).done))],
       );
     },
   );
@@ -123,24 +121,21 @@ Future<bool> resumeOwnLogFlow(
   required String uuid,
   required String pointCode,
 }) async {
-  final label = _logLabel(entity);
+  final label = _logLabel(context, entity);
   final go = await showDialog<bool>(
     context: context,
     builder: (c) {
       final w = c.colors;
       return AlertDialog(
         icon: Icon(Icons.phonelink_setup, size: 32, color: w.brand),
-        title: Text('Ambil $label $pointCode ke HP ini', textAlign: TextAlign.center),
+        title: Text(t(c).takeLogHere(label, pointCode), textAlign: TextAlign.center),
         content: Text(
-          '${label[0].toUpperCase()}${label.substring(1)} ini memang dipegang akun Anda, hanya isinya '
-          'belum ada di HP ini. Tidak perlu kode oper.\n\n'
-          'Bila log ini sedang terbuka di HP Anda yang lain, lanjutkan di SATU HP saja supaya isiannya '
-          'tidak bertabrakan.',
+          t(c).takeLogHereBody('${label[0].toUpperCase()}${label.substring(1)}'),
           style: TextStyle(color: w.ink, height: 1.4),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Ambil ke HP ini')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).cancel)),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).takeToThisPhone)),
         ],
       );
     },
@@ -162,7 +157,7 @@ Future<bool> redeemHandoverFlow(
 }) async {
   final code = await showDialog<String>(
     context: context,
-    builder: (c) => _CodeDialog(title: 'Lanjutkan ${_logLabel(entity)} $pointCode'),
+    builder: (c) => _CodeDialog(title: t(c).continueLog(_logLabel(c, entity), pointCode)),
   );
   if (code == null || !context.mounted) return false;
   return _takeOver(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, code: code);
@@ -183,7 +178,7 @@ Future<bool> _takeOver(
   try {
     final answer = await _busy(
       context,
-      'Mengambil ${_logLabel(entity)}…',
+      t(context).takingLog(_logLabel(context, entity)),
       () => ref.read(apiProvider).redeemHandover(entity, uuid, code),
     );
     await ref.read(dbProvider).saveSyncedDocument(
@@ -197,8 +192,8 @@ Future<bool> _takeOver(
     // so the screen opens unlocked (and the old phone locks on its pull).
     await ref.read(syncProvider.notifier).run();
     if (context.mounted) {
-      final label = _logLabel(entity);
-      showSnack(context, '${label[0].toUpperCase()}${label.substring(1)} $pointCode sekarang dipegang HP ini.');
+      final label = _logLabel(context, entity);
+      showSnack(context, t(context).logNowHere('${label[0].toUpperCase()}${label.substring(1)}', pointCode));
     }
     return true;
   } on ApiError catch (e) {
@@ -270,9 +265,7 @@ class _CodeDialogState extends State<_CodeDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Masukkan kode oper 6 angka yang disebutkan pemegang lognya '
-              '(dia menekan "Oper ke rekan" di HP-nya).',
-              style: TextStyle(color: w.ink, height: 1.4)),
+          Text(t(context).enterHandoverCode, style: TextStyle(color: w.ink, height: 1.4)),
           const SizedBox(height: 14),
           TextField(
             controller: _code,
@@ -288,8 +281,8 @@ class _CodeDialogState extends State<_CodeDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        FilledButton(onPressed: _complete ? _submit : null, child: const Text('Ambil alih')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
+        FilledButton(onPressed: _complete ? _submit : null, child: Text(t(context).takeOver)),
       ],
     );
   }
