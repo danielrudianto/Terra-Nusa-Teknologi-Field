@@ -1,0 +1,10 @@
+# Terjemahan dibangkitkan dari lib/l10n/*.arb.
+#
+# app_id.arb adalah TEMPLATE: bahasa Indonesia yang ditulis lebih dulu, dan
+# satu-satunya berkas yang memuat keterangan placeholder. Yang lain hanya
+# menerjemahkan kuncinya.
+arb-dir: lib/l10n
+template-arb-file: app_id.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false

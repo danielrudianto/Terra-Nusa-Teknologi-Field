@@ -237,6 +237,12 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     final elsewhere = t.castedElsewhere && t.stage != 'sudah_cor';
     final drillLogOpen = t.drillLog != null && t.drillLogBody?['status'] != 'selesai';
     final drillingElsewhere = t.drillLoggedElsewhere && t.stage == 'sedang_bor';
+    // The log is missing from THIS phone but the server says this very account
+    // holds it (another phone of his, or a reinstall). Nobody can read a
+    // handover code out to him, so he takes it back without one.
+    final myId = session?.user?.id;
+    final castingIsMine = myId != null && t.castingHolderId == myId;
+    final drillLogIsMine = myId != null && t.drillLogHolderId == myId;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -270,17 +276,29 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.block,
-                  title: t.castingHeldElsewhere ? 'Sedang dicor dari HP lain' : 'Titik ini sudah punya log cor',
-                  body: '${t.castingHolderName ?? t.serverCastingBy ?? 'Rekan'} yang memegang log cornya. '
-                      'Satu titik hanya boleh satu log cor.'
-                      '${t.castingHeldElsewhere ? ' Untuk melanjutkan dari HP ini, minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.' : ' Bila log itu salah, minta kantor menghapusnya dulu.'}',
+                  title: !t.castingHeldElsewhere
+                      ? 'Titik ini sudah punya log cor'
+                      : castingIsMine
+                          ? 'Log cornya ada di HP Anda yang lain'
+                          : 'Sedang dicor dari HP lain',
+                  body: !t.castingHeldElsewhere
+                      ? '${t.castingHolderName ?? t.serverCastingBy ?? 'Rekan'} yang memegang log cornya. '
+                          'Satu titik hanya boleh satu log cor. Bila log itu salah, minta kantor menghapusnya dulu.'
+                      : castingIsMine
+                          ? 'Log cor ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. '
+                              'Ambil langsung ke sini tanpa kode oper.'
+                          : '${t.castingHolderName ?? t.serverCastingBy ?? 'Rekan'} yang memegang log cornya. '
+                              'Satu titik hanya boleh satu log cor. Untuk melanjutkan dari HP ini, '
+                              'minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.',
                 ),
                 if (t.castingHeldElsewhere && allows && t.serverCastingUuid != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
-                    onPressed: () => _redeem(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t),
-                    icon: const Icon(Icons.swap_horiz),
-                    label: const Text('Lanjutkan di HP ini (kode oper)'),
+                    onPressed: () => castingIsMine
+                        ? _resumeOwn(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t)
+                        : _redeem(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t),
+                    icon: Icon(castingIsMine ? Icons.phonelink_setup : Icons.swap_horiz),
+                    label: Text(castingIsMine ? 'Ambil ke HP ini' : 'Lanjutkan di HP ini (kode oper)'),
                   ),
                 ],
               ],
@@ -288,17 +306,22 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 TerraBanner(
                   kind: BannerKind.info,
                   icon: Icons.construction,
-                  title: 'Sedang dibor dari HP lain',
-                  body: 'Log bornya dipegang ${t.drillLogHolderName ?? t.serverDrillLogBy ?? 'rekan'}. '
-                      'Satu titik hanya boleh satu log bor. Untuk melanjutkan dari HP ini, '
-                      'minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.',
+                  title: drillLogIsMine ? 'Log bornya ada di HP Anda yang lain' : 'Sedang dibor dari HP lain',
+                  body: drillLogIsMine
+                      ? 'Log bor ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. '
+                          'Ambil langsung ke sini tanpa kode oper.'
+                      : 'Log bornya dipegang ${t.drillLogHolderName ?? t.serverDrillLogBy ?? 'rekan'}. '
+                          'Satu titik hanya boleh satu log bor. Untuk melanjutkan dari HP ini, '
+                          'minta dia menekan "Oper ke rekan" lalu masukkan kodenya di sini.',
                 ),
                 if (allows && t.serverDrillLogUuid != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
-                    onPressed: () => _redeem(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t),
-                    icon: const Icon(Icons.swap_horiz),
-                    label: const Text('Lanjutkan di HP ini (kode oper)'),
+                    onPressed: () => drillLogIsMine
+                        ? _resumeOwn(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t)
+                        : _redeem(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t),
+                    icon: Icon(drillLogIsMine ? Icons.phonelink_setup : Icons.swap_horiz),
+                    label: Text(drillLogIsMine ? 'Ambil ke HP ini' : 'Lanjutkan di HP ini (kode oper)'),
                   ),
                 ],
               ]
@@ -401,6 +424,14 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     if (sheet.mounted) Navigator.pop(sheet);
     // Not awaited on purpose: this returns only when the log screen is
     // popped again, and nothing here depends on that.
+    unawaited(context.push(entity == 'drill_log' ? '/drilling/log/$uuid' : '/casting/log/$uuid'));
+  }
+
+  /// Same, for a log this very account already holds: no code is asked.
+  Future<void> _resumeOwn(BuildContext sheet, {required String entity, required String uuid, required FieldPilePoint point}) async {
+    final ok = await resumeOwnLogFlow(context, ref, entity: entity, uuid: uuid, pointCode: point.code);
+    if (!ok || !mounted) return;
+    if (sheet.mounted) Navigator.pop(sheet);
     unawaited(context.push(entity == 'drill_log' ? '/drilling/log/$uuid' : '/casting/log/$uuid'));
   }
 

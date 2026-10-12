@@ -1,0 +1,73 @@
+{
+  "@@locale": "id",
+  "appTitle": "TerraBot Field",
+  "@appTitle": {
+    "description": "Nama app di daftar tugas Android"
+  },
+  "navHome": "Beranda",
+  "navAttendance": "Absensi",
+  "navCasting": "Cor",
+  "navQueue": "Antrean",
+  "navAttendanceSoon": "Absensi belum aktif — segera hadir.",
+  "@navAttendanceSoon": {
+    "description": "Snackbar saat tab Absensi yang nonaktif ditekan"
+  },
+  "comingSoon": "Segera hadir",
+  "homeGreeting": "Halo, {name}",
+  "@homeGreeting": {
+    "description": "Sapaan di kartu atas Beranda",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Daniel"
+      }
+    }
+  },
+  "homeTagline": "Selamat bekerja. Data tersimpan di HP walau tanpa sinyal.",
+  "homePickProject": "Pilih proyek saya",
+  "homeAllSent": "Semua sudah terkirim",
+  "homePending": "{count} belum terkirim",
+  "@homePending": {
+    "description": "Jumlah dokumen + foto yang menunggu",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "homeWatched": "Sedang dipantau",
+  "homeWatchedCount": "{count} log",
+  "@homeWatchedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "homeDrillRunning": "log bor berjalan",
+  "homeCastRunning": "log cor berjalan",
+  "labelDrill": "Bor",
+  "@labelDrill": {
+    "description": "Awalan judul kartu: Bor PP.A13"
+  },
+  "labelCast": "Cor",
+  "@labelCast": {
+    "description": "Awalan judul kartu: Cor PP.A13"
+  },
+  "shortcutAttendance": "Absen kru",
+  "shortcutAttendanceBody": "Foto masuk & pulang, centang kru yang hadir",
+  "shortcutCasting": "Log bor & cor",
+  "shortcutCastingBody": "Catat kedalaman bor, TM, tremie & sounding per titik",
+  "shortcutWorkers": "Pekerja",
+  "shortcutWorkersBody": "Semua pekerja per proyek, daftarkan pekerja baru",
+  "shortcutReports": "Laporan lapangan",
+  "shortcutReportsBody": "Titik yang dibor & dicor hari ini, kemarin, atau seminggu",
+  "settingsLanguage": "Bahasa",
+  "settingsLanguageBody": "Bahasa tampilan app. Istilah teknis lapangan tetap sama di semua bahasa.",
+  "languageSystem": "Ikut HP",
+  "languageIndonesian": "Indonesia",
+  "languageEnglish": "English",
+  "languageChinese": "中文"
+}

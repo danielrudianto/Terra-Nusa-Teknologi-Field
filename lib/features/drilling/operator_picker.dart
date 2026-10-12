@@ -89,7 +89,7 @@ class _OperatorSheetState extends ConsumerState<_OperatorSheet> {
     ]..sort((a, b) => a.name.compareTo(b.name));
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, MediaQuery.viewInsetsOf(context).bottom + Dimens.pagePadding),
+      padding: sheetPadding(context),
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.7,
         child: Column(

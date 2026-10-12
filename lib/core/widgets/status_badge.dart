@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/color_tokens.dart';
+import '../theme/dimens.dart';
 
 /// Small colored badge — push status / review status.
 class StatusBadge extends StatelessWidget {
@@ -24,15 +25,23 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // "Belum terkirim" -> "Terkirim" is the moment the foreman waits for, so
+    // the badge melts between the two instead of swapping in place.
+    return AnimatedContainer(
+      duration: Dimens.motionMedium,
+      curve: Curves.easeOutCubic,
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[Icon(icon, size: 14, color: fg), const SizedBox(width: 4)],
-          Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg)),
-        ],
+      child: AnimatedSwitcher(
+        duration: Dimens.motionFast,
+        child: Row(
+          key: ValueKey('$text$icon'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[Icon(icon, size: 14, color: fg), const SizedBox(width: 4)],
+            Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg)),
+          ],
+        ),
       ),
     );
   }

@@ -112,6 +112,45 @@ Future<void> offerHandover(
   );
 }
 
+/// The log is ALREADY this account's — it just is not on this phone (a new
+/// phone, a reinstall, or it was handed back). There is nobody to read a code
+/// out, so none is asked: the server hands the body back to its own holder
+/// without touching the holder or the code.
+Future<bool> resumeOwnLogFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required String entity,
+  required String uuid,
+  required String pointCode,
+}) async {
+  final label = _logLabel(entity);
+  final go = await showDialog<bool>(
+    context: context,
+    builder: (c) {
+      final w = c.colors;
+      return AlertDialog(
+        icon: Icon(Icons.phonelink_setup, size: 32, color: w.brand),
+        title: Text('Ambil $label $pointCode ke HP ini', textAlign: TextAlign.center),
+        content: Text(
+          '${label[0].toUpperCase()}${label.substring(1)} ini memang dipegang akun Anda, hanya isinya '
+          'belum ada di HP ini. Tidak perlu kode oper.\n\n'
+          'Bila log ini sedang terbuka di HP Anda yang lain, lanjutkan di SATU HP saja supaya isiannya '
+          'tidak bertabrakan.',
+          style: TextStyle(color: w.ink, height: 1.4),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Ambil ke HP ini')),
+        ],
+      );
+    },
+  );
+  if (go != true || !context.mounted) return false;
+  // Six digits are required by the contract, but the server never reads them
+  // when the caller already holds the log.
+  return _takeOver(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, code: '000000');
+}
+
 /// Colleague types the code on the locked point. Returns true when the log is
 /// now on this phone (the caller navigates to it).
 Future<bool> redeemHandoverFlow(
@@ -126,6 +165,19 @@ Future<bool> redeemHandoverFlow(
     builder: (c) => _CodeDialog(title: 'Lanjutkan ${_logLabel(entity)} $pointCode'),
   );
   if (code == null || !context.mounted) return false;
+  return _takeOver(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, code: code);
+}
+
+/// Ask the server for the whole body, store it as already-sent, then pull so
+/// the point record names this phone's user as holder.
+Future<bool> _takeOver(
+  BuildContext context,
+  WidgetRef ref, {
+  required String entity,
+  required String uuid,
+  required String pointCode,
+  required String code,
+}) async {
   final p = ref.read(userProvider);
   if (p == null) return false;
   try {
@@ -145,7 +197,8 @@ Future<bool> redeemHandoverFlow(
     // so the screen opens unlocked (and the old phone locks on its pull).
     await ref.read(syncProvider.notifier).run();
     if (context.mounted) {
-      showSnack(context, '${_logLabel(entity)[0].toUpperCase()}${_logLabel(entity).substring(1)} $pointCode sekarang dipegang HP ini.');
+      final label = _logLabel(entity);
+      showSnack(context, '${label[0].toUpperCase()}${label.substring(1)} $pointCode sekarang dipegang HP ini.');
     }
     return true;
   } on ApiError catch (e) {

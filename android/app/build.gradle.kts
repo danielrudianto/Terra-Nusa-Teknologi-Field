@@ -60,9 +60,35 @@ android {
 
     buildTypes {
         release {
-            // Without key.properties (another laptop) the release build falls
-            // back to the debug key: fine for trying, NEVER for handing out.
-            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            // No silent fallback to the debug key. An APK signed with the debug
+            // key cannot be installed over a release-signed one ("App not
+            // installed"), and the only way out is uninstalling the app — which
+            // deletes logs not yet sent. A release build with no key FAILS instead,
+            // see the guard below.
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else null
+        }
+    }
+}
+
+// Guard: a release artifact may NEVER leave this machine signed with the debug
+// key. Debug builds (`flutter run`) are untouched, so a laptop without
+// key.properties can still develop — it just cannot hand out an APK. Escape
+// hatch for a throwaway local test: -Pizinkan-rilis-tanpa-kunci=true
+val izinTanpaKunci = project.findProperty("izinkan-rilis-tanpa-kunci") == "true"
+tasks.configureEach {
+    if ((name.startsWith("package") || name.startsWith("sign")) && name.contains("Release")) {
+        doFirst {
+            if (!hasReleaseKey && !izinTanpaKunci) {
+                throw GradleException(
+                    "Build rilis DIBATALKAN: android/key.properties tidak ada, jadi APK/AAB ini " +
+                        "akan ketandatangan kunci DEBUG. HP yang sudah memasang versi rilis akan " +
+                        "menolaknya (\"App not installed\"), dan uninstall menghapus log yang belum " +
+                        "terkirim. Salin key.properties + android/app/terrabot-field-release.jks ke " +
+                        "mesin ini dulu (flashdisk atau 7-Zip AES-256 — JANGAN OneDrive/WhatsApp/" +
+                        "email/Drive). Kalau memang hanya uji lokal: tambahkan " +
+                        "-Pizinkan-rilis-tanpa-kunci=true"
+                )
+            }
         }
     }
 }

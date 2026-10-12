@@ -49,8 +49,15 @@ class _ListCardState extends State<ListCard> {
           clipBehavior: Clip.antiAlias,
           child: Row(
             children: [
-              if (widget.edgeColor != null)
-                Container(width: 4, height: 64, color: widget.edgeColor),
+              // The edge marks work in progress; when a point changes stage
+              // the colour slides rather than jumping.
+              AnimatedContainer(
+                duration: Dimens.motionMedium,
+                curve: Curves.easeOutCubic,
+                width: widget.edgeColor == null ? 0 : 4,
+                height: 64,
+                color: widget.edgeColor,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/config/env.dart';
 import '../../core/config/features.dart';
 import '../../core/device/notifications.dart';
+import '../../core/i18n.dart';
 import '../../core/providers.dart';
 import '../../core/theme/appearance.dart';
 import '../../core/theme/color_tokens.dart';
@@ -264,6 +265,34 @@ class _AppearanceCard extends ConsumerWidget {
                 ),
               ],
             ],
+          ),
+          const SizedBox(height: 16),
+          // Four across would be cramped on a small phone, so the languages
+          // wrap instead of being squeezed into equal columns.
+          label(t(context).settingsLanguage),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (code, text) in [
+                (null, t(context).languageSystem),
+                ('id', t(context).languageIndonesian),
+                ('en', t(context).languageEnglish),
+                ('zh', t(context).languageChinese),
+              ])
+                SizedBox(
+                  width: 112,
+                  child: _ChoiceButton(
+                    selected: a.languageCode == code,
+                    text: text,
+                    onTap: () => _save(ref, a.withLanguage(code)),
+                  ),
+                ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(t(context).settingsLanguageBody, style: TextStyle(color: w.muted, fontSize: 13, height: 1.35)),
           ),
           const SizedBox(height: 16),
           label('Ukuran teks'),

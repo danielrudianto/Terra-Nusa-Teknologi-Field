@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'appearance.dart';
 import 'color_tokens.dart';
 import 'dimens.dart';
+import 'motion.dart';
 
 /// ThemeData from the TerraBot tokens. One function for light and dark,
 /// so the two do not differ in shape — only in color. [accent] (Pengaturan →
@@ -37,6 +38,13 @@ ThemeData buildTheme(Brightness light, {AccentOption? accent}) {
     colorScheme: scheme,
     fontFamily: 'Montserrat',
     scaffoldBackgroundColor: w.pageBg,
+    // Every pushed screen moves the same way — declared here, not per route.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: TerraPageTransitions(),
+        TargetPlatform.iOS: TerraPageTransitions(),
+      },
+    ),
     extensions: [w],
   );
 

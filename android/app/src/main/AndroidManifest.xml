@@ -16,6 +16,15 @@
     <!-- Casting stopwatch notification (Android 13+ asks for permission). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Scheduled reminders (TM 20 minutes, pause, idle, drill log) are
+         Android alarms. A reboot CLEARS every pending alarm, and so does
+         replacing the app with a new build. Without this permission and the
+         receiver below, a phone that restarts mid-pour simply stops buzzing
+         — with nothing on screen to say so. It is a normal permission: no
+         prompt, and it is NOT the exact-alarm permission (SCHEDULE_EXACT_ALARM),
+         which Play questions for an app that is not a clock. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <!-- CAMERA IS DELIBERATELY NOT DECLARED.
          Photos are taken through the phone's built-in camera app (image_picker →
          ACTION_IMAGE_CAPTURE). If CAMERA is declared but not yet
@@ -61,6 +70,22 @@
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+
+        <!-- Puts the pending reminders back after a reboot or an app update.
+             MY_PACKAGE_REPLACED matters as much as BOOT_COMPLETED here: every
+             new build installed over the old one wipes the alarms too.
+             The QUICKBOOT actions are the same thing on HTC and some Chinese
+             ROMs, which do not send BOOT_COMPLETED. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

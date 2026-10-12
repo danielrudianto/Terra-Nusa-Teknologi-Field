@@ -25,3 +25,8 @@ android/key.properties
 *.iml
 .vscode/
 .DS_Store
+
+# Terjemahan yang dibangkitkan dari lib/l10n/*.arb — sama seperti *.g.dart,
+# ini turunan, bukan sumber. `flutter pub get` membangkitkannya lagi (pubspec
+# memakai `generate: true`); kalau belum ada, jalankan `flutter gen-l10n`.
+lib/l10n/app_localizations*.dart

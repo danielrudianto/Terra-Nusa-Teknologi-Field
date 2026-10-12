@@ -92,13 +92,29 @@ const textScaleOptions = <(String, double)>[
   ('Sangat besar', 1.3),
 ];
 
+/// Languages on offer. Indonesian is the language the app was written in;
+/// the other two exist because the work gets shown to people who do not read
+/// it — an owner, a client, an investor.
+const languageOptions = <String>['id', 'en', 'zh'];
+
 @immutable
 class Appearance {
-  const Appearance({this.mode = ThemeMode.system, this.accentId = 'biru', this.textScale = 1.0});
+  const Appearance({
+    this.mode = ThemeMode.system,
+    this.accentId = 'biru',
+    this.textScale = 1.0,
+    this.languageCode,
+  });
 
   final ThemeMode mode;
   final String accentId;
   final double textScale;
+
+  /// null = follow the phone. A phone set to a language the app does not
+  /// speak falls back to Indonesian, which is what the site speaks.
+  final String? languageCode;
+
+  Locale? get locale => languageCode == null ? null : Locale(languageCode!);
 
   AccentOption get accent => accentById(accentId);
 
@@ -106,9 +122,24 @@ class Appearance {
         mode: mode ?? this.mode,
         accentId: accentId ?? this.accentId,
         textScale: textScale ?? this.textScale,
+        languageCode: languageCode,
       );
 
-  String encode() => jsonEncode({'mode': mode.name, 'accent': accentId, 'scale': textScale});
+  /// Its own method, not a `copyWith` argument: null here MEANS "follow the
+  /// phone", and `copyWith(languageCode: null)` could not say that.
+  Appearance withLanguage(String? code) => Appearance(
+        mode: mode,
+        accentId: accentId,
+        textScale: textScale,
+        languageCode: code,
+      );
+
+  String encode() => jsonEncode({
+        'mode': mode.name,
+        'accent': accentId,
+        'scale': textScale,
+        if (languageCode != null) 'lang': languageCode,
+      });
 
   /// Defaults on anything missing or unparsable: a broken saved value must
   /// never keep the app from starting.
@@ -122,7 +153,13 @@ class Appearance {
       final rawScale = j['scale'];
       var scale = rawScale is num ? rawScale.toDouble() : 1.0;
       if (!textScaleOptions.any((o) => o.$2 == scale)) scale = 1.0;
-      return Appearance(mode: mode, accentId: accent, textScale: scale);
+      final lang = j['lang'];
+      return Appearance(
+        mode: mode,
+        accentId: accent,
+        textScale: scale,
+        languageCode: lang is String && languageOptions.contains(lang) ? lang : null,
+      );
     } catch (_) {
       return const Appearance();
     }
@@ -130,8 +167,12 @@ class Appearance {
 
   @override
   bool operator ==(Object other) =>
-      other is Appearance && other.mode == mode && other.accentId == accentId && other.textScale == textScale;
+      other is Appearance &&
+      other.mode == mode &&
+      other.accentId == accentId &&
+      other.textScale == textScale &&
+      other.languageCode == languageCode;
 
   @override
-  int get hashCode => Object.hash(mode, accentId, textScale);
+  int get hashCode => Object.hash(mode, accentId, textScale, languageCode);
 }

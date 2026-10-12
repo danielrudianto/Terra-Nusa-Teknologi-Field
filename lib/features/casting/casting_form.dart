@@ -481,6 +481,57 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (mounted) showSnack(context, 'TM #$seq tersimpan.', icon: Icons.local_shipping_outlined);
   }
 
+  /// Correct a TM that was typed wrong — slump, volume, hull number,
+  /// supplier, photos.
+  ///
+  /// Everything else about a TM can already be fixed by tapping its row
+  /// (times, soundings); these five could only be typed once, so a slump of
+  /// 8 entered as 18 was stuck in the quality record for good and the only
+  /// way out was the office deleting the whole casting log. The sheet that
+  /// enters a TM is the same sheet that corrects it, so the rules cannot
+  /// drift apart.
+  Future<void> _editTruck(Map<String, Object?> truck) async {
+    if (_readOnly) return;
+    final k = _castingState;
+    final seq = toIntOrNull(truck['seq']) ?? 0;
+    final supplierId = toIntOrNull(truck['supplierID']);
+    final offer = suppliersForProject(
+      await ref.read(dbProvider).listMaster('supplier'),
+      toIntOrNull(_pilePoint!['projectID']),
+      // A supplier dropped from the project's POs since must still show, or
+      // reopening an old TM would silently change who delivered it.
+      keepId: supplierId,
+    );
+    if (!mounted) return;
+    final result = await showModalBottomSheet<Map<String, Object?>>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => _TruckSheet(
+        seq: seq,
+        initial: truck,
+        estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
+        takeTicketPhoto: _takeTicketPhoto,
+        takeSlumpPhoto: _takeSlumpPhoto,
+        suppliers: offer.suppliers,
+        supplierId: supplierId,
+        supplierName: truck['supplierName']?.toString(),
+      ),
+    );
+    if (result == null) return;
+    final saved = await _updateTruck('${truck['uuid']}', (t) {
+      t['truckNo'] = result['truckNo'];
+      t['supplierID'] = result['supplierID'];
+      t['supplierName'] = result['supplierName'];
+      t['slumpCm'] = result['slumpCm'];
+      t['volumeM3'] = result['volumeM3'];
+      t['concreteDepthBeforeM'] = result['concreteDepthBeforeM'];
+      t['ticketPhotoUuid'] = result['ticketPhotoUuid'];
+      t['slumpPhotoUuid'] = result['slumpPhotoUuid'];
+    });
+    if (saved && mounted) showSnack(context, 'TM #$seq diperbarui.', icon: Icons.edit_outlined);
+  }
+
   /// Warn before another truck when the concrete is already at cut-off.
   /// Returns true to add the truck anyway.
   Future<bool> _confirmTruckAboveCutOff(CastingState k, int lastSeq) async {
@@ -1059,6 +1110,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               truck: truck,
               castingState: k,
               locked: _readOnly,
+              onEdit: () => _editTruck(truck),
               onStart: () => _startTruck(truck),
               onFinish: () => _finishTruck(truck),
               onEditStart: () => _editTime(truck, start: true),
@@ -1585,6 +1637,7 @@ class _TruckCard extends StatelessWidget {
     required this.truck,
     required this.castingState,
     required this.locked,
+    required this.onEdit,
     required this.onStart,
     required this.onFinish,
     required this.onEditStart,
@@ -1597,6 +1650,7 @@ class _TruckCard extends StatelessWidget {
   final Map<String, Object?> truck;
   final CastingState castingState;
   final bool locked;
+  final VoidCallback onEdit;
   final VoidCallback onStart;
   final VoidCallback onFinish;
   final VoidCallback onEditStart;
@@ -1648,9 +1702,28 @@ class _TruckCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              // The header is the way in to correcting what was typed when
+              // the TM arrived; the pencil says so without a second button.
               Expanded(
-                child: Text('TM #$seq · ${_decimal(truck['volumeM3'])} m³',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
+                child: InkWell(
+                  onTap: locked ? null : onEdit,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text('TM #$seq · ${_decimal(truck['volumeM3'])} m³',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
+                        ),
+                        if (!locked) ...[
+                          const SizedBox(width: 6),
+                          Icon(Icons.edit_outlined, size: 15, color: w.faint),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
               if (elapsed != null && !running)
                 Text(formatDuration(elapsed),
@@ -1886,6 +1959,7 @@ final _photoProvider = FutureProvider.autoDispose.family<PhotoRow?, String>((ref
 class _TruckSheet extends StatefulWidget {
   const _TruckSheet({
     required this.seq,
+    this.initial,
     required this.estimatedConcreteBefore,
     required this.takeTicketPhoto,
     required this.takeSlumpPhoto,
@@ -1895,6 +1969,11 @@ class _TruckSheet extends StatefulWidget {
   });
 
   final int seq;
+
+  /// The TM being corrected, or null when a new one is arriving. Set = the
+  /// fields start filled and the sheet saves back into that same TM.
+  final Map<String, Object?>? initial;
+
   final double estimatedConcreteBefore;
   final Future<String?> Function() takeTicketPhoto;
   final Future<String?> Function() takeSlumpPhoto;
@@ -1910,13 +1989,29 @@ class _TruckSheet extends StatefulWidget {
 }
 
 class _TruckSheetState extends State<_TruckSheet> {
-  final _truck = TextEditingController();
-  final _volume = TextEditingController();
-  final _slump = TextEditingController();
-  final _sounding = TextEditingController();
+  /// A stored decimal ("7.00") as the field shows it ("7"): trailing zeros
+  /// gone, comma for the separator. Typing over "7,00" to fix a slump is
+  /// exactly the kind of small friction that makes people skip the fix.
+  static String _asTyped(Object? v) {
+    final d = toDoubleOrNull(v);
+    if (d == null) return '';
+    var t = d.toStringAsFixed(2);
+    if (t.contains('.')) {
+      t = t.replaceAll(RegExp(r'0+$'), '');
+      t = t.replaceAll(RegExp(r'\.$'), '');
+    }
+    return t.replaceAll('.', ',');
+  }
+
+  bool get _editing => widget.initial != null;
+
+  late final _truck = TextEditingController(text: widget.initial?['truckNo']?.toString() ?? '');
+  late final _volume = TextEditingController(text: _asTyped(widget.initial?['volumeM3']));
+  late final _slump = TextEditingController(text: _asTyped(widget.initial?['slumpCm']));
+  late final _sounding = TextEditingController(text: _asTyped(widget.initial?['concreteDepthBeforeM']));
   late final _supplier = TextEditingController(text: widget.supplierName ?? '');
-  String? _photo;
-  String? _slumpPhoto;
+  late String? _photo = widget.initial?['ticketPhotoUuid']?.toString();
+  late String? _slumpPhoto = widget.initial?['slumpPhotoUuid']?.toString();
   String? _error;
 
   /// Chosen supplier id; [_other] = typed by hand, null = none.
@@ -1973,13 +2068,14 @@ class _TruckSheetState extends State<_TruckSheet> {
   Widget build(BuildContext context) {
     const numeric = TextInputType.numberWithOptions(decimal: true);
     return Padding(
-      padding: EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, MediaQuery.viewInsetsOf(context).bottom + Dimens.pagePadding),
+      padding: sheetPadding(context),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('TM #${widget.seq} datang', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(_editing ? 'Ubah TM #${widget.seq}' : 'TM #${widget.seq} datang',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
             if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
             // Two photos per TM. The delivery-note NUMBER is no longer typed:
@@ -2064,7 +2160,7 @@ class _TruckSheetState extends State<_TruckSheet> {
             const SizedBox(height: 18),
             SizedBox(
               height: Dimens.minTouch + 4,
-              child: FilledButton(onPressed: _submit, child: const Text('Simpan TM')),
+              child: FilledButton(onPressed: _submit, child: Text(_editing ? 'Simpan perubahan' : 'Simpan TM')),
             ),
           ],
         ),
@@ -2150,7 +2246,7 @@ class _HeaderSheetState extends State<_HeaderSheet> {
   Widget build(BuildContext context) {
     const numeric = TextInputType.numberWithOptions(decimal: true);
     return Padding(
-      padding: EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, MediaQuery.viewInsetsOf(context).bottom + Dimens.pagePadding),
+      padding: sheetPadding(context),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

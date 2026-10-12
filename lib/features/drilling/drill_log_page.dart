@@ -10,6 +10,7 @@ import '../../core/device/notifications.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/decimal_input.dart';
 import '../../core/util/format.dart';
 import '../../core/util/reasons.dart';
@@ -469,7 +470,8 @@ class _DepthHero extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(formatMeters(deepest), style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: w.ink, height: 1)),
+              AnimatedFigure(formatMeters(deepest),
+                  style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: w.ink, height: 1)),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 3),
@@ -482,11 +484,18 @@ class _DepthHero extends StatelessWidget {
             const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: (deepest / planned).clamp(0.0, 1.0),
-                minHeight: 8,
-                backgroundColor: w.line,
-                color: over > 0.005 ? w.warnFg : w.brand,
+              // The bar fills to the new reading instead of teleporting, so a
+              // 3 m jump looks like 3 m of drilling.
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(end: (deepest / planned).clamp(0.0, 1.0)),
+                duration: Dimens.motionMedium,
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) => LinearProgressIndicator(
+                  value: value,
+                  minHeight: 8,
+                  backgroundColor: w.line,
+                  color: over > 0.005 ? w.warnFg : w.brand,
+                ),
               ),
             ),
           ],
@@ -665,7 +674,7 @@ class _ReadingSheetState extends State<_ReadingSheet> {
     final problem = _problem ?? refusal;
     final overPlan = typed == null || refusal != null ? null : beyondPlanM(typed, widget.plannedM);
     return Padding(
-      padding: EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, MediaQuery.viewInsetsOf(context).bottom + Dimens.pagePadding),
+      padding: sheetPadding(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

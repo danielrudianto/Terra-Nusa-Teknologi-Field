@@ -1,7 +1,7 @@
 name: terrabot_field
 description: TerraBot Field — AKN field app (crew attendance & pile casting log), offline-first.
 publish_to: "none"
-version: 1.0.0+4
+version: 1.0.0+2
 
 environment:
   # Flutter stable as of October 2026 = 3.47 (Dart 3.12). The package versions below
@@ -65,6 +65,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Membangkitkan AppLocalizations dari lib/l10n/*.arb (lihat l10n.yaml).
+  generate: true
 
   # Montserrat, same as TerraBot web. Put the TTF files in
   # assets/fonts/ (see SETUP.md) — bundled so the look stays

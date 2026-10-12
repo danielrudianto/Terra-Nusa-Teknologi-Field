@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/config/features.dart';
+import '../../core/i18n.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/list_card.dart';
@@ -71,29 +73,29 @@ class HomePage extends ConsumerWidget {
             if (canAttend)
               _Shortcut(
                 icon: Icons.how_to_reg,
-                title: 'Absen kru',
-                body: 'Foto masuk & pulang, centang kru yang hadir',
+                title: t(context).shortcutAttendance,
+                body: t(context).shortcutAttendanceBody,
                 onTap: () => context.push('/attendance/new'),
               ),
             if (canCast)
               _Shortcut(
                 icon: Icons.foundation,
-                title: 'Log bor & cor',
-                body: 'Catat kedalaman bor, TM, tremie & sounding per titik',
+                title: t(context).shortcutCasting,
+                body: t(context).shortcutCastingBody,
                 onTap: () => context.go('/casting'),
               ),
             if (canViewWorkers)
               _Shortcut(
                 icon: Icons.groups_outlined,
-                title: 'Pekerja',
-                body: 'Semua pekerja per proyek, daftarkan pekerja baru',
+                title: t(context).shortcutWorkers,
+                body: t(context).shortcutWorkersBody,
                 onTap: () => context.push('/workers'),
               ),
             if (canReport)
               _Shortcut(
                 icon: Icons.insights,
-                title: 'Laporan lapangan',
-                body: 'Titik yang dibor & dicor hari ini, kemarin, atau seminggu',
+                title: t(context).shortcutReports,
+                body: t(context).shortcutReportsBody,
                 onTap: () => context.push('/reports'),
               ),
           ],
@@ -121,50 +123,54 @@ class _WatchedCard extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text('Sedang dipantau',
+                child: Text(t(context).homeWatched,
                     style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, letterSpacing: -0.2, color: w.ink)),
               ),
-              Text('${items.length} log', style: TextStyle(color: w.muted, fontSize: 13)),
+              Text(t(context).homeWatchedCount(items.length), style: TextStyle(color: w.muted, fontSize: 13)),
             ],
           ),
         ),
-        for (final l in items)
-          ListCard(
-            onTap: () => context.push(l.route),
-            edgeColor: l.entity == 'drill_log' ? w.warnFg : w.checkedFg,
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: l.entity == 'drill_log' ? w.warnBg : w.checkedBg,
-                    shape: BoxShape.circle,
+        for (final (i, l) in items.indexed)
+          AppearIn(
+            key: ValueKey(l.uuid),
+            order: i,
+            child: ListCard(
+              onTap: () => context.push(l.route),
+              edgeColor: l.entity == 'drill_log' ? w.warnFg : w.checkedFg,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: l.entity == 'drill_log' ? w.warnBg : w.checkedBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      l.entity == 'drill_log' ? Icons.construction : Icons.foundation,
+                      color: l.entity == 'drill_log' ? w.warnFg : w.checkedFg,
+                    ),
                   ),
-                  child: Icon(
-                    l.entity == 'drill_log' ? Icons.construction : Icons.foundation,
-                    color: l.entity == 'drill_log' ? w.warnFg : w.checkedFg,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${l.entity == 'drill_log' ? t(context).labelDrill : t(context).labelCast} ${l.pointCode}',
+                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
+                        Text(
+                          [
+                            if (l.projectCode != null) l.projectCode!,
+                            l.entity == 'drill_log' ? t(context).homeDrillRunning : t(context).homeCastRunning,
+                          ].join(' · '),
+                          style: TextStyle(color: w.muted, fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${l.entity == 'drill_log' ? 'Bor' : 'Cor'} ${l.pointCode}',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
-                      Text(
-                        [
-                          if (l.projectCode != null) l.projectCode!,
-                          l.entity == 'drill_log' ? 'log bor berjalan' : 'log cor berjalan',
-                        ].join(' · '),
-                        style: TextStyle(color: w.muted, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: w.faint),
-              ],
+                  Icon(Icons.chevron_right, color: w.faint),
+                ],
+              ),
             ),
           ),
         const SizedBox(height: 6),
@@ -246,10 +252,10 @@ class _Hero extends ConsumerWidget {
                 Text(longDate(DateTime.now()).toUpperCase(),
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: Colors.white.withValues(alpha: 0.72))),
                 const SizedBox(height: 6),
-                Text('Halo, $name',
+                Text(t(context).homeGreeting(name),
                     style: const TextStyle(fontSize: 28, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -0.6, color: Colors.white)),
                 const SizedBox(height: 4),
-                Text('Selamat bekerja. Data tersimpan di HP walau tanpa sinyal.',
+                Text(t(context).homeTagline,
                     style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.78))),
                 const SizedBox(height: 16),
                 Wrap(
@@ -258,12 +264,12 @@ class _Hero extends ConsumerWidget {
                   children: [
                     pill(
                       Icons.location_city_outlined,
-                      project == null ? 'Pilih proyek saya' : '${project['code']} · ${project['name']}',
+                      project == null ? t(context).homePickProject : '${project['code']} · ${project['name']}',
                       onTap: () => context.push('/settings'),
                     ),
                     pill(
                       pending == 0 ? Icons.cloud_done_outlined : Icons.cloud_upload_outlined,
-                      pending == 0 ? 'Semua sudah terkirim' : '$pending belum terkirim',
+                      pending == 0 ? t(context).homeAllSent : t(context).homePending(pending),
                     ),
                   ],
                 ),
