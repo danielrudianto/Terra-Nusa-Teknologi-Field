@@ -106,6 +106,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     );
     if (whole == null || !mounted) return;
     setState(() => _downloading = true);
+    final subject = t(context).excelSubject;
     try {
       final from = whole ? null : range.from;
       final bytes = await ref.read(apiProvider).reportExcel(from: from, to: range.to);
@@ -115,7 +116,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')],
-          subject: t(context).excelSubject,
+          subject: subject,
         ),
       );
     } catch (e) {

@@ -62,10 +62,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     if (_scroll.hasClients) _scroll.jumpTo(0);
   }
 
-  static bool _inFilter(FieldPilePoint t, String filter) => switch (filter) {
-        'undrilled' => t.stage == 'belum_bor' || t.stage == 'sedang_bor',
-        'drilled' => t.stage == 'sudah_bor' || t.stage == 'berjalan',
-        'cast' => t.stage == 'selesai' || t.stage == 'sudah_cor',
+  static bool _inFilter(FieldPilePoint pt, String filter) => switch (filter) {
+        'undrilled' => pt.stage == 'belum_bor' || pt.stage == 'sedang_bor',
+        'drilled' => pt.stage == 'sudah_bor' || pt.stage == 'berjalan',
+        'cast' => pt.stage == 'selesai' || pt.stage == 'sudah_cor',
         _ => true,
       };
 
@@ -90,9 +90,9 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         data: (all) {
           final matching = _search.isEmpty
               ? all
-              : all.where((t) => t.code.toLowerCase().contains(_search.toLowerCase())).toList();
-          final items = matching.where((t) => _inFilter(t, _filter)).toList();
-          final castCount = all.where((t) => t.stage == 'selesai' || t.stage == 'sudah_cor').length;
+              : all.where((pt) => pt.code.toLowerCase().contains(_search.toLowerCase())).toList();
+          final items = matching.where((pt) => _inFilter(pt, _filter)).toList();
+          final castCount = all.where((pt) => pt.stage == 'selesai' || pt.stage == 'sudah_cor').length;
 
           if (all.isEmpty) {
             return Padding(
@@ -152,7 +152,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                               ('cast', t(context).filterCast),
                             ]) ...[
                               ChoiceChip(
-                                label: Text('$l (${matching.where((t) => _inFilter(t, k)).length})'),
+                                label: Text('$l (${matching.where((pt) => _inFilter(pt, k)).length})'),
                                 selected: _filter == k,
                                 onSelected: (_) {
                                   setState(() => _filter = k);
@@ -180,7 +180,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       child: Text(t(context).castProgress(castCount, all.length), style: TextStyle(color: w.muted)),
                     ),
                     if (items.isEmpty) EmptyState(message: t(context).noMatchingPoints),
-                    for (final t in items) _card(t),
+                    for (final pt in items) _card(pt),
                   ],
                 ),
               ),
@@ -191,20 +191,20 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     );
   }
 
-  Widget _card(FieldPilePoint t) {
+  Widget _card(FieldPilePoint pt) {
     final w = context.colors;
     // Each stage its own colour, in the order of the work: grey → amber
     // (drilling) → blue (drilled) → purple (casting) → green (cast).
-    final (text, bg, fg) = switch (t.stage) {
+    final (text, bg, fg) = switch (pt.stage) {
       'berjalan' => (t(context).stageCasting, w.checkedBg, w.checkedFg),
       'selesai' || 'sudah_cor' => (t(context).stageCast, w.okBg, w.okFg),
-      'sudah_bor' => (t(context).stageDrilled(formatMeters(t.drillDepthM)), w.infoBg, w.infoFg),
+      'sudah_bor' => (t(context).stageDrilled(formatMeters(pt.drillDepthM)), w.infoBg, w.infoFg),
       'sedang_bor' => (t(context).stageDrilling, w.warnBg, w.warnFg),
       _ => (t(context).stageUndrilled, w.surface2, w.muted),
     };
-    final busy = t.stage == 'berjalan' || t.stage == 'sedang_bor';
+    final busy = pt.stage == 'berjalan' || pt.stage == 'sedang_bor';
     return ListCard(
-      onTap: () => _showActions(t),
+      onTap: () => _showActions(pt),
       // Work in progress stands out in a long list.
       edgeColor: busy ? fg : null,
       child: Row(
@@ -213,10 +213,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t.code, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
-                Text('D${t.diameterMm} · efektif ${formatMeters(t.plannedEffectiveLengthM)} · ${t.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³',
+                Text(pt.code, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
+                Text('D${pt.diameterMm} · efektif ${formatMeters(pt.plannedEffectiveLengthM)} · ${pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³',
                     style: TextStyle(color: w.muted, fontSize: 13)),
-                if (t.groundLevel == null && t.stage != 'sudah_cor')
+                if (pt.groundLevel == null && pt.stage != 'sudah_cor')
                   Text(t(context).gsMissingShort, style: TextStyle(color: w.warnFg, fontSize: 13, fontWeight: FontWeight.w600)),
               ],
             ),
@@ -227,26 +227,26 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     );
   }
 
-  Future<void> _showActions(FieldPilePoint t) async {
+  Future<void> _showActions(FieldPilePoint pt) async {
     final session = ref.read(sessionProvider).value;
     // Satu akun, satu HP: HP yang sudah digantikan dan lewat masa
     // tenggang hanya boleh mengirim sisa antreannya, tidak membuka
     // pekerjaan baru. Sebabnya terbaca di banner Beranda.
     final allows = ref.watch(canRecordProvider) && (session?.allows('field_casting', 'create') ?? false);
-    final g = t.geometry;
+    final g = pt.geometry;
     final w = context.colors;
     // The casting log needs the drilled depth: it sets the hole bottom that
     // the tremie, the concrete rise and the soundings are measured against.
-    final drilled = t.isDrilled;
-    final elsewhere = t.castedElsewhere && t.stage != 'sudah_cor';
-    final drillLogOpen = t.drillLog != null && t.drillLogBody?['status'] != 'selesai';
-    final drillingElsewhere = t.drillLoggedElsewhere && t.stage == 'sedang_bor';
+    final drilled = pt.isDrilled;
+    final elsewhere = pt.castedElsewhere && pt.stage != 'sudah_cor';
+    final drillLogOpen = pt.drillLog != null && pt.drillLogBody?['status'] != 'selesai';
+    final drillingElsewhere = pt.drillLoggedElsewhere && pt.stage == 'sedang_bor';
     // The log is missing from THIS phone but the server says this very account
     // holds it (another phone of his, or a reinstall). Nobody can read a
     // handover code out to him, so he takes it back without one.
     final myId = session?.user?.id;
-    final castingIsMine = myId != null && t.castingHolderId == myId;
-    final drillLogIsMine = myId != null && t.drillLogHolderId == myId;
+    final castingIsMine = myId != null && pt.castingHolderId == myId;
+    final drillLogIsMine = myId != null && pt.drillLogHolderId == myId;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -258,17 +258,17 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(t(context).pointHeading(t.code), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+              Text(t(context).pointHeading(pt.code), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
               const SizedBox(height: 8),
-              _InfoRow(t(context).fieldDiameter, '${t.diameterMm} mm'),
-              _InfoRow(t(context).fieldLevels, '${_elevation(t.groundLevel)} / ${_elevation(t.cutOffLevel)} / ${_elevation(t.tipLevel)}'),
+              _InfoRow(t(context).fieldDiameter, '${pt.diameterMm} mm'),
+              _InfoRow(t(context).fieldLevels, '${_elevation(pt.groundLevel)} / ${_elevation(pt.cutOffLevel)} / ${_elevation(pt.tipLevel)}'),
               _InfoRow(t(context).fieldCutOffDepth, formatMeters(g?.cutOffDepthM)),
               _InfoRow(t(context).fieldPlannedDrill, formatMeters(g?.plannedDrillLengthM)),
-              _InfoRow(t(context).fieldPlannedEff, formatMeters(t.plannedEffectiveLengthM)),
-              _InfoRow(t(context).fieldPlannedVol, '${t.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³'),
-              if (t.drillDepthM != null) _InfoRow(t(context).fieldActualDrill, formatMeters(t.drillDepthM)),
+              _InfoRow(t(context).fieldPlannedEff, formatMeters(pt.plannedEffectiveLengthM)),
+              _InfoRow(t(context).fieldPlannedVol, '${pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³'),
+              if (pt.drillDepthM != null) _InfoRow(t(context).fieldActualDrill, formatMeters(pt.drillDepthM)),
               const SizedBox(height: 14),
-              if (g == null && t.stage != 'sudah_cor')
+              if (g == null && pt.stage != 'sudah_cor')
                 TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.terrain_outlined,
@@ -279,23 +279,23 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 TerraBanner(
                   kind: BannerKind.warning,
                   icon: Icons.block,
-                  title: !t.castingHeldElsewhere
+                  title: !pt.castingHeldElsewhere
                       ? t(context).castLogExists
                       : castingIsMine
                           ? t(context).castLogOnMyOther
                           : t(context).castLogElsewhere,
-                  body: !t.castingHeldElsewhere
-                      ? t(context).castLogHeldBody(t.castingHolderName ?? t.serverCastingBy ?? t(context).colleague)
+                  body: !pt.castingHeldElsewhere
+                      ? t(context).castLogHeldBody(pt.castingHolderName ?? pt.serverCastingBy ?? t(context).colleague)
                       : castingIsMine
                           ? t(context).logIsMineBody
-                          : t(context).castLogHandoverBody(t.castingHolderName ?? t.serverCastingBy ?? t(context).colleague),
+                          : t(context).castLogHandoverBody(pt.castingHolderName ?? pt.serverCastingBy ?? t(context).colleague),
                 ),
-                if (t.castingHeldElsewhere && allows && t.serverCastingUuid != null) ...[
+                if (pt.castingHeldElsewhere && allows && pt.serverCastingUuid != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: () => castingIsMine
-                        ? _resumeOwn(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t)
-                        : _redeem(c, entity: 'casting', uuid: t.serverCastingUuid!, point: t),
+                        ? _resumeOwn(c, entity: 'casting', uuid: pt.serverCastingUuid!, point: pt)
+                        : _redeem(c, entity: 'casting', uuid: pt.serverCastingUuid!, point: pt),
                     icon: Icon(castingIsMine ? Icons.phonelink_setup : Icons.swap_horiz),
                     label: Text(castingIsMine ? t(context).takeToThisPhone : t(context).continueHereCode),
                   ),
@@ -308,14 +308,14 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   title: drillLogIsMine ? t(context).drillLogOnMyOther : t(context).drillLogElsewhere,
                   body: drillLogIsMine
                       ? t(context).logIsMineBody
-                      : t(context).drillLogHandoverBody(t.drillLogHolderName ?? t.serverDrillLogBy ?? t(context).colleague),
+                      : t(context).drillLogHandoverBody(pt.drillLogHolderName ?? pt.serverDrillLogBy ?? t(context).colleague),
                 ),
-                if (allows && t.serverDrillLogUuid != null) ...[
+                if (allows && pt.serverDrillLogUuid != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: () => drillLogIsMine
-                        ? _resumeOwn(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t)
-                        : _redeem(c, entity: 'drill_log', uuid: t.serverDrillLogUuid!, point: t),
+                        ? _resumeOwn(c, entity: 'drill_log', uuid: pt.serverDrillLogUuid!, point: pt)
+                        : _redeem(c, entity: 'drill_log', uuid: pt.serverDrillLogUuid!, point: pt),
                     icon: Icon(drillLogIsMine ? Icons.phonelink_setup : Icons.swap_horiz),
                     label: Text(drillLogIsMine ? t(context).takeToThisPhone : t(context).continueHereCode),
                   ),
@@ -333,20 +333,20 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
               else ...[
                 // Not drilled yet: drilling is THE next step, so it gets the
                 // filled button and "Mulai log cor" below stays disabled.
-                if (t.drillLog != null && drillLogOpen)
+                if (pt.drillLog != null && drillLogOpen)
                   FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(c);
-                      context.push('/drilling/log/${t.drillLog!.uuid}');
+                      context.push('/drilling/log/${pt.drillLog!.uuid}');
                     },
                     icon: const Icon(Icons.construction),
                     label: Text(t(context).continueDrillLog),
                   )
-                else if (t.drillLog != null)
+                else if (pt.drillLog != null)
                   OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(c);
-                      context.push('/drilling/log/${t.drillLog!.uuid}');
+                      context.push('/drilling/log/${pt.drillLog!.uuid}');
                     },
                     icon: const Icon(Icons.construction),
                     label: Text(t(context).viewDrillLog),
@@ -355,7 +355,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(c);
-                      context.push('/drilling/log/${newUuid()}?pilePoint=${t.uuid}');
+                      context.push('/drilling/log/${newUuid()}?pilePoint=${pt.uuid}');
                     },
                     icon: const Icon(Icons.construction),
                     label: Text(t(context).startDrillLog),
@@ -364,40 +364,40 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(c);
-                      _markDrilled(t);
+                      _markDrilled(pt);
                     },
                     icon: const Icon(Icons.straighten),
                     label: Text(t(context).markDrilledNoLog),
                   ),
                 ],
-                if (t.stage == 'sudah_bor') ...[
+                if (pt.stage == 'sudah_bor') ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(c);
-                      _markDrilled(t);
+                      _markDrilled(pt);
                     },
                     icon: const Icon(Icons.straighten),
                     label: Text(t(context).correctDrillGs),
                   ),
                 ],
                 const SizedBox(height: 10),
-                if (t.casting != null)
+                if (pt.casting != null)
                   FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(c);
-                      context.push('/casting/log/${t.casting!.uuid}');
+                      context.push('/casting/log/${pt.casting!.uuid}');
                     },
                     icon: const Icon(Icons.open_in_new),
                     label: Text(t(context).openCastLog),
                   )
-                else if (t.stage != 'sudah_cor' && !elsewhere)
+                else if (pt.stage != 'sudah_cor' && !elsewhere)
                   FilledButton.icon(
                     onPressed: g == null || !drilled
                         ? null
                         : () {
                             Navigator.pop(c);
-                            context.push('/casting/log/${newUuid()}?pilePoint=${t.uuid}');
+                            context.push('/casting/log/${newUuid()}?pilePoint=${pt.uuid}');
                           },
                     icon: const Icon(Icons.play_arrow),
                     label: Text(t(context).startCastLog),
@@ -437,20 +437,20 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
   /// GS is REQUIRED when the point has none yet: the casting log cannot start
   /// without it. When it is already known it is shown for correction and only
   /// sent if changed.
-  Future<void> _markDrilled(FieldPilePoint t) async {
-    final knownGs = t.groundLevel;
-    final initialDepth = t.drillDepthM ?? t.geometry?.plannedDrillLengthM;
+  Future<void> _markDrilled(FieldPilePoint pt) async {
+    final knownGs = pt.groundLevel;
+    final initialDepth = pt.drillDepthM ?? pt.geometry?.plannedDrillLengthM;
     // The dialog owns its text controllers: disposing them here, while the
     // dialog is still animating out, crashes ('_dependents.isEmpty').
     final result = await showDialog<({double depth, double? groundLevel})>(
       context: context,
       builder: (c) => _DrillDialog(
-        code: t.code,
+        code: pt.code,
         initialDepth: initialDepth == null ? '' : initialDepth.toStringAsFixed(2).replaceAll('.', ','),
         initialGs: knownGs == null ? '' : knownGs.toStringAsFixed(3).replaceAll('.', ','),
         gsRequired: knownGs == null,
-        cutOffLevel: t.cutOffLevel,
-        tipLevel: t.tipLevel,
+        cutOffLevel: pt.cutOffLevel,
+        tipLevel: pt.tipLevel,
       ),
     );
     if (result == null) return;
@@ -463,7 +463,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
       entity: 'drill_mark',
       userId: p.id,
       body: {
-        'pilePointUuid': t.uuid,
+        'pilePointUuid': pt.uuid,
         'drilledDepthM': decimalText(result.depth),
         'at': isoWithOffset(DateTime.now()),
         if (sendGs) 'groundLevel': decimalText(gs, decimals: 3),
@@ -477,7 +477,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
           children: [
             const Icon(Icons.check_circle_outline, color: Colors.white),
             const SizedBox(width: 10),
-            Expanded(child: Text(t(context).markedDrilled(t.code, formatMeters(result.depth)))),
+            Expanded(child: Text(t(context).markedDrilled(pt.code, formatMeters(result.depth)))),
           ],
         ),
       ),

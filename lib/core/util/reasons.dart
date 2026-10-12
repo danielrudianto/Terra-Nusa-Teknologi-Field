@@ -8,8 +8,12 @@ import '../i18n.dart';
 /// they are the server's contract — only the sentence the screen shows is
 /// translated. A code this build does not know is shown as-is: looking odd
 /// beats being hidden.
-String reasonText(BuildContext context, String? code, [String? detail]) {
-  final l = t(context);
+String reasonText(BuildContext context, String? code, [String? detail]) =>
+    reasonTextOf(t(context), code, detail);
+
+/// Same, from an already-read bundle — for code that must read the sentence
+/// BEFORE an await, when `context` may no longer be usable afterwards.
+String reasonTextOf(AppLocalizations l, String? code, [String? detail]) {
   final k = switch (code) {
     'TIDAK_VALID' => l.reasonTidakValid,
     'TIDAK_BERHAK' => l.reasonTidakBerhak,

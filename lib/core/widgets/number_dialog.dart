@@ -84,12 +84,12 @@ class _NumberDialogState extends State<_NumberDialog> {
   }
 
   void _submit() {
-    final t = _input.text.trim();
-    if (t.isEmpty && widget.allowEmpty) {
+    final typed = _input.text.trim();
+    if (typed.isEmpty && widget.allowEmpty) {
       Navigator.pop(context, (null,));
       return;
     }
-    final v = parseNumber(t);
+    final v = parseNumber(typed);
     if (v == null || v <= 0 || v > widget.maxValue) {
       setState(() => _problem = t(context).numberInvalid(decimalText(widget.maxValue, decimals: 0)));
       return;

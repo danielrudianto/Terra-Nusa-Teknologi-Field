@@ -60,7 +60,7 @@ class _UpdateRequiredPageState extends ConsumerState<UpdateRequiredPage> {
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: w.ink)),
             const SizedBox(height: 8),
             Text(
-              t(context).updateBody(Env.appVersion, '${widget.info.minVersion}'),
+              t(context).updateBody(Env.appVersion, widget.info.minVersion),
               textAlign: TextAlign.center,
               style: TextStyle(color: w.muted, height: 1.45),
             ),

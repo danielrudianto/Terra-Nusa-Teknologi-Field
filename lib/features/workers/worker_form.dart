@@ -62,12 +62,15 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
       _projectId = await ref.read(myProjectProvider.future);
     }
     if (widget.uuid != null) {
+      if (!mounted) return;
+      // Dibaca sebelum await: sesudahnya layar bisa sudah ditutup.
+      final l = t(context);
       final db = ref.read(dbProvider);
       final doc = await db.getDocument(_uuid);
       Map<String, Object?>? body;
       if (doc != null) {
         body = (jsonDecode(doc.body) as Map).cast<String, Object?>();
-        if (doc.sendStatus == 'rejected') _rejectReason = reasonText(context, doc.reason, doc.detail);
+        if (doc.sendStatus == 'rejected') _rejectReason = reasonTextOf(l, doc.reason, doc.detail);
       } else {
         body = await db.getMaster('worker', _uuid);
         _serverOnly = body != null;

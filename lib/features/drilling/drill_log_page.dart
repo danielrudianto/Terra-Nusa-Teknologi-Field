@@ -279,8 +279,9 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   }
 
   Future<void> _reopen() async {
+    final l = t(context);
     if (!await _update((d) => d['status'] = 'berjalan')) return;
-    _snack(t(context).drillReopened);
+    _snack(l.drillReopened);
   }
 
   void _snack(String text) {

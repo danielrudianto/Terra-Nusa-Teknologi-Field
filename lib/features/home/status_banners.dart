@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../core/util/clock_drift.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/util/format.dart';
+import '../../core/i18n.dart';
 
 /// Status banners shown at the TOP of every main page.
 ///

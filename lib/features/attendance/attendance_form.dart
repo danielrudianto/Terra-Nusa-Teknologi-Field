@@ -468,9 +468,9 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
   }
 
   List<Widget> _flagBanners() {
-    final t = _doc?.flags;
-    if (t == null) return const [];
-    final m = (jsonDecode(t) as Map).cast<String, Object?>();
+    final raw = _doc?.flags;
+    if (raw == null) return const [];
+    final m = (jsonDecode(raw) as Map).cast<String, Object?>();
     final all = <String>{
       for (final v in m.values)
         if (v is List) ...v.map((e) => '$e'),

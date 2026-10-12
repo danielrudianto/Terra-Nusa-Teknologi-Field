@@ -659,31 +659,35 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       );
       return;
     }
+    // Terjemahan diambil SEBELUM await: sesudahnya layar bisa saja sudah
+    // ditutup, dan `context` tidak boleh dipakai lagi.
+    final l = t(context);
     await Notifications.cancelIdleReminders();
     final start = DateTime.now();
     if (!await _updateTruck('${truck['uuid']}', (t) => t['startAt'] = isoWithOffset(start))) return;
     await Notifications.requestPermission();
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
-      title: t(context).notifPouring('${truck['seq']}'),
-      body: t(context).notifTapToOpen(_decimal(truck['volumeM3'])),
+      title: l.notifPouring('${truck['seq']}'),
+      body: l.notifTapToOpen(_decimal(truck['volumeM3'])),
       start: start,
       subText: _notifSubText,
       detail: _notifDetail(truck),
       progress: _notifProgress,
     );
     await _scheduleReminder(truck, poured: Duration.zero);
-    if (mounted) showSnack(context, t(context).pourStarted('${truck['seq']}'));
+    if (mounted) showSnack(context, l.pourStarted('${truck['seq']}'));
   }
 
   /// Vibrating reminder when this TM has poured for [truckReminderAfter]
   /// (pauses not counted) and is still not finished.
   Future<void> _scheduleReminder(Map<String, Object?> truck, {required Duration poured}) {
+    final l = t(context);
     final left = truckReminderAfter - poured;
     return Notifications.scheduleTruckReminder(
       route: '/casting/log/${widget.uuid}',
-      title: t(context).notifTruckLate('${truck['seq']}', truckReminderAfter.inMinutes, '${_pilePoint!['code']}'),
-      body: t(context).notifTruckLateBody,
+      title: l.notifTruckLate('${truck['seq']}', truckReminderAfter.inMinutes, '${_pilePoint!['code']}'),
+      body: l.notifTruckLateBody,
       at: DateTime.now().add(left),
     );
   }
@@ -696,14 +700,16 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       showDragHandle: true,
       builder: (c) => _PauseReasonSheet(seq: seq),
     );
-    if (reason == null) return;
+    if (reason == null || !mounted) return;
     final now = DateTime.now();
+    final l = t(context);
+    final reasonLabel = pauseReasonLabel(context, reason);
     // A pause is not pouring time: the reminder is set again on Lanjut.
     await Notifications.cancelTruckReminder();
     await Notifications.schedulePauseReminders(
       route: '/casting/log/${widget.uuid}',
-      title: t(context).notifStillPaused(seq, '${_pilePoint!['code']}'),
-      body: t(context).notifStillPausedBody,
+      title: l.notifStillPaused(seq, '${_pilePoint!['code']}'),
+      body: l.notifStillPausedBody,
       from: now,
     );
     if (!await _update((d) {
@@ -722,12 +728,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     }
     await Notifications.showPaused(
       route: '/casting/log/${widget.uuid}',
-      title: t(context).notifPausedTitle(seq),
-      body: t(context).notifPausedBody(pauseReasonLabel(context, reason)),
+      title: l.notifPausedTitle(seq),
+      body: l.notifPausedBody(reasonLabel),
       subText: _notifSubText,
       detail: _notifDetail(truck),
     );
-    if (mounted) showSnack(context, t(context).pourPaused(pauseReasonLabel(context, reason)), icon: Icons.pause_circle_outline);
+    if (mounted) showSnack(context, l.pourPaused(reasonLabel), icon: Icons.pause_circle_outline);
   }
 
   /// Close the open pause of [seq] at [at], if there is one.
@@ -741,6 +747,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _resumeTruck(Map<String, Object?> truck) async {
     final seq = toIntOrNull(truck['seq']) ?? 0;
     final now = DateTime.now();
+    final l = t(context);
     if (!await _update((d) => _closePause(d, seq, now))) return;
     await Notifications.cancelPauseReminders();
     // The notification clock cannot pause: restart it from a start moved
@@ -748,19 +755,20 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final poured = pouringTime(truck, _pauses, now) ?? Duration.zero;
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
-      title: t(context).notifPouring('$seq'),
-      body: t(context).notifTapToOpen(_decimal(truck['volumeM3'])),
+      title: l.notifPouring('$seq'),
+      body: l.notifTapToOpen(_decimal(truck['volumeM3'])),
       start: now.subtract(poured),
       subText: _notifSubText,
       detail: _notifDetail(truck),
       progress: _notifProgress,
     );
     await _scheduleReminder(truck, poured: poured);
-    if (mounted) showSnack(context, t(context).pourResumed(seq));
+    if (mounted) showSnack(context, l.pourResumed(seq));
   }
 
   Future<void> _finishTruck(Map<String, Object?> truck) async {
     final end = DateTime.now();
+    final l = t(context);
     final finishedSeq = toIntOrNull(truck['seq']) ?? 0;
     final saved = await _update((d) {
       _closePause(d, finishedSeq, end);
@@ -776,12 +784,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     // Waiting too long for the next truck risks a cold joint in the pile.
     await Notifications.scheduleIdleReminders(
       route: '/casting/log/${widget.uuid}',
-      title: t(context).notifNoNextTruck('${_pilePoint!['code']}'),
-      body: t(context).notifNoNextTruckBody,
+      title: l.notifNoNextTruck('${_pilePoint!['code']}'),
+      body: l.notifNoNextTruckBody,
       from: end,
     );
     if (!mounted) return;
-    showSnack(context, t(context).truckFinished(finishedSeq));
+    showSnack(context, l.truckFinished(finishedSeq));
     await _askSoundingAfter(truck);
   }
 
