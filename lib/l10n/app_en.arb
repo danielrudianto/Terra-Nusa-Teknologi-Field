@@ -768,5 +768,15 @@
   "download": "Download",
   "retakePhoto": "Retake",
   "tapToEnlarge": "Tap to enlarge",
-  "photoNotOnThisPhone": "Photo not on this phone"
+  "photoNotOnThisPhone": "Photo not on this phone",
+  "correct": "Correct",
+  "backOut": "Back out",
+  "gsRowLabel": "Ground level (GS)",
+  "plannedDrillOf": "Planned drill length {depth}",
+  "confirmBeforeDrilling": "Confirm before drilling {code}",
+  "confirmBeforeDrillingBody": "Enter the corrected GS for this point. The planned drill length is worked out from it, so it has to be right before the bit goes down.",
+  "correctGsTitle": "Correct GS",
+  "correctGsBody": "Surveyor revised the shot? Change GS here; the planned drill length and cut-off depth are recomputed with it.",
+  "codeHeldBy": "The code is on {name}’s phone",
+  "codeHeldByBody": "Ask {name} to open this point on their phone and tap \"Hand over to a mate\". A 6-digit code appears on their screen to read out. No request is sent automatically."
 }

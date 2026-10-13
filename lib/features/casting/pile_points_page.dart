@@ -413,7 +413,16 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
   /// Type the handover code on a locked point; on success the log is on this
   /// phone and its screen opens.
   Future<void> _redeem(BuildContext sheet, {required String entity, required String uuid, required FieldPilePoint point}) async {
-    final ok = await redeemHandoverFlow(context, ref, entity: entity, uuid: uuid, pointCode: point.code);
+    final ok = await redeemHandoverFlow(
+      context,
+      ref,
+      entity: entity,
+      uuid: uuid,
+      pointCode: point.code,
+      holderName: entity == 'drill_log'
+          ? point.drillLogHolderName ?? point.serverDrillLogBy
+          : point.castingHolderName ?? point.serverCastingBy,
+    );
     if (!ok || !mounted) return;
     if (sheet.mounted) Navigator.pop(sheet);
     // Not awaited on purpose: this returns only when the log screen is

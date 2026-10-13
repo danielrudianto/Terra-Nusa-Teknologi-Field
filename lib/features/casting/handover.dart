@@ -154,10 +154,14 @@ Future<bool> redeemHandoverFlow(
   required String entity,
   required String uuid,
   required String pointCode,
+  String? holderName,
 }) async {
   final code = await showDialog<String>(
     context: context,
-    builder: (c) => _CodeDialog(title: t(c).continueLog(_logLabel(c, entity), pointCode)),
+    builder: (c) => _CodeDialog(
+      title: t(c).continueLog(_logLabel(c, entity), pointCode),
+      holderName: holderName,
+    ),
   );
   if (code == null || !context.mounted) return false;
   return _takeOver(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, code: code);
@@ -232,9 +236,15 @@ Future<T> _busy<T>(BuildContext context, String text, Future<T> Function() task)
 
 /// Six digits, numeric keyboard, big glove-friendly text.
 class _CodeDialog extends StatefulWidget {
-  const _CodeDialog({required this.title});
+  const _CodeDialog({required this.title, this.holderName});
 
   final String title;
+
+  /// Siapa yang memegang log ini sekarang. Tanpa nama, layar ini jadi jalan
+  /// buntu: ada kotak kode tetapi tidak ada petunjuk dari mana kodenya
+  /// datang, dan tidak ada notifikasi apa pun yang dikirim ke pemegangnya —
+  /// memang tidak dirancang begitu (lihat [offerHandover]).
+  final String? holderName;
 
   @override
   State<_CodeDialog> createState() => _CodeDialogState();
@@ -265,6 +275,15 @@ class _CodeDialogState extends State<_CodeDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (widget.holderName != null) ...[
+            TerraBanner(
+              kind: BannerKind.info,
+              icon: Icons.person_pin_circle_outlined,
+              title: t(context).codeHeldBy(widget.holderName!),
+              body: t(context).codeHeldByBody(widget.holderName!),
+            ),
+            const SizedBox(height: 10),
+          ],
           Text(t(context).enterHandoverCode, style: TextStyle(color: w.ink, height: 1.4)),
           const SizedBox(height: 14),
           TextField(

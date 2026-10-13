@@ -4368,5 +4368,65 @@
   "photoNotOnThisPhone": "Foto tidak ada di HP ini",
   "@photoNotOnThisPhone": {
     "description": "The photo belongs to this log but its file is on another phone"
+  },
+  "correct": "Koreksi",
+  "@correct": {
+    "description": "Button next to GS that opens the correction dialog"
+  },
+  "backOut": "Keluar",
+  "@backOut": {
+    "description": "Leaves the drill log when GS is not confirmed"
+  },
+  "gsRowLabel": "Muka tanah (GS)",
+  "@gsRowLabel": {
+    "description": "Label of the ground-level row in the drill log"
+  },
+  "plannedDrillOf": "Panjang bor rencana {depth}",
+  "@plannedDrillOf": {
+    "description": "Planned drill length under the GS row",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmBeforeDrilling": "Konfirmasi sebelum bor {code}",
+  "@confirmBeforeDrilling": {
+    "description": "Title of the GS dialog shown before drilling starts",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmBeforeDrillingBody": "Masukkan hasil koreksi GS di titik ini. Panjang bor rencana dihitung dari angka ini, jadi harus benar sebelum mata bor turun.",
+  "@confirmBeforeDrillingBody": {
+    "description": "Body of that dialog"
+  },
+  "correctGsTitle": "Koreksi GS",
+  "@correctGsTitle": {
+    "description": "Title when GS is being corrected later"
+  },
+  "correctGsBody": "Surveyor merevisi tembakannya? Ubah GS di sini; panjang bor rencana dan kedalaman cut-off ikut terhitung ulang.",
+  "@correctGsBody": {
+    "description": "Body of the GS correction dialog"
+  },
+  "codeHeldBy": "Kodenya ada di HP {name}",
+  "@codeHeldBy": {
+    "description": "Names the colleague whose phone shows the handover code",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "codeHeldByBody": "Minta {name} membuka titik ini di HP-nya lalu menekan \"Oper ke rekan\". Kode 6 angka akan muncul di layarnya untuk disebutkan. Tidak ada permintaan yang terkirim otomatis.",
+  "@codeHeldByBody": {
+    "description": "Tells the receiver exactly what the holder must do; there is no push request",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

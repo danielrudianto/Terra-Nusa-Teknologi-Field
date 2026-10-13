@@ -768,5 +768,15 @@
   "download": "下载",
   "retakePhoto": "重拍",
   "tapToEnlarge": "点按放大",
-  "photoNotOnThisPhone": "此手机上没有该照片"
+  "photoNotOnThisPhone": "此手机上没有该照片",
+  "correct": "更正",
+  "backOut": "退出",
+  "gsRowLabel": "地面标高 (GS)",
+  "plannedDrillOf": "计划钻进长度 {depth}",
+  "confirmBeforeDrilling": "开钻前确认 {code}",
+  "confirmBeforeDrillingBody": "请输入该桩点校正后的 GS。计划钻进长度由此算出，必须在下钻前确认无误。",
+  "correctGsTitle": "更正 GS",
+  "correctGsBody": "测量员修正了数据？在此修改 GS，计划钻进长度和截桩深度会随之重新计算。",
+  "codeHeldBy": "验证码在 {name} 的手机上",
+  "codeHeldByBody": "请 {name} 在其手机上打开该桩点并点击\"移交给同事\"，屏幕上会显示6位数验证码供口头告知。系统不会自动发送任何请求。"
 }

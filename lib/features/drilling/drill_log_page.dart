@@ -106,6 +106,15 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
       _pilePoint = point;
       _row = row;
     });
+    // Koreksi GS dilakukan sesaat SEBELUM bor dimulai, bukan sesudahnya.
+    // Sebelum ini GS baru diminta di dialog "Selesai bor", sehingga sepanjang
+    // pengeboran panjang bor rencana (GS − tip) tidak ada di layar — persis
+    // saat operator membutuhkannya — dan GS diketik dari ingatan berjam-jam
+    // kemudian. Satu GS yang meleset menggeser semua turunannya: panjang bor
+    // rencana, kedalaman cut-off, volume teoritis, lalu overbreak.
+    if (_groundLevel == null && !_finished && !_handedAway && _pilePoint!['status'] != 'sudah_cor') {
+      await _mintaGs(pertamaKali: true);
+    }
     // Handed over: the colleague's phone buzzes now, not this one.
     if (_handedAway) {
       try {
@@ -197,6 +206,38 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
 
   /// Choose (or change) the rig operator. Remembered on this phone as the
   /// default for the next log.
+  /// Minta atau koreksi GS titik ini.
+  ///
+  /// [pertamaKali] = konfirmasi wajib sebelum bor: dibatalkan berarti keluar
+  /// dari log, sebab mengebor tanpa GS menghasilkan catatan yang tidak bisa
+  /// dihitung dan log cornya pun ditolak server.
+  ///
+  /// Tidak disimpan ke antrean selama log ini belum punya pembacaan: membuka
+  /// lalu menutup log tidak boleh meninggalkan apa pun (lihat `_load`).
+  Future<void> _mintaGs({bool pertamaKali = false}) async {
+    final gs = await showDialog<double>(
+      context: context,
+      barrierDismissible: !pertamaKali,
+      builder: (_) => _GsSheet(
+        code: _code,
+        pertamaKali: pertamaKali,
+        tipLevel: toDoubleOrNull(_pilePoint!['tipLevel']),
+        cutOffLevel: toDoubleOrNull(_pilePoint!['cutOffLevel']),
+        groundLevel: _groundLevel,
+      ),
+    );
+    if (gs == null) {
+      if (pertamaKali && mounted) context.pop();
+      return;
+    }
+    final teks = decimalText(gs, decimals: 3);
+    if (_row == null) {
+      setState(() => _doc!['groundLevel'] = teks);
+    } else {
+      await _update((d) => d['groundLevel'] = teks);
+    }
+  }
+
   Future<bool> _chooseOperator() async {
     final picked = await pickOperator(context, current: _operatorUuid);
     if (picked == null) return false;
@@ -311,7 +352,8 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     final w = context.colors;
     final readings = _readings;
     final cast = _pilePoint!['status'] == 'sudah_cor';
-    final canEdit = !_finished && !cast && !_handedAway;
+    // Tanpa GS tidak ada yang boleh dicatat: itulah arti "GS wajib dulu".
+    final canEdit = !_finished && !cast && !_handedAway && _groundLevel != null;
     final canOffer = _row != null && !_finished && !cast && !_handedAway;
 
     return Scaffold(
@@ -342,6 +384,11 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
           if (_row?.sendStatus == 'rejected' && !_handedAway)
             TerraBanner(kind: BannerKind.danger, title: t(context).rejectedByServer, body: reasonText(context, _row!.reason, _row!.detail)),
           _DepthHero(readings: readings, plannedM: _plannedM, diameterMm: toIntOrNull(_pilePoint!['diameterMm']), finished: _finished),
+          _GsRow(
+            groundLevel: _groundLevel,
+            plannedM: _plannedM,
+            onChange: _finished || cast || _handedAway ? null : () => _mintaGs(),
+          ),
           _OperatorRow(uuid: _operatorUuid, onChange: canEdit ? _chooseOperator : null),
           if (_finished)
             TerraBanner(
@@ -410,6 +457,151 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                 ),
         ),
       ),
+    );
+  }
+}
+
+/// GS titik ini berikut panjang bor rencana yang mengikutinya.
+///
+/// Sengaja sejajar dengan baris operator: dua hal yang dikonfirmasi sebelum
+/// mata bor menyentuh tanah, dan dua-duanya bisa dibetulkan selama log masih
+/// terbuka — surveyor kadang merevisi tembakannya.
+class _GsRow extends StatelessWidget {
+  const _GsRow({required this.groundLevel, required this.plannedM, required this.onChange});
+
+  final double? groundLevel;
+  final double? plannedM;
+  final VoidCallback? onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final gs = groundLevel;
+    return ListCard(
+      onTap: onChange == null ? null : () async => onChange!(),
+      child: Row(
+        children: [
+          Icon(Icons.height, color: gs == null ? w.warnFg : w.brand),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t(context).gsRowLabel,
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.9, color: w.faint)),
+                Text(gs == null ? t(context).notSet : formatElevation(gs),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: gs == null ? w.warnFg : w.ink)),
+                if (plannedM != null)
+                  Text(t(context).plannedDrillOf(formatMeters(plannedM!)),
+                      style: TextStyle(color: w.muted, fontSize: 13)),
+              ],
+            ),
+          ),
+          if (onChange != null)
+            Text(gs == null ? t(context).fill : t(context).correct,
+                style: TextStyle(color: w.brand, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Konfirmasi GS sebelum bor, dan koreksinya di kemudian hari.
+class _GsSheet extends StatefulWidget {
+  const _GsSheet({
+    required this.code,
+    required this.pertamaKali,
+    required this.tipLevel,
+    required this.cutOffLevel,
+    required this.groundLevel,
+  });
+
+  final String code;
+  final bool pertamaKali;
+  final double? tipLevel;
+  final double? cutOffLevel;
+  final double? groundLevel;
+
+  @override
+  State<_GsSheet> createState() => _GsSheetState();
+}
+
+class _GsSheetState extends State<_GsSheet> {
+  late final _gs = TextEditingController(
+      text: widget.groundLevel == null ? '' : formatElevation(widget.groundLevel!, decimals: 3).replaceAll('+', ''));
+  String? _problem;
+
+  @override
+  void dispose() {
+    _gs.dispose();
+    super.dispose();
+  }
+
+  double? get _diketik => parseNumber(_gs.text);
+
+  void _submit() {
+    final gs = _diketik;
+    if (gs == null || gs < -500 || gs > 5000) {
+      setState(() => _problem = t(context).gsRequiredMsg);
+      return;
+    }
+    Navigator.pop(context, gs);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final gs = _diketik;
+    final col = widget.cutOffLevel;
+    // Cut-off di ATAS muka tanah: bukan penghalang — kadang memang begitu —
+    // tetapi hampir selalu tanda GS salah ketik, jadi harus terbaca sekarang.
+    final colDiAtas = gs != null && col != null && col > gs;
+    return AlertDialog(
+      icon: Icon(Icons.height, size: 32, color: w.brand),
+      title: Text(widget.pertamaKali ? t(context).confirmBeforeDrilling(widget.code) : t(context).correctGsTitle,
+          textAlign: TextAlign.center),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(widget.pertamaKali ? t(context).confirmBeforeDrillingBody : t(context).correctGsBody,
+                style: TextStyle(color: w.ink, height: 1.4)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _gs,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+              inputFormatters: decimalInput(maxIntDigits: 4, decimals: 3, signed: true),
+              decoration: InputDecoration(labelText: t(context).gsFieldRequired, suffixText: 'm'),
+              onChanged: (_) => setState(() => _problem = null),
+            ),
+            const SizedBox(height: 12),
+            // Angka turunannya ikut berubah sambil diketik: salah ketik satu
+            // digit langsung terlihat sebagai panjang bor yang mustahil.
+            LevelReferenceBanner(cutOffLevel: col, tipLevel: widget.tipLevel, groundLevel: gs),
+            if (colDiAtas) ...[
+              const SizedBox(height: 8),
+              TerraBanner(
+                kind: BannerKind.warning,
+                title: t(context).cutOffAboveGsTitle,
+                body: t(context).cutOffAboveGsBody(formatElevation(col!)),
+              ),
+            ],
+            if (_problem != null) ...[
+              const SizedBox(height: 8),
+              TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: _problem),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(widget.pertamaKali ? t(context).backOut : t(context).cancel),
+        ),
+        FilledButton(onPressed: _submit, child: Text(t(context).save)),
+      ],
     );
   }
 }
