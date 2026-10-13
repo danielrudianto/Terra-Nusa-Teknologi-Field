@@ -43,7 +43,7 @@ class QueuePage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t(context).queueTitle)),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncProvider.notifier).run(),
+        onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: doc.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(title: t(context).queueLoadError, message: '$e'),

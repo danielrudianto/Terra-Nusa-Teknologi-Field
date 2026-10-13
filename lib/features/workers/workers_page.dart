@@ -61,10 +61,13 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
               label: Text(t(context).newWorker),
             )
           : null,
-      body: workers.when(
-        loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(title: t(context).workersLoadError, message: '$e'),
-        data: (all) => _list(all, codes),
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
+        child: workers.when(
+          loading: () => const LoadingState(),
+          error: (e, _) => ErrorState(title: t(context).workersLoadError, message: '$e'),
+          data: (all) => _list(all, codes),
+        ),
       ),
     );
   }

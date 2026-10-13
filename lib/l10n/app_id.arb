@@ -4428,5 +4428,239 @@
         "type": "String"
       }
     }
+  },
+  "askHolder": "Minta ke pemegang",
+  "@askHolder": {
+    "description": "Button in the code dialog that asks the holder instead of typing a code"
+  },
+  "sendingRequest": "Mengirim permintaan…",
+  "@sendingRequest": {
+    "description": "Progress while the handover request is sent"
+  },
+  "requestSentTitle": "Permintaan terkirim",
+  "@requestSentTitle": {
+    "description": "Confirmation that the request reached the server"
+  },
+  "requestSentBody": "{name} mendapat pemberitahuan di HP-nya. Begitu disetujui, log ini pindah ke HP Anda — tidak perlu kode.",
+  "@requestSentBody": {
+    "description": "Explains what happens next after asking the holder",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "handingOver": "Memindahkan log…",
+  "@handingOver": {
+    "description": "Progress while the holder approves"
+  },
+  "rejectingRequest": "Menolak permintaan…",
+  "@rejectingRequest": {
+    "description": "Progress while the holder rejects"
+  },
+  "logHandedTo": "Log {code} sudah pindah ke {name}.",
+  "@logHandedTo": {
+    "description": "Snack on the old holder phone once the log has moved",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "requestRejected": "Permintaan {name} ditolak.",
+  "@requestRejected": {
+    "description": "Snack after the holder rejects",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverRequestTitle": "{name} minta oper",
+  "@handoverRequestTitle": {
+    "description": "Notification title and banner title on the holder phone",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverRequestBody": "Titik {code} — buka untuk menyetujui atau menolak.",
+  "@handoverRequestBody": {
+    "description": "Notification body on the holder phone",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverRequestPrompt": "{name} sedang di titik {code} dan menunggu jawaban. Disetujui berarti log ini langsung pindah ke HP-nya, dan layar ini ditutup.",
+  "@handoverRequestPrompt": {
+    "description": "Banner body asking the holder to approve or reject",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "approve": "Setujui",
+  "@approve": {
+    "description": "Button that grants the handover"
+  },
+  "reject": "Tolak",
+  "@reject": {
+    "description": "Button that refuses the handover"
+  },
+  "slumpPhotoAhead": "Foto slump TM berikutnya",
+  "@slumpPhotoAhead": {
+    "description": "Button that photographs the slump before its TM is entered"
+  },
+  "slumpPhotoWaiting": "Foto slump menunggu TM berikutnya",
+  "@slumpPhotoWaiting": {
+    "description": "Title of the parked slump photo card"
+  },
+  "slumpPhotoWaitingBody": "Diambil {time} — otomatis terpasang saat TM berikutnya dicatat.",
+  "@slumpPhotoWaitingBody": {
+    "description": "When the parked slump photo was taken",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "slumpPhotoParked": "Foto slump disimpan untuk TM berikutnya.",
+  "@slumpPhotoParked": {
+    "description": "Snack after parking a slump photo"
+  },
+  "drillProgressLabel": "Kemajuan bor",
+  "@drillProgressLabel": {
+    "description": "Label of the drilling progress card on a point held elsewhere"
+  },
+  "castProgressLabel": "Kemajuan cor",
+  "@castProgressLabel": {
+    "description": "Label of the casting progress card on a point held elsewhere"
+  },
+  "drillProgressMain": "{depth} dari {planned} rencana",
+  "@drillProgressMain": {
+    "description": "Deepest reading against the planned drill length",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "castProgressMain": "TM ke-{n} · {vol} m³ dari {theoretical} m³ teoritis",
+  "@castProgressMain": {
+    "description": "Truck count and volume against the theoretical volume",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "vol": {
+        "type": "String"
+      },
+      "theoretical": {
+        "type": "String"
+      }
+    }
+  },
+  "progressNothingYet": "Belum ada catatan yang terkirim",
+  "@progressNothingYet": {
+    "description": "Shown when the holder has sent no records yet"
+  },
+  "progressNoSync": "Belum pernah tersinkron",
+  "@progressNoSync": {
+    "description": "Shown when there is no timestamp at all"
+  },
+  "progressLastAt": "Catatan terakhir {time} · {age}",
+  "@progressLastAt": {
+    "description": "When the last record was made, and how long ago",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "progressAsSent": "Sejauh yang sudah terkirim HP pemegangnya. Kalau HP-nya sedang tanpa sinyal, keadaan sebenarnya bisa lebih maju.",
+  "@progressAsSent": {
+    "description": "Warns that the figures are only as fresh as the holder phone last sync"
+  },
+  "refresh": "Muat ulang",
+  "@refresh": {
+    "description": "Tooltip of the refresh button that pulls from the server"
+  },
+  "pointHistoryOpen": "Lihat riwayat titik",
+  "@pointHistoryOpen": {
+    "description": "Button that opens the server-side history of this pile point"
+  },
+  "pointHistoryTitle": "Riwayat {code}",
+  "@pointHistoryTitle": {
+    "description": "Title of the point history screen",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "pointHistoryErrorTitle": "Riwayat tidak bisa dibuka",
+  "@pointHistoryErrorTitle": {
+    "description": "Shown when the history request fails"
+  },
+  "pointHistoryErrorBody": "Layar ini membaca langsung dari server, jadi perlu sinyal. Tarik ke bawah untuk mencoba lagi.",
+  "@pointHistoryErrorBody": {
+    "description": "Explains the history screen needs connectivity"
+  },
+  "pointHistoryNoCasting": "Belum ada log cor di server untuk titik ini.",
+  "@pointHistoryNoCasting": {
+    "description": "Empty state of the point history screen"
+  },
+  "pointHistoryTrail": "Jejak koreksi",
+  "@pointHistoryTrail": {
+    "description": "Heading of the audit trail section"
+  },
+  "deletedLabel": "Dihapus",
+  "@deletedLabel": {
+    "description": "Badge on a record that has been deleted"
+  },
+  "fromOffice": "Dari kantor",
+  "@fromOffice": {
+    "description": "Badge on a record created or edited from the web office app"
+  },
+  "trucksCount": "{n} TM",
+  "@trucksCount": {
+    "description": "How many mixer trucks the casting log has",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "volumeUsed": "Volume terpakai",
+  "@volumeUsed": {
+    "description": "Label of the actual concrete volume"
+  },
+  "volumeTheoretical": "Volume teoritis",
+  "@volumeTheoretical": {
+    "description": "Label of the theoretical concrete volume"
+  },
+  "overusePercent": "Kelebihan pakai",
+  "@overusePercent": {
+    "description": "Label of the overuse percentage"
+  },
+  "castStartEnd": "Mulai – selesai cor",
+  "@castStartEnd": {
+    "description": "Label of the casting start and end time"
   }
 }

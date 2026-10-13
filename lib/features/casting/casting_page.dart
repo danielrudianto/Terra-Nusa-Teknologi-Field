@@ -23,7 +23,7 @@ class CastingPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t(context).castingTitle)),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncProvider.notifier).run(),
+        onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: projects.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(title: t(context).projectsLoadError, message: '$e'),

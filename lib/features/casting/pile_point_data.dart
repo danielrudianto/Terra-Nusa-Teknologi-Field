@@ -43,6 +43,10 @@ class FieldPilePoint {
   /// (LOG_BOR_SUDAH_ADA), so "Mulai log bor" is closed here.
   bool get drillLoggedElsewhere => drillLog == null && serverDrillLogUuid != null;
 
+  /// Nomor baris titik di server. Dipakai oleh layar Riwayat, yang membaca
+  /// langsung dari server dan karena itu memakai id, bukan uuid.
+  int? get serverId => toIntOrNull(server['id']);
+
   String get uuid => '${server['uuid']}';
   String get code => '${server['code']}';
   int get diameterMm => toIntOrNull(server['diameterMm']) ?? 0;
@@ -57,6 +61,35 @@ class FieldPilePoint {
   String? get drillLogHolderName => server['drillLogHolderName']?.toString();
   int? get castingHolderId => toIntOrNull(server['castingHolderID']);
   String? get castingHolderName => server['castingHolderName']?.toString();
+
+  // -------------------------------------------------------------------
+  // Kemajuan titik yang sedang dikerjakan HP lain
+  // -------------------------------------------------------------------
+  //
+  // Semuanya "sejauh yang sudah TERKIRIM", bukan keadaan sekarang: HP yang
+  // mencatatnya baru menyetor saat ada sinyal. Karena itu setiap angka di
+  // bawah berpasangan dengan waktunya, dan layar TIDAK BOLEH menampilkan
+  // angkanya tanpa umurnya — kemajuan tanpa umur akan dibaca sebagai
+  // keadaan sekarang, lalu dipakai memutuskan pemindahan rig.
+
+  double? get drillLogDeepestM => toDoubleOrNull(server['drillLogDeepestM']);
+  DateTime? get drillLogLastAt => _waktu(server['drillLogLastAt']);
+  int? get castingTruckCount => toIntOrNull(server['castingTruckCount']);
+  double? get castingVolumeM3 => toDoubleOrNull(server['castingVolumeM3']);
+  DateTime? get castingLastAt => _waktu(server['castingLastAt']);
+
+  static DateTime? _waktu(Object? v) => v == null ? null : DateTime.tryParse('$v');
+
+  /// A colleague standing at the point has asked for the log THIS phone
+  /// holds. Null = nobody is waiting.
+  ///
+  /// The name is what the holder sees; without it the notification would say
+  /// "someone wants your log", which is exactly the kind of message people
+  /// learn to swipe away.
+  int? get drillLogRequestBy => toIntOrNull(server['drillLogRequestBy']);
+  String? get drillLogRequestName => server['drillLogRequestName']?.toString();
+  int? get castingRequestBy => toIntOrNull(server['castingRequestBy']);
+  String? get castingRequestName => server['castingRequestName']?.toString();
 
   /// This phone has the log, but the server says someone else holds it now:
   /// it was handed over (Oper), and pushes from here are refused (DIOPER).

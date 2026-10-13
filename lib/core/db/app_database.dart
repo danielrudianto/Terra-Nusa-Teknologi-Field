@@ -464,14 +464,27 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// What is waiting to be sent for this user, in a safe order.
-  Future<List<DocumentRow>> sendQueue(int userId, {int limits = 50}) async {
+  /// Dokumen yang menunggu giliran kirim.
+  ///
+  /// [sekarangJuga] mengabaikan jadwal mundur (`retryAfter`). Dipakai HANYA
+  /// oleh kiriman yang DIMINTA ORANG — tombol Kirim, tarik-untuk-muat-ulang.
+  /// Tanpa itu, menekan Kirim pada antrean yang sedang menunggu tidak
+  /// mengirim apa pun dan tidak mengatakan apa pun: orangnya menekan
+  /// berkali-kali, tidak ada yang berubah, dan satu-satunya kesimpulan yang
+  /// masuk akal baginya adalah aplikasinya rusak.
+  ///
+  /// Sinkron berkala TIDAK memakainya: jadwal mundur memang untuk menahan
+  /// percobaan beruntun ke server yang sedang bermasalah.
+  Future<List<DocumentRow>> sendQueue(int userId, {int limits = 50, bool sekarangJuga = false}) async {
     final now = DateTime.now();
     final q = select(documents)
       ..where((t) =>
           t.userId.equals(userId) &
           t.version.isBiggerThan(t.syncedVersion) &
           t.sendStatus.isNotIn(const ['rejected']) &
-          (t.retryAfter.isNull() | t.retryAfter.isSmallerOrEqualValue(now)))
+          (sekarangJuga
+              ? const Constant(true)
+              : (t.retryAfter.isNull() | t.retryAfter.isSmallerOrEqualValue(now))))
       ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]);
     final all = await q.get();
     all.sort((a, b) {

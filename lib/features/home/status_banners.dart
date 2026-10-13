@@ -90,7 +90,7 @@ class StatusBanners extends ConsumerWidget {
             action: syncState.running
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : TextButton(
-                    onPressed: () => ref.read(syncProvider.notifier).run(),
+                    onPressed: () => ref.read(syncProvider.notifier).run(diminta: true),
                     child: Text(t(context).send),
                   ),
           ),

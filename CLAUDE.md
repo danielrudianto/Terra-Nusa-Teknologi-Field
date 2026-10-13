@@ -51,3 +51,21 @@ pulls every worker and may absent or correct any of them. `projectID` (main
 project, optional) and `lastProjectID`/`lastSeenDate` (kept by the server on
 every attendance) only group and sort — they never limit where a worker can
 be absent. `foremanUserID` on a worker means "registered by".
+
+## Release
+
+Any change under `lib/` or `android/` that will reach a phone means a new
+build, and a new build means a new `versionCode`. **Bump `version:` in
+`pubspec.yaml` as part of the change itself** — do not finish the work and
+then ask whether to bump it.
+
+    version: 1.0.0+5     # the number after + always goes up, never reused
+
+Play rejects a `versionCode` that has been uploaded before, and the number
+cannot be recycled even if the release was discarded. Finding that out at
+the upload screen wastes a whole build.
+
+Raise the number after `+` for an ordinary release. Raise the semantic part
+(`1.0.1`) when the release must be forcible: `urai_versi()` on the server
+drops everything after `+`, so `1.0.0+4` and `1.0.0+5` are the SAME version
+to `FIELD_MIN_APP_VERSION` and cannot be told apart.

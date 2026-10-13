@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/device/notifications.dart';
 import '../../core/network/api_error.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
@@ -36,7 +37,7 @@ Future<void> offerHandover(
   final label = _logLabel(context, entity);
   // Everything typed so far must reach the server first — the body the
   // colleague receives comes from there, not from this phone.
-  await _busy(context, t(context).sendingFirst(label), () => ref.read(syncProvider.notifier).run());
+  await _busy(context, t(context).sendingFirst(label), () => ref.read(syncProvider.notifier).run(diminta: true));
   final row = await ref.read(dbProvider).getDocument(uuid);
   if (!context.mounted) return;
   if (row == null || row.version > row.syncedVersion || row.sendStatus != 'sent') {
@@ -146,6 +147,88 @@ Future<bool> resumeOwnLogFlow(
   return _takeOver(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, code: '000000');
 }
 
+/// Minta log ini kepada pemegangnya, tanpa kode.
+///
+/// Melengkapi [redeemHandoverFlow], tidak menggantikannya: kode melayani dua
+/// orang yang berdiri berdekatan, sedangkan ini melayani keadaan sebaliknya —
+/// rekan sudah di titik, pemegangnya tidak di sampingnya. Yang memindahkan
+/// pegangan tetap pemegangnya; di sini ia hanya diberi tahu.
+Future<bool> requestHandoverFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required String entity,
+  required String uuid,
+  required String pointCode,
+  String? holderName,
+}) async {
+  final siapa = holderName ?? t(context).colleague;
+  try {
+    await _busy(context, t(context).sendingRequest, () => ref.read(apiProvider).requestHandover(entity, uuid));
+  } on ApiError catch (e) {
+    if (context.mounted) showSnack(context, e.message, icon: Icons.error_outline);
+    return false;
+  }
+  if (!context.mounted) return true;
+  await showDialog<void>(
+    context: context,
+    builder: (c) => AlertDialog(
+      icon: Icon(Icons.schedule_send, size: 32, color: c.colors.brand),
+      title: Text(t(c).requestSentTitle, textAlign: TextAlign.center),
+      content: Text(t(c).requestSentBody(siapa), style: TextStyle(color: c.colors.ink, height: 1.4)),
+      actions: [FilledButton(onPressed: () => Navigator.pop(c), child: Text(t(c).understood))],
+    ),
+  );
+  return true;
+}
+
+/// Pemegang menjawab permintaan yang masuk. True = log sudah BUKAN miliknya
+/// lagi, dan layarnya harus ditutup.
+Future<bool> answerHandoverFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required String entity,
+  required String uuid,
+  required String pointCode,
+  required String requesterName,
+  required bool agree,
+}) async {
+  if (agree) {
+    // Semua yang diketik di HP ini harus sampai server LEBIH DULU: isi log
+    // yang diterima rekan datang dari server, bukan dari HP ini.
+    await _busy(context, t(context).sendingFirst(_logLabel(context, entity)),
+        () => ref.read(syncProvider.notifier).run(diminta: true));
+    if (!context.mounted) return false;
+  }
+  try {
+    await _busy(
+      context,
+      agree ? t(context).handingOver : t(context).rejectingRequest,
+      () => ref.read(apiProvider).answerHandover(entity, uuid, agree: agree),
+    );
+  } on ApiError catch (e) {
+    if (context.mounted) showSnack(context, e.message, icon: Icons.error_outline);
+    return false;
+  }
+  // Tarik lagi supaya titiknya menyebut pemegang barunya; tanpa ini layar
+  // sebelumnya masih menganggap log ini miliknya.
+  await ref.read(syncProvider.notifier).run(diminta: true);
+  try {
+    await Notifications.clearHandoverRequest();
+  } catch (_) {
+    // Tidak ada plugin notifikasi (misalnya dalam uji).
+  }
+  if (context.mounted) {
+    showSnack(
+      context,
+      agree
+          ? t(context).logHandedTo(requesterName, pointCode)
+          : t(context).requestRejected(requesterName),
+      icon: agree ? Icons.swap_horiz : Icons.block,
+    );
+  }
+  return agree;
+}
+
 /// Colleague types the code on the locked point. Returns true when the log is
 /// now on this phone (the caller navigates to it).
 Future<bool> redeemHandoverFlow(
@@ -161,9 +244,14 @@ Future<bool> redeemHandoverFlow(
     builder: (c) => _CodeDialog(
       title: t(c).continueLog(_logLabel(c, entity), pointCode),
       holderName: holderName,
+      canRequest: holderName != null,
     ),
   );
   if (code == null || !context.mounted) return false;
+  if (code == _minta) {
+    await requestHandoverFlow(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, holderName: holderName);
+    return false;
+  }
   return _takeOver(context, ref, entity: entity, uuid: uuid, pointCode: pointCode, code: code);
 }
 
@@ -194,7 +282,7 @@ Future<bool> _takeOver(
         );
     // Pull straight away: the point record then names THIS user as holder,
     // so the screen opens unlocked (and the old phone locks on its pull).
-    await ref.read(syncProvider.notifier).run();
+    await ref.read(syncProvider.notifier).run(diminta: true);
     if (context.mounted) {
       final label = _logLabel(context, entity);
       showSnack(context, t(context).logNowHere('${label[0].toUpperCase()}${label.substring(1)}', pointCode));
@@ -235,8 +323,11 @@ Future<T> _busy<T>(BuildContext context, String text, Future<T> Function() task)
 }
 
 /// Six digits, numeric keyboard, big glove-friendly text.
+/// Dikembalikan dialog kode saat penggunanya memilih meminta, bukan mengetik.
+const _minta = '__minta__';
+
 class _CodeDialog extends StatefulWidget {
-  const _CodeDialog({required this.title, this.holderName});
+  const _CodeDialog({required this.title, this.holderName, this.canRequest = false});
 
   final String title;
 
@@ -245,6 +336,10 @@ class _CodeDialog extends StatefulWidget {
   /// datang, dan tidak ada notifikasi apa pun yang dikirim ke pemegangnya —
   /// memang tidak dirancang begitu (lihat [offerHandover]).
   final String? holderName;
+
+  /// Meminta hanya bisa ditawarkan kalau pemegangnya diketahui — tanpa nama,
+  /// permintaannya tidak punya tujuan yang bisa disebutkan ke penggunanya.
+  final bool canRequest;
 
   @override
   State<_CodeDialog> createState() => _CodeDialogState();
@@ -300,6 +395,12 @@ class _CodeDialogState extends State<_CodeDialog> {
         ],
       ),
       actions: [
+        if (widget.canRequest)
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, _minta),
+            icon: const Icon(Icons.schedule_send, size: 18),
+            label: Text(t(context).askHolder),
+          ),
         TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
         FilledButton(onPressed: _complete ? _submit : null, child: Text(t(context).takeOver)),
       ],

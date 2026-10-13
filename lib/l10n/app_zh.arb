@@ -778,5 +778,93 @@
   "correctGsTitle": "更正 GS",
   "correctGsBody": "测量员修正了数据？在此修改 GS，计划钻进长度和截桩深度会随之重新计算。",
   "codeHeldBy": "验证码在 {name} 的手机上",
-  "codeHeldByBody": "请 {name} 在其手机上打开该桩点并点击\"移交给同事\"，屏幕上会显示6位数验证码供口头告知。系统不会自动发送任何请求。"
+  "codeHeldByBody": "请 {name} 在其手机上打开该桩点并点击\"移交给同事\"，屏幕上会显示6位数验证码供口头告知。系统不会自动发送任何请求。",
+  "askHolder": "向持有人申请",
+  "sendingRequest": "正在发送申请…",
+  "requestSentTitle": "申请已发送",
+  "requestSentBody": "{name} 的手机会收到通知。对方同意后，该记录立即转到您的手机，无需验证码。",
+  "handingOver": "正在移交记录…",
+  "rejectingRequest": "正在拒绝申请…",
+  "logHandedTo": "记录 {code} 已转给 {name}。",
+  "requestRejected": "已拒绝 {name} 的申请。",
+  "handoverRequestTitle": "{name} 申请接手",
+  "handoverRequestBody": "桩点 {code} — 打开以同意或拒绝。",
+  "handoverRequestPrompt": "{name} 正在桩点 {code} 等待答复。同意后该记录立即转到对方手机，本页面将关闭。",
+  "approve": "同意",
+  "reject": "拒绝",
+  "slumpPhotoAhead": "下一车坍落度照片",
+  "slumpPhotoWaiting": "坍落度照片等待下一车",
+  "slumpPhotoWaitingBody": "拍摄于 {time} — 录入下一车时自动附加。",
+  "slumpPhotoParked": "坍落度照片已保存，待下一车使用。",
+  "drillProgressLabel": "钻进进度",
+  "castProgressLabel": "浇筑进度",
+  "drillProgressMain": "{depth} / 计划 {planned}",
+  "castProgressMain": "第 {n} 车 · {vol} m³ / 理论 {theoretical} m³",
+  "progressNothingYet": "尚无已上传的记录",
+  "progressNoSync": "从未同步",
+  "progressLastAt": "最近记录 {time} · {age}",
+  "progressAsSent": "以持有人手机已上传的数据为准。若其处于无信号状态，实际进度可能更快。",
+  "refresh": "刷新",
+  "pointHistoryOpen": "查看桩点历史",
+  "@pointHistoryOpen": {
+    "description": "Button that opens the server-side history of this pile point"
+  },
+  "pointHistoryTitle": "{code} 历史",
+  "@pointHistoryTitle": {
+    "description": "Title of the point history screen",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "pointHistoryErrorTitle": "无法打开历史记录",
+  "@pointHistoryErrorTitle": {
+    "description": "Shown when the history request fails"
+  },
+  "pointHistoryErrorBody": "此页面直接读取服务器数据，需要网络连接。下拉可重试。",
+  "@pointHistoryErrorBody": {
+    "description": "Explains the history screen needs connectivity"
+  },
+  "pointHistoryNoCasting": "服务器上该桩点尚无浇筑记录。",
+  "@pointHistoryNoCasting": {
+    "description": "Empty state of the point history screen"
+  },
+  "pointHistoryTrail": "修改记录",
+  "@pointHistoryTrail": {
+    "description": "Heading of the audit trail section"
+  },
+  "deletedLabel": "已删除",
+  "@deletedLabel": {
+    "description": "Badge on a record that has been deleted"
+  },
+  "fromOffice": "来自办公室",
+  "@fromOffice": {
+    "description": "Badge on a record created or edited from the web office app"
+  },
+  "trucksCount": "{n} 车",
+  "@trucksCount": {
+    "description": "How many mixer trucks the casting log has",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "volumeUsed": "实际用量",
+  "@volumeUsed": {
+    "description": "Label of the actual concrete volume"
+  },
+  "volumeTheoretical": "理论用量",
+  "@volumeTheoretical": {
+    "description": "Label of the theoretical concrete volume"
+  },
+  "overusePercent": "超用比例",
+  "@overusePercent": {
+    "description": "Label of the overuse percentage"
+  },
+  "castStartEnd": "浇筑起止",
+  "@castStartEnd": {
+    "description": "Label of the casting start and end time"
+  }
 }

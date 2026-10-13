@@ -37,7 +37,7 @@ class ApiClient {
           // Merek dan tipe HP. Server memakainya untuk menamai perangkat pada
           // peringatan "akun ini dipakai di HP lain"; tanpa ini yang tampil
           // adalah user-agent Dart, yang sama di semua HP.
-          if (deviceName != null) 'X-Device-Name': deviceName!,
+          'X-Device-Name': ?deviceName,
         },
       ),
     );
@@ -112,7 +112,7 @@ class ApiClient {
           'X-App-Version': Env.appVersion,
           // Penyegaran juga menulis baris perangkat di server, jadi namanya
           // ikut di sini — kalau tidak, labelnya berubah-ubah sendiri.
-          if (deviceName != null) 'X-Device-Name': deviceName!,
+          'X-Device-Name': ?deviceName,
         }),
       );
       final data = r.data ?? const {};
@@ -239,6 +239,44 @@ class ApiClient {
         version: toIntOrNull(data['version']) ?? 1,
         body: (data['body'] as Map).cast<String, Object?>(),
       );
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Ask the HOLDER to hand this log over. No code is involved: the holder's
+  /// phone raises a notification on its next pull and answers from there.
+  Future<void> requestHandover(String entity, String uuid) async {
+    try {
+      await dio.post<Map<String, dynamic>>('${_handoverBase(entity)}/$uuid/minta-oper');
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Holder's answer. [agree] true moves the log to the requester THERE AND
+  /// THEN — no code, because the person tapping is the holder.
+  Future<void> answerHandover(String entity, String uuid, {required bool agree}) async {
+    try {
+      await dio.post<Map<String, dynamic>>(
+        '${_handoverBase(entity)}/$uuid/jawab-oper',
+        data: {'setuju': agree},
+      );
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Riwayat satu titik, langsung dari server: SELURUH log cornya (termasuk
+  /// yang sudah dihapus), TM-nya, hitungannya, dan jejak siapa mengubah apa.
+  ///
+  /// Dibaca dari server, bukan dari HP ini, justru karena yang ditanyakan
+  /// adalah titik yang dikerjakan HP LAIN — lognya memang tidak pernah ada
+  /// di sini.
+  Future<Map<String, Object?>> pointHistory(int pileId) async {
+    try {
+      final r = await dio.get<Map<String, dynamic>>('/field/pile-points/$pileId/riwayat');
+      return (r.data ?? const {}).cast<String, Object?>();
     } catch (e) {
       throw ApiError.from(e);
     }

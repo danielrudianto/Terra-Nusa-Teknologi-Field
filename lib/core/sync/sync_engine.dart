@@ -78,7 +78,9 @@ class SyncEngine {
 
   Dio get _dio => api.dio;
 
-  Future<SyncResult> run({bool push = true, bool pull = true}) async {
+  /// [diminta] = kiriman yang diminta orang (tombol Kirim, tarik-untuk-muat
+  /// -ulang). Jadwal mundur antrean diabaikan; lihat [AppDatabase.sendQueue].
+  Future<SyncResult> run({bool push = true, bool pull = true, bool diminta = false}) async {
     final result = SyncResult();
     final user = await session.user();
     if (user == null || await session.accessToken() == null) {
@@ -97,7 +99,7 @@ class SyncEngine {
     }
     try {
       if (push) {
-        await _pushDocuments(user.id, owner, result);
+        await _pushDocuments(user.id, owner, result, diminta);
         await _pushPhotos(user.id, owner, result);
       }
       if (pull) await _pull(user.id, owner, result);
@@ -137,9 +139,9 @@ class SyncEngine {
   // Push documents
   // -------------------------------------------------------------------------
 
-  Future<void> _pushDocuments(int userId, String owner, SyncResult result) async {
+  Future<void> _pushDocuments(int userId, String owner, SyncResult result, bool diminta) async {
     for (var round = 0; round < _maxPushRounds; round++) {
-      final queue = await db.sendQueue(userId, limits: Env.itemsPerPush);
+      final queue = await db.sendQueue(userId, limits: Env.itemsPerPush, sekarangJuga: diminta);
       if (queue.isEmpty) return;
       await _extendLock(owner);
 
@@ -274,6 +276,7 @@ class SyncEngine {
 
   Future<void> _pull(int userId, String owner, SyncResult result) async {
     final cursorKey = 'cursor:$userId';
+    final diminta = <_PermintaanOper>[];
     var cursor = await db.readMeta(cursorKey);
     for (var page = 0; page < _maxPullPages; page++) {
       await _extendLock(owner);
@@ -304,6 +307,7 @@ class SyncEngine {
         for (final t in (d['pilePoints'] as List?) ?? const []) {
           final m = (t as Map).cast<String, Object?>();
           await db.upsertMaster('pile_point', '${m['uuid']}', m, deleted: m['isDelete'] == true);
+          _kumpulkanPermintaanOper(m, userId, diminta);
         }
         for (final a in (d['attendanceStatus'] as List?) ?? const []) {
           final m = (a as Map).cast<String, Object?>();
@@ -344,6 +348,12 @@ class SyncEngine {
           AppLog.info('clock', 'phone clock off by ${drift.inMinutes} min from server');
         }
       });
+      // Permintaan oper yang masuk: notifikasi lokal, bukan push. Aplikasi ini
+      // tidak punya Firebase, dan tidak perlu — pull sudah berjalan sendiri
+      // tiap 15 menit di latar dan segera saat layar terbuka.
+      for (final permintaan in diminta) {
+        await _umumkanPermintaanOper(permintaan);
+      }
       for (final uuid in deletedDrillLogs) {
         try {
           await Notifications.cancelDrillIdleReminders(uuid);
@@ -351,8 +361,79 @@ class SyncEngine {
           // No notification plugin here (e.g. a test): nothing to cancel.
         }
       }
+      diminta.clear();
       result.pulled = true;
       if (d['hasMore'] != true) return;
     }
   }
+
+  /// Catat permintaan oper yang ditujukan kepada PENGGUNA HP INI.
+  ///
+  /// Hanya pemegangnya yang diberi tahu. Titik yang sama ditarik semua HP di
+  /// proyek itu, jadi tanpa saringan ini seluruh kru akan berdering untuk
+  /// permintaan yang bukan urusannya.
+  void _kumpulkanPermintaanOper(Map<String, Object?> titik, int userId, List<_PermintaanOper> keluar) {
+    void periksa(String entity, String awalan, Object? uuidLog) {
+      if (uuidLog == null) return;
+      final peminta = toIntOrNull(titik['${awalan}RequestBy']);
+      final pemegang = toIntOrNull(titik['${awalan}HolderID']);
+      if (peminta == null || pemegang != userId || peminta == userId) return;
+      keluar.add(_PermintaanOper(
+        entity: entity,
+        logUuid: '$uuidLog',
+        pointCode: '${titik['code']}',
+        requesterId: peminta,
+        requestedAt: titik['${awalan}RequestAt']?.toString(),
+        requesterName: titik['${awalan}RequestName']?.toString(),
+      ));
+    }
+
+    periksa('drill_log', 'drillLog', titik['drillLogUuid']);
+    periksa('casting', 'casting', titik['castingUuid']);
+  }
+
+  /// Bunyikan sekali per permintaan.
+  ///
+  /// Penandanya disimpan di basis data, bukan di memori: pull berikutnya
+  /// membawa permintaan yang sama selama belum dijawab, dan notifikasi yang
+  /// berbunyi tiap 15 menit akan dimatikan orangnya — lalu permintaan
+  /// berikutnya yang sungguh penting ikut tidak terdengar.
+  Future<void> _umumkanPermintaanOper(_PermintaanOper p) async {
+    // Penandanya memuat WAKTU permintaan, bukan hanya siapa yang meminta.
+    // Dengan id saja, orang yang permintaannya ditolak lalu meminta lagi tidak
+    // akan pernah terdengar untuk kedua kalinya.
+    final kunci = 'minta_oper:${p.logUuid}';
+    final tanda = '${p.requesterId}@${p.requestedAt ?? ''}';
+    if (await db.readMeta(kunci) == tanda) return;
+    try {
+      await Notifications.showHandoverRequest(
+        entity: p.entity,
+        logUuid: p.logUuid,
+        pointCode: p.pointCode,
+        requesterName: p.requesterName,
+      );
+    } catch (_) {
+      // Tidak ada plugin notifikasi di sini (misalnya dalam uji).
+    }
+    await db.writeMeta(kunci, tanda);
+  }
+}
+
+/// Satu permintaan oper yang masuk, sebagaimana terbaca dari pull.
+class _PermintaanOper {
+  const _PermintaanOper({
+    required this.entity,
+    required this.logUuid,
+    required this.pointCode,
+    required this.requesterId,
+    required this.requestedAt,
+    required this.requesterName,
+  });
+
+  final String entity;
+  final String logUuid;
+  final String pointCode;
+  final int requesterId;
+  final String? requestedAt;
+  final String? requesterName;
 }

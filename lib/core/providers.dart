@@ -174,12 +174,14 @@ class SyncNotifier extends Notifier<SyncState> {
 
   /// Push + pull now. Safe to call repeatedly: one that is already
   /// running is not duplicated, and the background worker is blocked by the lock.
-  Future<SyncResult?> run() async {
+  /// [diminta] = orangnya yang menekan (Kirim, tarik-untuk-muat-ulang), bukan
+  /// sinkron berkala. Antrean yang sedang menunggu giliran ulang ikut dikirim.
+  Future<SyncResult?> run({bool diminta = false}) async {
     if (state.running) return null;
     state = SyncState(running: true, last: state.last, lastRunAt: state.lastRunAt);
     SyncResult? result;
     try {
-      result = await ref.read(syncEngineProvider).run();
+      result = await ref.read(syncEngineProvider).run(diminta: diminta);
       if (result.sessionExpired) ref.read(sessionProvider.notifier).markExpired();
     } finally {
       state = SyncState(last: result ?? state.last, lastRunAt: DateTime.now());

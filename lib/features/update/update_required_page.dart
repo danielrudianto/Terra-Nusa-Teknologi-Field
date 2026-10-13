@@ -33,7 +33,7 @@ class _UpdateRequiredPageState extends ConsumerState<UpdateRequiredPage> {
   /// Ask the server again: the minimum may have been lowered meanwhile.
   Future<void> _check() async {
     setState(() => _checking = true);
-    await ref.read(syncProvider.notifier).run();
+    await ref.read(syncProvider.notifier).run(diminta: true);
     if (mounted) setState(() => _checking = false);
   }
 

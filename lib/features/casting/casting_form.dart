@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/db/app_database.dart';
 import '../../core/providers.dart';
@@ -95,6 +96,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   }
 
   Future<void> _load() async {
+    await _muatSlumpMenunggu();
     final db = ref.read(dbProvider);
     final rows = await db.getDocument(widget.uuid);
     Map<String, Object?>? doc;
@@ -252,6 +254,38 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   }
 
   String? get _holderName => _pilePoint?['castingHolderName']?.toString();
+
+  /// Rekan yang menunggu jawaban atas permintaan opernya, bila ada.
+  String? get _peminta {
+    if (_handedAway) return null;
+    final siapa = toIntOrNull(_pilePoint?['castingRequestBy']);
+    final me = ref.read(userProvider)?.id;
+    if (siapa == null || me == null || siapa == me) return null;
+    return _pilePoint?['castingRequestName']?.toString() ?? t(context).colleague;
+  }
+
+  /// Setujui atau tolak. Disetujui = log ini bukan milik HP ini lagi, jadi
+  /// layarnya ditutup; membiarkannya terbuka berarti orangnya terus mengetik
+  /// TM ke log yang setiap simpanannya akan ditolak server.
+  Future<void> _jawabOper(bool setuju) async {
+    final siapa = _peminta;
+    if (siapa == null) return;
+    final pindah = await answerHandoverFlow(
+      context,
+      ref,
+      entity: 'casting',
+      uuid: widget.uuid,
+      pointCode: '${_pilePoint!['code']}',
+      requesterName: siapa,
+      agree: setuju,
+    );
+    if (!mounted) return;
+    if (pindah) {
+      context.pop();
+    } else {
+      await _load();
+    }
+  }
 
   /// Nothing on this screen may change the document.
   bool get _readOnly => _locked || _handedAway;
@@ -445,12 +479,20 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         pouredSoFarM3: k.totalVolumeM3,
         takeTicketPhoto: _takeTicketPhoto,
         takeSlumpPhoto: _takeSlumpPhoto,
+        // Foto slump yang sudah diambil saat TM sebelumnya masih dituang.
+        slumpPhotoUuid: _slumpMenunggu?.uuid,
+        slumpPhotoAt: _slumpMenunggu?.at,
         suppliers: offer.suppliers,
         supplierId: defaultSupplierId,
         supplierName: defaultSupplierName,
       ),
     );
     if (result == null) return;
+    // Titipannya terpakai: kalau tidak dibuang, foto yang sama akan menempel
+    // lagi pada TM berikutnya.
+    if (_slumpMenunggu != null && result['slumpPhotoUuid'] == _slumpMenunggu!.uuid) {
+      await _simpanSlumpMenunggu(null);
+    }
     // The next truck is here: no more waiting reminders.
     await Notifications.cancelIdleReminders();
     final saved = await _update((d) {
@@ -594,6 +636,52 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (p == null) return null;
     final f = await takePhoto(db: ref.read(dbProvider), userId: p.id, kind: 'slump_tm');
     return f?.uuid;
+  }
+
+  // ---------------------------------------------------------------------
+  // Foto slump yang diambil LEBIH DULU
+  // ---------------------------------------------------------------------
+  //
+  // Uji slump TM berikutnya biasa dilakukan saat TM sekarang masih dituang —
+  // artinya pada saat fotonya diambil, isian TM itu belum ada, dan tidak ada
+  // tempat untuk menaruhnya.
+  //
+  // Yang TIDAK dipilih: mengizinkan ambil dari galeri. Nilai foto slump di
+  // berkas mutu justru terletak pada kepastian kapan ia diambil; begitu
+  // galeri terbuka, foto mana pun bisa masuk — slump kemarin, slump titik
+  // sebelah — dan tidak ada yang bisa membedakannya belakangan.
+  //
+  // Jadi fotonya tetap lewat kamera aplikasi, hanya saja diparkir sampai TM
+  // yang bersangkutan dibuka. Penitipannya LOKAL: tidak pernah ikut
+  // dikirim, jadi tidak ada perubahan apa pun di server. Fotonya sendiri
+  // sudah naik lewat antrean foto seperti biasa.
+
+  String get _kunciSlumpMenunggu => 'slump_menunggu:${widget.uuid}';
+
+  /// Foto slump yang menunggu TM berikutnya: uuid foto dan jam pengambilannya.
+  ({String uuid, DateTime at})? _slumpMenunggu;
+
+  Future<void> _muatSlumpMenunggu() async {
+    final teks = await ref.read(dbProvider).readMeta(_kunciSlumpMenunggu);
+    final bagian = (teks ?? '').split('|');
+    final kapan = bagian.length < 2 ? null : DateTime.tryParse(bagian[1]);
+    if (!mounted) return;
+    setState(() => _slumpMenunggu = kapan == null ? null : (uuid: bagian[0], at: kapan));
+  }
+
+  Future<void> _simpanSlumpMenunggu(({String uuid, DateTime at})? nilai) async {
+    await ref.read(dbProvider).writeMeta(
+          _kunciSlumpMenunggu,
+          nilai == null ? null : '${nilai.uuid}|${nilai.at.toIso8601String()}',
+        );
+    if (mounted) setState(() => _slumpMenunggu = nilai);
+  }
+
+  Future<void> _fotoSlumpDuluan() async {
+    final uuid = await _takeSlumpPhoto();
+    if (uuid == null) return;
+    await _simpanSlumpMenunggu((uuid: uuid, at: DateTime.now()));
+    if (mounted) showSnack(context, t(context).slumpPhotoParked, icon: Icons.science_outlined);
   }
 
   Future<bool> _updateTruck(String truckUuid, void Function(Map<Object?, Object?> t) f) => _update((d) {
@@ -1210,6 +1298,21 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // ends above: no extra room needed under the last card.
         padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 8),
         children: [
+          if (_peminta != null)
+            TerraBanner(
+              kind: BannerKind.warning,
+              icon: Icons.pan_tool_alt_outlined,
+              title: t(context).handoverRequestTitle(_peminta!),
+              body: t(context).handoverRequestPrompt(_peminta!, '${_pilePoint!['code']}'),
+              action: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(onPressed: () => _jawabOper(false), child: Text(t(context).reject)),
+                  const SizedBox(width: 4),
+                  FilledButton(onPressed: () => _jawabOper(true), child: Text(t(context).approve)),
+                ],
+              ),
+            ),
           if (_handedAway)
             TerraBanner(
               kind: BannerKind.info,
@@ -1268,6 +1371,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
           // --- TM ---------------------------------------------------------
           _SectionTitle(t(context).trucksSection, t(context).trucksSectionBody(_trucks.length, _decimal(k.totalVolumeM3))),
+          if (!_readOnly && !_finished)
+            _SlumpMenungguCard(
+              menunggu: _slumpMenunggu,
+              onAmbil: _fotoSlumpDuluan,
+              onBuang: _slumpMenunggu == null ? null : () => _simpanSlumpMenunggu(null),
+            ),
           for (final truck in _trucks..sort((a, b) => (toIntOrNull(a['seq']) ?? 0).compareTo(toIntOrNull(b['seq']) ?? 0)))
             _TruckCard(
               truck: truck,
@@ -1989,11 +2098,17 @@ class _PhotoField extends ConsumerWidget {
     required this.emptyLabel,
     required this.icon,
     required this.onTake,
+    this.note,
   });
 
   final String? uuid;
   final String label;
   final String emptyLabel;
+
+  /// Keterangan pengganti "ketuk untuk memperbesar" — dipakai saat fotonya
+  /// datang dari titipan, supaya tidak ada yang bingung kenapa isian TM baru
+  /// sudah ada fotonya.
+  final String? note;
   final IconData icon;
   final Future<void> Function() onTake;
 
@@ -2040,7 +2155,7 @@ class _PhotoField extends ConsumerWidget {
               children: [
                 Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                 const SizedBox(height: 2),
-                Text(ada ? t(context).tapToEnlarge : t(context).photoNotOnThisPhone,
+                Text(ada ? (note ?? t(context).tapToEnlarge) : t(context).photoNotOnThisPhone,
                     style: TextStyle(fontSize: 12, color: ada ? w.muted : w.badFg)),
               ],
             ),
@@ -2051,6 +2166,88 @@ class _PhotoField extends ConsumerWidget {
             label: Text(t(context).retakePhoto),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Foto slump yang sudah diambil tetapi TM-nya belum masuk.
+///
+/// Muncul sebagai ajakan selama belum ada, dan sebagai pratinjau begitu ada —
+/// supaya QS tahu fotonya sudah di tangan aplikasi dan tidak memotret dua
+/// kali, serta bisa membuangnya kalau ternyata keliru.
+class _SlumpMenungguCard extends ConsumerWidget {
+  const _SlumpMenungguCard({required this.menunggu, required this.onAmbil, required this.onBuang});
+
+  final ({String uuid, DateTime at})? menunggu;
+  final VoidCallback onAmbil;
+  final VoidCallback? onBuang;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final w = context.colors;
+    final m = menunggu;
+    if (m == null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: OutlinedButton.icon(
+          onPressed: onAmbil,
+          icon: const Icon(Icons.science_outlined),
+          label: Text(t(context).slumpPhotoAhead),
+        ),
+      );
+    }
+    final photo = ref.watch(_photoProvider(m.uuid)).value;
+    final ada = photo != null && File(photo.path).existsSync();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: w.infoBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: w.line),
+        ),
+        child: Row(
+          children: [
+            if (ada)
+              GestureDetector(
+                onTap: () => _showPhotoFull(context, photo.path),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(File(photo.path), height: 56, width: 56, fit: BoxFit.cover, cacheHeight: 168),
+                ),
+              )
+            else
+              Container(
+                height: 56,
+                width: 56,
+                decoration: BoxDecoration(color: w.surface, borderRadius: BorderRadius.circular(8)),
+                child: Icon(Icons.image_not_supported_outlined, color: w.faint),
+              ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(t(context).slumpPhotoWaiting,
+                      style: TextStyle(fontWeight: FontWeight.w700, color: w.infoFg)),
+                  const SizedBox(height: 2),
+                  Text(t(context).slumpPhotoWaitingBody(formatTime(m.at)),
+                      style: TextStyle(fontSize: 12, color: w.muted)),
+                ],
+              ),
+            ),
+            TextButton(onPressed: onAmbil, child: Text(t(context).retakePhoto)),
+            if (onBuang != null)
+              IconButton(
+                tooltip: t(context).discard,
+                onPressed: onBuang,
+                icon: Icon(Icons.close, size: 20, color: w.muted),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -2221,6 +2418,8 @@ class _TruckSheet extends ConsumerStatefulWidget {
     required this.pouredSoFarM3,
     required this.takeTicketPhoto,
     required this.takeSlumpPhoto,
+    this.slumpPhotoUuid,
+    this.slumpPhotoAt,
     required this.suppliers,
     required this.supplierId,
     required this.supplierName,
@@ -2241,6 +2440,11 @@ class _TruckSheet extends ConsumerStatefulWidget {
 
   final Future<String?> Function() takeTicketPhoto;
   final Future<String?> Function() takeSlumpPhoto;
+
+  /// Foto slump yang sudah diambil sebelum TM ini masuk, berikut jamnya.
+  /// Isian ini terbuka dengan foto tersebut sudah terpasang.
+  final String? slumpPhotoUuid;
+  final DateTime? slumpPhotoAt;
 
   /// Concrete suppliers to offer, and the previous TM's (or the header's)
   /// choice as the preselected default.
@@ -2275,7 +2479,7 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   late final _sounding = TextEditingController(text: _asTyped(widget.initial?['concreteDepthBeforeM']));
   late final _supplier = TextEditingController(text: widget.supplierName ?? '');
   late String? _photo = widget.initial?['ticketPhotoUuid']?.toString();
-  late String? _slumpPhoto = widget.initial?['slumpPhotoUuid']?.toString();
+  late String? _slumpPhoto = widget.initial?['slumpPhotoUuid']?.toString() ?? widget.slumpPhotoUuid;
   String? _error;
 
   /// Chosen supplier id; [_other] = typed by hand, null = none.
@@ -2374,6 +2578,9 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
               uuid: _slumpPhoto,
               label: t(context).slumpTest,
               emptyLabel: t(context).photoSlump,
+              note: widget.slumpPhotoAt == null || _slumpPhoto != widget.slumpPhotoUuid
+                  ? null
+                  : t(context).slumpPhotoWaitingBody(formatTime(widget.slumpPhotoAt!)),
               icon: Icons.science_outlined,
               onTake: () async {
                 final f = await widget.takeSlumpPhoto();

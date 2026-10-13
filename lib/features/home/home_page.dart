@@ -53,7 +53,7 @@ class HomePage extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncProvider.notifier).run(),
+        onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: ListView(
           padding: const EdgeInsets.all(Dimens.pagePadding),
           children: [

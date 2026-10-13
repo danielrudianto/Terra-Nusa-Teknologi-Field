@@ -778,5 +778,93 @@
   "correctGsTitle": "Correct GS",
   "correctGsBody": "Surveyor revised the shot? Change GS here; the planned drill length and cut-off depth are recomputed with it.",
   "codeHeldBy": "The code is on {name}’s phone",
-  "codeHeldByBody": "Ask {name} to open this point on their phone and tap \"Hand over to a mate\". A 6-digit code appears on their screen to read out. No request is sent automatically."
+  "codeHeldByBody": "Ask {name} to open this point on their phone and tap \"Hand over to a mate\". A 6-digit code appears on their screen to read out. No request is sent automatically.",
+  "askHolder": "Ask the holder",
+  "sendingRequest": "Sending request…",
+  "requestSentTitle": "Request sent",
+  "requestSentBody": "{name} gets a notification on their phone. Once they agree, this log moves to your phone — no code needed.",
+  "handingOver": "Handing the log over…",
+  "rejectingRequest": "Rejecting the request…",
+  "logHandedTo": "Log {code} is now with {name}.",
+  "requestRejected": "{name}’s request was rejected.",
+  "handoverRequestTitle": "{name} asks for the log",
+  "handoverRequestBody": "Point {code} — open to approve or reject.",
+  "handoverRequestPrompt": "{name} is at point {code} waiting for an answer. Approving moves this log to their phone right away, and closes this screen.",
+  "approve": "Approve",
+  "reject": "Reject",
+  "slumpPhotoAhead": "Slump photo for the next TM",
+  "slumpPhotoWaiting": "Slump photo waiting for the next TM",
+  "slumpPhotoWaitingBody": "Taken {time} — attached automatically when the next TM is entered.",
+  "slumpPhotoParked": "Slump photo saved for the next TM.",
+  "drillProgressLabel": "Drilling progress",
+  "castProgressLabel": "Casting progress",
+  "drillProgressMain": "{depth} of {planned} planned",
+  "castProgressMain": "TM #{n} · {vol} m³ of {theoretical} m³ theoretical",
+  "progressNothingYet": "Nothing sent yet",
+  "progressNoSync": "Never synced",
+  "progressLastAt": "Last record {time} · {age}",
+  "progressAsSent": "As far as the holder’s phone has sent. If it is out of signal, the real state may be further along.",
+  "refresh": "Refresh",
+  "pointHistoryOpen": "View point history",
+  "@pointHistoryOpen": {
+    "description": "Button that opens the server-side history of this pile point"
+  },
+  "pointHistoryTitle": "History of {code}",
+  "@pointHistoryTitle": {
+    "description": "Title of the point history screen",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "pointHistoryErrorTitle": "History cannot be opened",
+  "@pointHistoryErrorTitle": {
+    "description": "Shown when the history request fails"
+  },
+  "pointHistoryErrorBody": "This screen reads straight from the server, so it needs a connection. Pull down to try again.",
+  "@pointHistoryErrorBody": {
+    "description": "Explains the history screen needs connectivity"
+  },
+  "pointHistoryNoCasting": "No casting log on the server for this point yet.",
+  "@pointHistoryNoCasting": {
+    "description": "Empty state of the point history screen"
+  },
+  "pointHistoryTrail": "Correction trail",
+  "@pointHistoryTrail": {
+    "description": "Heading of the audit trail section"
+  },
+  "deletedLabel": "Deleted",
+  "@deletedLabel": {
+    "description": "Badge on a record that has been deleted"
+  },
+  "fromOffice": "From office",
+  "@fromOffice": {
+    "description": "Badge on a record created or edited from the web office app"
+  },
+  "trucksCount": "{n} trucks",
+  "@trucksCount": {
+    "description": "How many mixer trucks the casting log has",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "volumeUsed": "Volume used",
+  "@volumeUsed": {
+    "description": "Label of the actual concrete volume"
+  },
+  "volumeTheoretical": "Theoretical volume",
+  "@volumeTheoretical": {
+    "description": "Label of the theoretical concrete volume"
+  },
+  "overusePercent": "Overuse",
+  "@overusePercent": {
+    "description": "Label of the overuse percentage"
+  },
+  "castStartEnd": "Casting start – end",
+  "@castStartEnd": {
+    "description": "Label of the casting start and end time"
+  }
 }

@@ -34,7 +34,9 @@ class AttendancePage extends ConsumerWidget {
               label: Text(t(context).attendToday),
             )
           : null,
-      body: doc.when(
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
+        child: doc.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(title: t(context).attendanceLoadError, message: '$e'),
         data: (items) => ListView(
@@ -82,6 +84,7 @@ class AttendancePage extends ConsumerWidget {
               }),
           ],
         ),
+      ),
       ),
     );
   }

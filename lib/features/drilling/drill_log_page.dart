@@ -149,6 +149,39 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
 
   String? get _holderName => _pilePoint?['drillLogHolderName']?.toString();
 
+  /// Rekan yang sedang menunggu jawaban atas permintaan opernya, bila ada dan
+  /// bila log ini memang dipegang HP ini.
+  String? get _peminta {
+    if (_handedAway) return null;
+    final siapa = toIntOrNull(_pilePoint?['drillLogRequestBy']);
+    final me = ref.read(userProvider)?.id;
+    if (siapa == null || me == null || siapa == me) return null;
+    return _pilePoint?['drillLogRequestName']?.toString() ?? t(context).colleague;
+  }
+
+  /// Setujui atau tolak. Disetujui = log ini bukan milik HP ini lagi, jadi
+  /// layarnya ditutup — membiarkannya terbuka berarti orangnya terus mencatat
+  /// ke log yang setiap simpanannya akan ditolak server.
+  Future<void> _jawabOper(bool setuju) async {
+    final siapa = _peminta;
+    if (siapa == null) return;
+    final pindah = await answerHandoverFlow(
+      context,
+      ref,
+      entity: 'drill_log',
+      uuid: widget.uuid,
+      pointCode: _code,
+      requesterName: siapa,
+      agree: setuju,
+    );
+    if (!mounted) return;
+    if (pindah) {
+      context.pop();
+    } else {
+      await _load();
+    }
+  }
+
   /// GS: the one entered in this log, else the point's.
   double? get _groundLevel => toDoubleOrNull(_doc!['groundLevel']) ?? toDoubleOrNull(_pilePoint!['groundLevel']);
 
@@ -374,6 +407,21 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         // ends above: no extra room needed under the last card.
         padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 8),
         children: [
+          if (_peminta != null)
+            TerraBanner(
+              kind: BannerKind.warning,
+              icon: Icons.pan_tool_alt_outlined,
+              title: t(context).handoverRequestTitle(_peminta!),
+              body: t(context).handoverRequestPrompt(_peminta!, _code),
+              action: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(onPressed: () => _jawabOper(false), child: Text(t(context).reject)),
+                  const SizedBox(width: 4),
+                  FilledButton(onPressed: () => _jawabOper(true), child: Text(t(context).approve)),
+                ],
+              ),
+            ),
           if (_handedAway)
             TerraBanner(
               kind: BannerKind.info,
@@ -585,7 +633,7 @@ class _GsSheetState extends State<_GsSheet> {
               TerraBanner(
                 kind: BannerKind.warning,
                 title: t(context).cutOffAboveGsTitle,
-                body: t(context).cutOffAboveGsBody(formatElevation(col!)),
+                body: t(context).cutOffAboveGsBody(formatElevation(col)),
               ),
             ],
             if (_problem != null) ...[

@@ -170,7 +170,13 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
               ),
               Divider(height: 1, color: w.line),
               Expanded(
-                child: ListView(
+                child: RefreshIndicator(
+                  // Menarik daftar = tarik ulang dari server. Yang paling
+                  // dicari di layar ini justru keadaan TERKINI titik yang
+                  // sedang dikerjakan HP lain, dan menunggu sinkron berkala
+                  // 15 menit untuk itu terasa seperti aplikasinya menggantung.
+                  onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
+                  child: ListView(
                   controller: _scroll,
                   keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 12, Dimens.pagePadding, 80),
@@ -182,6 +188,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     if (items.isEmpty) EmptyState(message: t(context).noMatchingPoints),
                     for (final pt in items) _card(pt),
                   ],
+                ),
                 ),
               ),
             ],
@@ -227,38 +234,75 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     );
   }
 
-  Future<void> _showActions(FieldPilePoint pt) async {
+  /// Tarik ulang dari server lalu bangun ulang lembar ini di tempat.
+  ///
+  /// Tanpa ini, satu-satunya cara melihat kemajuan terbaru adalah menutup
+  /// lembarnya, menarik daftarnya, lalu membukanya lagi — tiga langkah untuk
+  /// satu pertanyaan yang ditanyakan berkali-kali dalam sehari.
+  Future<void> _segarkanLembar(void Function(void Function()) ulang) async {
+    await ref.read(syncProvider.notifier).run(diminta: true);
+    if (mounted) ulang(() {});
+  }
+
+  Future<void> _showActions(FieldPilePoint awal) async {
     final session = ref.read(sessionProvider).value;
     // Satu akun, satu HP: HP yang sudah digantikan dan lewat masa
     // tenggang hanya boleh mengirim sisa antreannya, tidak membuka
     // pekerjaan baru. Sebabnya terbaca di banner Beranda.
     final allows = ref.watch(canRecordProvider) && (session?.allows('field_casting', 'create') ?? false);
-    final g = pt.geometry;
     final w = context.colors;
-    // The casting log needs the drilled depth: it sets the hole bottom that
-    // the tremie, the concrete rise and the soundings are measured against.
-    final drilled = pt.isDrilled;
-    final elsewhere = pt.castedElsewhere && pt.stage != 'sudah_cor';
-    final drillLogOpen = pt.drillLog != null && pt.drillLogBody?['status'] != 'selesai';
-    final drillingElsewhere = pt.drillLoggedElsewhere && pt.stage == 'sedang_bor';
     // The log is missing from THIS phone but the server says this very account
     // holds it (another phone of his, or a reinstall). Nobody can read a
     // handover code out to him, so he takes it back without one.
     final myId = session?.user?.id;
-    final castingIsMine = myId != null && pt.castingHolderId == myId;
-    final drillLogIsMine = myId != null && pt.drillLogHolderId == myId;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (c) => SafeArea(
+      builder: (c) => StatefulBuilder(
+        builder: (c, ulangLembar) {
+          // Titik dibaca ULANG dari provider tiap bangun: sesudah sinkron,
+          // angka kemajuannya ikut baru tanpa lembarnya perlu ditutup.
+          final pt = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const <FieldPilePoint>[])
+                  .where((x) => x.uuid == awal.uuid)
+                  .firstOrNull ??
+              awal;
+          final g = pt.geometry;
+          final drilled = pt.isDrilled;
+          final elsewhere = pt.castedElsewhere && pt.stage != 'sudah_cor';
+          final drillLogOpen = pt.drillLog != null && pt.drillLogBody?['status'] != 'selesai';
+          final drillingElsewhere = pt.drillLoggedElsewhere && pt.stage == 'sedang_bor';
+          final castingIsMine = myId != null && pt.castingHolderId == myId;
+          final drillLogIsMine = myId != null && pt.drillLogHolderId == myId;
+          return SafeArea(
+            // Isinya DIGULIR, dan tingginya dibatasi 85% layar.
+            //
+            // Tanpa ini, titik yang banner dan tombolnya panjang — sedang
+            // dibor orang lain, GS kosong, plus kartu kemajuan — terpotong
+            // di bawah tanpa ada tanda apa pun bahwa masih ada isi. Yang
+            // hilang justru tombol-tombolnya, jadi layarnya tampak rusak.
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(c).size.height * 0.85),
+              child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, Dimens.pagePadding),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(t(context).pointHeading(pt.code), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(t(context).pointHeading(pt.code),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+                  ),
+                  IconButton(
+                    tooltip: t(context).refresh,
+                    onPressed: () => _segarkanLembar(ulangLembar),
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               _InfoRow(t(context).fieldDiameter, '${pt.diameterMm} mm'),
               _InfoRow(t(context).fieldLevels, '${_elevation(pt.groundLevel)} / ${_elevation(pt.cutOffLevel)} / ${_elevation(pt.tipLevel)}'),
@@ -290,6 +334,20 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                           ? t(context).logIsMineBody
                           : t(context).castLogHandoverBody(pt.castingHolderName ?? pt.serverCastingBy ?? t(context).colleague),
                 ),
+                _KemajuanCard(
+                  label: t(context).castProgressLabel,
+                  utama: pt.castingTruckCount == null || pt.castingTruckCount == 0
+                      ? null
+                      : t(context).castProgressMain(
+                          '${pt.castingTruckCount}',
+                          (pt.castingVolumeM3 ?? 0).toStringAsFixed(2).replaceAll('.', ','),
+                          pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ','),
+                        ),
+                  rasio: pt.plannedTheoreticalVolumeM3 < 0.01
+                      ? null
+                      : ((pt.castingVolumeM3 ?? 0) / pt.plannedTheoreticalVolumeM3).clamp(0.0, 1.0),
+                  kapan: pt.castingLastAt,
+                ),
                 if (pt.castingHeldElsewhere && allows && pt.serverCastingUuid != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
@@ -310,6 +368,19 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       ? t(context).logIsMineBody
                       : t(context).drillLogHandoverBody(pt.drillLogHolderName ?? pt.serverDrillLogBy ?? t(context).colleague),
                 ),
+                _KemajuanCard(
+                  label: t(context).drillProgressLabel,
+                  utama: pt.drillLogDeepestM == null
+                      ? null
+                      : t(context).drillProgressMain(
+                          formatMeters(pt.drillLogDeepestM),
+                          formatMeters(g?.plannedDrillLengthM),
+                        ),
+                  rasio: g == null || g.plannedDrillLengthM < 0.01
+                      ? null
+                      : ((pt.drillLogDeepestM ?? 0) / g.plannedDrillLengthM).clamp(0.0, 1.0),
+                  kapan: pt.drillLogLastAt,
+                ),
                 if (allows && pt.serverDrillLogUuid != null) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
@@ -320,8 +391,25 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     label: Text(drillLogIsMine ? t(context).takeToThisPhone : t(context).continueHereCode),
                   ),
                 ],
-              ]
-              else if (!drilled && allows && !elsewhere)
+              ],
+              // Titik yang SUDAH selesai dicor oleh HP lain: lognya tidak ada
+              // di sini dan tidak akan pernah ada, jadi tanpa ringkasan ini
+              // layarnya cuma menampilkan angka rencana — orang tahu titiknya
+              // sudah dicor tetapi tidak bisa melihat satu pun angka hasilnya.
+              if (pt.casting == null && (pt.castingTruckCount ?? 0) > 0 && !elsewhere)
+                _KemajuanCard(
+                  label: t(context).castProgressLabel,
+                  utama: t(context).castProgressMain(
+                    '${pt.castingTruckCount}',
+                    (pt.castingVolumeM3 ?? 0).toStringAsFixed(2).replaceAll('.', ','),
+                    pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ','),
+                  ),
+                  rasio: pt.plannedTheoreticalVolumeM3 < 0.01
+                      ? null
+                      : ((pt.castingVolumeM3 ?? 0) / pt.plannedTheoreticalVolumeM3).clamp(0.0, 1.0),
+                  kapan: pt.castingLastAt,
+                ),
+              if (!drilled && allows && !elsewhere)
                 TerraBanner(
                   kind: BannerKind.info,
                   icon: Icons.straighten,
@@ -403,9 +491,34 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     label: Text(t(context).startCastLog),
                   ),
               ],
+              // Riwayat penuh dari server: satu-satunya cara melihat angka
+              // log cor yang dibuat HP lain, termasuk titik yang sudah selesai
+              // dicor berminggu-minggu lalu dan lognya tidak akan pernah
+              // turun ke HP ini.
+              if (pt.serverId != null &&
+                  (pt.casting != null ||
+                      pt.serverCastingUuid != null ||
+                      (pt.castingTruckCount ?? 0) > 0 ||
+                      pt.stage == 'sudah_cor')) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(c);
+                    context.push(
+                      '/casting/point/${pt.serverId}/history?code=${Uri.encodeComponent(pt.code)}',
+                    );
+                  },
+                  icon: const Icon(Icons.history),
+                  label: Text(t(context).pointHistoryOpen),
+                ),
+              ],
             ],
           ),
         ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -631,6 +744,99 @@ class _DrillDialogState extends State<_DrillDialog> {
         FilledButton(onPressed: refusal == null ? _submit : null, child: Text(t(context).save)),
       ],
     );
+  }
+}
+
+/// Kemajuan titik yang sedang dikerjakan HP LAIN.
+///
+/// Angkanya "sejauh yang sudah terkirim", jadi umurnya ditampilkan sekeras
+/// angkanya sendiri dan berubah kuning setelah [_basi]. Tanpa itu, kemajuan
+/// yang tertinggal dua jam akan dibaca sebagai keadaan sekarang — dan
+/// dipakai memutuskan pemindahan rig.
+///
+/// Belum ada catatan sama sekali juga sebuah jawaban ("belum ada catatan
+/// terkirim"), bukan alasan menyembunyikan kartunya: layar kosong membuat
+/// orang mengira fiturnya rusak.
+class _KemajuanCard extends StatelessWidget {
+  const _KemajuanCard({required this.label, required this.utama, required this.rasio, required this.kapan});
+
+  final String label;
+  final String? utama;
+  final double? rasio;
+  final DateTime? kapan;
+
+  static const _basi = Duration(hours: 1);
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final k = kapan;
+    final umur = k == null ? null : DateTime.now().difference(k);
+    final basi = umur != null && umur > _basi;
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: w.surface2,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: w.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(label.toUpperCase(),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.9, color: w.faint)),
+          const SizedBox(height: 4),
+          Text(utama ?? t(context).progressNothingYet,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: utama == null ? w.muted : w.ink,
+              )),
+          if (rasio != null && utama != null) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: rasio,
+                minHeight: 6,
+                backgroundColor: w.line,
+                color: basi ? w.warnFg : w.brand,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(basi ? Icons.history_toggle_off : Icons.schedule,
+                  size: 14, color: basi ? w.warnFg : w.muted),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  k == null
+                      ? t(context).progressNoSync
+                      : t(context).progressLastAt(formatTime(k), _usia(context, umur!)),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: basi ? w.warnFg : w.muted,
+                    fontWeight: basi ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(t(context).progressAsSent, style: TextStyle(fontSize: 11.5, color: w.faint, height: 1.35)),
+        ],
+      ),
+    );
+  }
+
+  String _usia(BuildContext context, Duration d) {
+    if (d.inMinutes < 1) return t(context).justNow;
+    if (d.inHours < 1) return t(context).minutesAgo(d.inMinutes);
+    if (d.inHours < 24) return t(context).hoursAgo(d.inHours);
+    return t(context).daysAgo(d.inDays);
   }
 }
 

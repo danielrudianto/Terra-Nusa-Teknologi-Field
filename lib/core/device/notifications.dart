@@ -19,6 +19,7 @@ class Notifications {
   static final _plugin = FlutterLocalNotificationsPlugin();
   static const _stopwatchId = 7001;
   static const _reminderId = 7002;
+  static const _handoverId = 7003;
 
   /// Pause reminders use ids 7100–7119, one per buzz.
   static const _pauseReminderBase = 7100;
@@ -209,6 +210,32 @@ class Notifications {
   }
 
   static Future<void> cancelTruckReminder() => _plugin.cancel(id: _reminderId);
+
+  /// Seorang rekan di titik meminta log yang dipegang HP ini.
+  ///
+  /// Berbunyi dan bergetar: ini satu-satunya pemberitahuan di aplikasi yang
+  /// ada ORANG menunggu jawaban di lapangan, bukan sekadar pengingat. Isinya
+  /// menyebut nama dan kode titik, sebab "seseorang meminta log Anda" adalah
+  /// kalimat yang orang belajar mengabaikannya.
+  static Future<void> showHandoverRequest({
+    required String entity,
+    required String logUuid,
+    required String pointCode,
+    String? requesterName,
+  }) {
+    final l = L10n.current;
+    final siapa = requesterName ?? l?.colleague ?? 'Rekan';
+    final rute = entity == 'drill_log' ? '/drilling/log/$logUuid' : '/casting/log/$logUuid';
+    return _plugin.show(
+      id: _handoverId,
+      title: l?.handoverRequestTitle(siapa) ?? '$siapa minta oper',
+      body: l?.handoverRequestBody(pointCode) ?? 'Titik $pointCode — buka untuk menyetujui atau menolak.',
+      payload: rute,
+      notificationDetails: _buzzDetails,
+    );
+  }
+
+  static Future<void> clearHandoverRequest() => _plugin.cancel(id: _handoverId);
 
   static NotificationDetails get _buzzDetails => NotificationDetails(
         android: AndroidNotificationDetails(
