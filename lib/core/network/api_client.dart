@@ -23,14 +23,22 @@ import 'api_error.dart';
 /// from the rejected one, another isolate has just refreshed it and this one
 /// simply uses the result.
 class ApiClient {
-  ApiClient({required this.db, required this.session, required this.deviceId}) {
+  ApiClient({required this.db, required this.session, required this.deviceId, this.deviceName}) {
     dio = Dio(
       BaseOptions(
         baseUrl: Env.apiUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 45),
         sendTimeout: const Duration(seconds: 45),
-        headers: {'X-Device-Id': deviceId, 'X-App-Version': Env.appVersion, 'X-Os-Version': 'android'},
+        headers: {
+          'X-Device-Id': deviceId,
+          'X-App-Version': Env.appVersion,
+          'X-Os-Version': 'android',
+          // Merek dan tipe HP. Server memakainya untuk menamai perangkat pada
+          // peringatan "akun ini dipakai di HP lain"; tanpa ini yang tampil
+          // adalah user-agent Dart, yang sama di semua HP.
+          if (deviceName != null) 'X-Device-Name': deviceName!,
+        },
       ),
     );
     dio.interceptors.add(
@@ -67,6 +75,9 @@ class ApiClient {
   final AppDatabase db;
   final SessionStore session;
   final String deviceId;
+
+  /// Merek dan tipe HP, bila terbaca. Null = server memakai user-agent.
+  final String? deviceName;
   late final Dio dio;
 
   /// Called when the refresh token is rejected (the session has truly expired).
@@ -99,6 +110,9 @@ class ApiClient {
           'x-refresh-token': 'Bearer $refresh',
           'X-Device-Id': deviceId,
           'X-App-Version': Env.appVersion,
+          // Penyegaran juga menulis baris perangkat di server, jadi namanya
+          // ikut di sini — kalau tidak, labelnya berubah-ubah sendiri.
+          if (deviceName != null) 'X-Device-Name': deviceName!,
         }),
       );
       final data = r.data ?? const {};
@@ -165,7 +179,16 @@ class ApiClient {
   }
 
   /// "Rekapitulasi Data Tiang" as .xlsx bytes. No [from] = since the start.
-  Future<List<int>> reportExcel({DateTime? from, required DateTime to, int? projectId}) async {
+  ///
+  /// [sheets] names which of the three the server builds (tiang / beton /
+  /// operator). Empty means all three — which is also what an older server
+  /// does with the parameter it does not know, so neither side breaks.
+  Future<List<int>> reportExcel({
+    DateTime? from,
+    required DateTime to,
+    int? projectId,
+    List<String> sheets = const [],
+  }) async {
     try {
       final r = await dio.get<List<int>>(
         '/field/reports/excel',
@@ -173,6 +196,7 @@ class ApiClient {
           'dateFrom': ?(from == null ? null : isoDate(from)),
           'dateTo': isoDate(to),
           'projectID': ?projectId,
+          if (sheets.isNotEmpty) 'sheets': sheets.join(','),
         },
         options: Options(responseType: ResponseType.bytes, receiveTimeout: const Duration(seconds: 60)),
       );

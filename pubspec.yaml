@@ -32,6 +32,8 @@ dependencies:
   workmanager: ">=0.10.10 <1.0.0"
 
   # Device
+  # Merek dan tipe HP untuk header X-Device-Name; lihat core/device/device_name.dart.
+  device_info_plus: ^13.3.0
   geolocator: ^14.1.1
   geocoding: ^5.0.0
   gal: ^2.3.3

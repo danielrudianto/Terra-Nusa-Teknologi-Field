@@ -1914,17 +1914,9 @@
   "@photoTicket": {
     "description": "photoTicket"
   },
-  "photoTicketDone": "Foto surat jalan tersimpan · ulang",
-  "@photoTicketDone": {
-    "description": "photoTicketDone"
-  },
   "photoSlump": "Foto uji slump",
   "@photoSlump": {
     "description": "photoSlump"
-  },
-  "photoSlumpDone": "Foto uji slump tersimpan · ulang",
-  "@photoSlumpDone": {
-    "description": "photoSlumpDone"
   },
   "hullNoField": "Nomor lambung TM",
   "@hullNoField": {
@@ -4209,5 +4201,172 @@
   "noFieldAccessBody": "Minta admin TerraBot menambahkan divisi Field Engineer ke akun Anda, lalu tarik ke bawah.",
   "@noFieldAccessBody": {
     "description": "noFieldAccessBody"
+  },
+  "volumePouredHere": "Volume tertuang di titik ini",
+  "@volumePouredHere": {
+    "description": "volumePouredHere"
+  },
+  "volumeSharedHint": "Bawaannya satu TM penuh. Bila TM ini dibagi dengan lubang lain, isi porsi yang masuk ke titik ini saja.",
+  "@volumeSharedHint": {
+    "description": "volumeSharedHint"
+  },
+  "overuseAheadTitle": "Beton akan lewat {percent}% dari teoritis",
+  "@overuseAheadTitle": {
+    "description": "overuseAheadTitle",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "overuseAheadBody": "Terpakai {used} m³ dari {theoretical} m³ teoritis setelah TM ini. Paling sering sebabnya TM dibagi dengan lubang lain — isi porsinya saja bila begitu.",
+  "@overuseAheadBody": {
+    "description": "overuseAheadBody",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "theoretical": {
+        "type": "String"
+      }
+    }
+  },
+  "overuseAfterTitle": "Beton jauh di atas teoritis",
+  "@overuseAfterTitle": {
+    "description": "overuseAfterTitle"
+  },
+  "overuseAfterBody": "Sampai TM #{seq}, beton terpakai {percent}% di atas teoritis. Sebelum dicatat sebagai lubang membesar, periksa dulu: apakah ada TM yang dibagi dengan lubang lain?",
+  "@overuseAfterBody": {
+    "description": "overuseAfterBody",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "fixTruckVolume": "Betulkan volume TM",
+  "@fixTruckVolume": {
+    "description": "fixTruckVolume"
+  },
+  "holeReallyWider": "Lubang memang membesar",
+  "@holeReallyWider": {
+    "description": "holeReallyWider"
+  },
+  "later": "Nanti saja",
+  "@later": {
+    "description": "later"
+  },
+  "widerHoleNote": "TM #{seq}: beton {percent}% di atas teoritis — lubang membesar (diperiksa di lapangan).",
+  "@widerHoleNote": {
+    "description": "widerHoleNote",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "pullNowTitle": "Cabut tremie sekarang?",
+  "@pullNowTitle": {
+    "description": "pullNowTitle"
+  },
+  "pullNowBody": "TM #{seq} selesai, tertanam {emb}. Cabut {which} supaya tertanam jadi {after}.",
+  "@pullNowBody": {
+    "description": "pullNowBody",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      },
+      "emb": {
+        "type": "String"
+      },
+      "which": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "pulledAlready": "Sudah dicabut",
+  "@pulledAlready": {
+    "description": "pulledAlready"
+  },
+  "notYetPull": "Belum dicabut",
+  "@notYetPull": {
+    "description": "notYetPull"
+  },
+  "gapInvalid1m": "Celah ujung tremie 0–1 m.",
+  "@gapInvalid1m": {
+    "description": "gapInvalid1m"
+  },
+  "gapFieldHint": "Jarak ujung bawah tremie di atas dasar lubang. Bawaannya 1 m.",
+  "@gapFieldHint": {
+    "description": "gapFieldHint"
+  },
+  "overbreakCheckedTag": "[overbreak diperiksa]",
+  "@overbreakCheckedTag": {
+    "description": "Penanda tetap di catatan log. SAMA di tiga bahasa: dipakai layar untuk tahu pertanyaan overbreak sudah dijawab, jadi menerjemahkannya akan membuat pertanyaan itu muncul lagi di bahasa lain."
+  },
+  "excelOptionsTitle": "Unduh Excel",
+  "@excelOptionsTitle": {
+    "description": "excelOptionsTitle"
+  },
+  "excelPeriodLabel": "Rentang",
+  "@excelPeriodLabel": {
+    "description": "excelPeriodLabel"
+  },
+  "excelSheetsLabel": "Lembar yang dibuat",
+  "@excelSheetsLabel": {
+    "description": "excelSheetsLabel"
+  },
+  "sheetPiles": "Rekap tiang",
+  "@sheetPiles": {
+    "description": "sheetPiles"
+  },
+  "sheetPilesBody": "Satu baris per titik: kedalaman, volume, tanggal.",
+  "@sheetPilesBody": {
+    "description": "sheetPilesBody"
+  },
+  "sheetConcrete": "Mutu beton",
+  "@sheetConcrete": {
+    "description": "sheetConcrete"
+  },
+  "sheetConcreteBody": "Hanya titik yang sudah dicor, beserta kuat tekannya.",
+  "@sheetConcreteBody": {
+    "description": "sheetConcreteBody"
+  },
+  "sheetOperators": "Rekap operator",
+  "@sheetOperators": {
+    "description": "sheetOperators"
+  },
+  "sheetOperatorsBody": "Meter bor per operator.",
+  "@sheetOperatorsBody": {
+    "description": "sheetOperatorsBody"
+  },
+  "pickAtLeastOneSheet": "Pilih minimal satu lembar.",
+  "@pickAtLeastOneSheet": {
+    "description": "pickAtLeastOneSheet"
+  },
+  "download": "Unduh",
+  "@download": {
+    "description": "download"
+  },
+  "retakePhoto": "Ulangi",
+  "@retakePhoto": {
+    "description": "Button that takes the photo again, next to its preview"
+  },
+  "tapToEnlarge": "Ketuk untuk memperbesar",
+  "@tapToEnlarge": {
+    "description": "Hint under a photo thumbnail"
+  },
+  "photoNotOnThisPhone": "Foto tidak ada di HP ini",
+  "@photoNotOnThisPhone": {
+    "description": "The photo belongs to this log but its file is on another phone"
   }
 }

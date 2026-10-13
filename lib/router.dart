@@ -50,7 +50,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       // can still be viewed/filled in. All that is asked is to log in again in order to
       // push — via a banner, not by closing off every screen.
       if (user == null) return toLogin ? null : '/login';
-      if (toLogin && !(session.value?.sessionExpired ?? false)) return '/home';
+      // Satu akun, satu HP: HP yang sudah digantikan HP lain punya sesi yang
+      // masih SAH — tokennya belum kedaluwarsa, yang dikunci ada di server.
+      // Tanpa syarat kunci ini, tombol "Masuk di HP ini" pada banner melempar
+      // ke /login lalu DIPANTULKAN kembali ke /home, sehingga banner itu tidak
+      // bisa diapa-apakan sama sekali dan HP-nya mentok di situ.
+      final locked = ref.read(deviceLockProvider).value != null;
+      if (toLogin && !(session.value?.sessionExpired ?? false) && !locked) return '/home';
       // Attendance on hold: its screens cannot be reached, even from an old
       // notification or a queue entry.
       if (!Features.attendance) {
@@ -106,14 +112,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class _SessionListenable extends ChangeNotifier {
   _SessionListenable(Ref ref) {
-    _subscription = ref.listen(sessionProvider, (_, _) => notifyListeners());
+    _session = ref.listen(sessionProvider, (_, _) => notifyListeners());
+    // Kunci perangkat ikut didengar: redirect di atas membacanya, jadi kalau
+    // perubahannya tidak memicu penilaian ulang, rute akan memakai nilai lama.
+    _lock = ref.listen(deviceLockProvider, (_, _) => notifyListeners());
   }
 
-  late final ProviderSubscription<Object?> _subscription;
+  late final ProviderSubscription<Object?> _session;
+  late final ProviderSubscription<Object?> _lock;
 
   @override
   void dispose() {
-    _subscription.close();
+    _session.close();
+    _lock.close();
     super.dispose();
   }
 }

@@ -21,7 +21,10 @@ class CastingState {
   factory CastingState.from(PileGeometry geometry, Map<String, Object?> doc) {
     return CastingState._(
       geometry: geometry,
-      bottomGapM: toDoubleOrNull(doc['tremieBottomGapM']) ?? 0.30,
+      // 1 m di atas dasar lubang (Daniel, 12 Okt 2026 — sebelumnya 0,30 m).
+      // Log cor yang sudah ada menyimpan angkanya sendiri, jadi yang lama
+      // tetap 0,30; hanya log baru yang mulai dari 1 m.
+      bottomGapM: toDoubleOrNull(doc['tremieBottomGapM']) ?? 1.00,
       segments: [
         for (final s in (doc['tremie'] as List?) ?? const [])
           TremieSegment.fromJson((s as Map).cast<String, Object?>()),
@@ -163,6 +166,43 @@ const truckVolumeMaxM3 = 10.0;
 /// Concrete used this much over theory, so far, gets a warning on screen:
 /// the hole is probably wider than drilled (collapse, soft layer).
 const overuseWarnPercent = 15.0;
+
+/// Checked when a TM's volume is TYPED, before anything is poured.
+///
+/// Why here and not only after the sounding: by the time a sounding says the
+/// pile has swallowed 70% more concrete than it should, the concrete is in
+/// the ground. The cheapest moment to catch it is while the figure is still
+/// a number on a screen.
+///
+/// The usual cause is NOT a wider hole. It is one TM shared between two
+/// piles: the whole truck gets typed into both logs, so both read far over
+/// theory. That is why the dialogs offer it as the first explanation.
+const volumeWarnPercent = 10.0;
+
+/// Past this the warning turns red — and that is ALL it does.
+///
+/// There was briefly a rule here that held the save button until a reason
+/// was picked. It was wrong and came out the same day (Daniel, 12 Okt 2026):
+/// overbreak past 100% genuinely happens in bad ground, so any ceiling is a
+/// ceiling on the TRUTH. A foreman who cannot save what happened types a
+/// smaller number so he can carry on — the one outcome worse than an
+/// alarming figure that is correct.
+///
+/// What catches a real mistake is not a wall but a question, asked once,
+/// after the sounding: see `_checkOveruseAfter`.
+const volumeLoudPercent = 25.0;
+
+/// Where this pile lands against theory if [addM3] more is poured, in
+/// percent over (negative = still under). Null when there is no usable
+/// theoretical volume.
+double? overuseIfAdded({
+  required double theoreticalM3,
+  required double pouredSoFarM3,
+  required double addM3,
+}) {
+  if (theoreticalM3 < 0.5) return null;
+  return ((pouredSoFarM3 + addM3) / theoreticalM3 - 1) * 100;
+}
 
 class TremieSegment {
   const TremieSegment({

@@ -176,7 +176,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         'concreteGrade': null,
         'supplierID': null,
         'supplierName': null,
-        'tremieBottomGapM': '0.30',
+        'tremieBottomGapM': '1.00',
         'status': 'berjalan',
         'note': null,
         'tremie': <Object?>[],
@@ -441,6 +441,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       builder: (c) => _TruckSheet(
         seq: seq,
         estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
+        theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
+        pouredSoFarM3: k.totalVolumeM3,
         takeTicketPhoto: _takeTicketPhoto,
         takeSlumpPhoto: _takeSlumpPhoto,
         suppliers: offer.suppliers,
@@ -509,6 +511,10 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         seq: seq,
         initial: truck,
         estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
+        theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
+        // TANPA truk yang sedang dikoreksi: angkanya sedang diketik ulang,
+        // jadi menghitungnya dua kali akan menuduh mandor berlebihan.
+        pouredSoFarM3: k.totalVolumeM3 - (toDoubleOrNull(truck['volumeM3']) ?? 0),
         takeTicketPhoto: _takeTicketPhoto,
         takeSlumpPhoto: _takeSlumpPhoto,
         suppliers: offer.suppliers,
@@ -790,7 +796,106 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     );
     if (!mounted) return;
     showSnack(context, l.truckFinished(finishedSeq));
-    await _askSoundingAfter(truck);
+    if (!await _askSoundingAfter(truck)) return;
+    // Urutannya sengaja: sounding dulu (semua angka berdiri di atasnya),
+    // baru periksa apakah betonnya masuk akal, baru tremie.
+    if (!mounted) return;
+    await _checkOveruseAfter(finishedSeq);
+    if (!mounted) return;
+    await _askPullTremie(finishedSeq);
+  }
+
+  /// Beton jauh di atas teoritis sesudah sounding.
+  ///
+  /// Dulu ini cuma banner yang mudah dilewati, dan Oktober 2026 terbukti:
+  /// sebuah titik tercatat overbreak 70% tanpa seorang pun berhenti. Sebab
+  /// yang paling sering BUKAN lubang membesar, melainkan satu TM yang
+  /// dibagi dua lubang lalu diketik penuh di dua log — jadi itu yang
+  /// ditawarkan lebih dulu.
+  Future<void> _checkOveruseAfter(int seq) async {
+    final k = _castingState;
+    final over = k.overuseSoFarPercent(seq);
+    if (over == null || over <= volumeLoudPercent) return;
+    // DITANYA SEKALI SAJA per titik. Di tanah yang jelek setiap TM lewat
+    // ambang ini, dan dialog yang muncul berulang kali akan ditekan tanpa
+    // dibaca — persis kebiasaan yang membuat pertanyaan ini perlu ada.
+    //
+    // Penandanya dibaca dari catatan log, bukan dari memori layar: ia harus
+    // tetap berlaku sesudah layar ditutup dan di HP mana pun log ini
+    // dilanjutkan lewat Oper.
+    if ('${_doc!['note'] ?? ''}'.contains(t(context).overbreakCheckedTag)) return;
+    final truck = _trucks.where((x) => (toIntOrNull(x['seq']) ?? 0) == seq).firstOrNull;
+    if (truck == null) return;
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (c) {
+        final w = c.colors;
+        return AlertDialog(
+          icon: Icon(Icons.trending_up, size: 32, color: w.badFg),
+          title: Text(t(c).overuseAfterTitle, textAlign: TextAlign.center),
+          content: Text(t(c).overuseAfterBody(seq, over.toStringAsFixed(0)),
+              style: TextStyle(color: w.ink, height: 1.4)),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, 'nanti'), child: Text(t(c).later)),
+            TextButton(onPressed: () => Navigator.pop(c, 'lubang'), child: Text(t(c).holeReallyWider)),
+            FilledButton(onPressed: () => Navigator.pop(c, 'betulkan'), child: Text(t(c).fixTruckVolume)),
+          ],
+        );
+      },
+    );
+    if (choice == null || choice == 'nanti' || !mounted) return;
+    if (choice == 'betulkan') {
+      await _editTruck(truck);
+      return;
+    }
+    final tag = t(context).overbreakCheckedTag;
+    await _update((d) => d['note'] = _withNote(
+          d['note'],
+          '${t(context).widerHoleNote(seq, over.toStringAsFixed(0))} $tag',
+        ));
+  }
+
+  /// Sesudah TM selesai: tawarkan cabut tremie lewat DIALOG, bukan banner.
+  ///
+  /// Banner saran sudah ada di layar, tetapi saat TM baru beres mandor
+  /// sedang menatap HP — itu satu-satunya saat dia pasti membacanya. Yang
+  /// ditanya cuma "sudah dicabut atau belum"; mencentangnya di sini sama
+  /// persis dengan mencentang di daftar tremie.
+  Future<void> _askPullTremie(int seq) async {
+    final k = _castingState;
+    final embedment = k.embedmentAfter(seq);
+    const limits = EmbedmentLimits();
+    final suggestion = chooseSegmentsToRemove(
+      [for (final s in k.installedAfter(seq)) Segment(key: s.uuid, lengthM: s.lengthM)],
+      embedment,
+      limits,
+    );
+    if (suggestion.isEmpty) return;
+    final position = {for (final s in k.segments) s.uuid: s.position};
+    final which = suggestion.map((s) => '#${position[s.key]} (${_decimal(s.lengthM)} m)').join(', ');
+    final after = embedment - suggestion.fold(0.0, (a, s) => a + s.lengthM);
+    final pulled = await showDialog<bool>(
+      context: context,
+      builder: (c) {
+        final w = c.colors;
+        return AlertDialog(
+          icon: Icon(Icons.north, size: 32, color: w.brand),
+          title: Text(t(c).pullNowTitle, textAlign: TextAlign.center),
+          content: Text(
+            t(c).pullNowBody(seq, formatMeters(embedment), which, formatMeters(after)),
+            style: TextStyle(color: w.ink, height: 1.4),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).notYetPull)),
+            FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).pulledAlready)),
+          ],
+        );
+      },
+    );
+    if (pulled != true) return;
+    for (final s in suggestion) {
+      await _toggleRemoved(s.key, seq);
+    }
   }
 
   /// The sounding after a truck is REQUIRED: every number after it (actual
@@ -907,7 +1012,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         suppliersNarrowed: offer.narrowed,
         supplierId: toIntOrNull(_doc!['supplierID']),
         supplier: _doc!['supplierName']?.toString(),
-        gap: toDoubleOrNull(_doc!['tremieBottomGapM']) ?? 0.30,
+        gap: toDoubleOrNull(_doc!['tremieBottomGapM']) ?? 1.00,
         note: _doc!['note']?.toString(),
       ),
     );
@@ -1861,6 +1966,96 @@ class _TruckCard extends StatelessWidget {
   }
 }
 
+/// Tampilkan satu foto selayar penuh, bisa dicubit untuk diperbesar.
+void _showPhotoFull(BuildContext context, String path) {
+  showDialog<void>(
+    context: context,
+    builder: (c) => Dialog(child: InteractiveViewer(child: Image.file(File(path)))),
+  );
+}
+
+/// Satu foto TM di dalam lembar isian: tombol kamera sebelum ada foto, lalu
+/// pratinjaunya begitu foto diambil.
+///
+/// Sebelum ini tombolnya hanya berubah jadi centang, sehingga tidak ada cara
+/// melihat apa yang sebenarnya terpotret. Surat jalan yang blur atau kena
+/// silau lampu baru ketahuan di kantor keesokan harinya, dan saat itu TM-nya
+/// sudah pulang — tidak ada lagi yang bisa difoto ulang. Karena itu
+/// pratinjaunya muncul di tempat, lengkap dengan tombol ulangi.
+class _PhotoField extends ConsumerWidget {
+  const _PhotoField({
+    required this.uuid,
+    required this.label,
+    required this.emptyLabel,
+    required this.icon,
+    required this.onTake,
+  });
+
+  final String? uuid;
+  final String label;
+  final String emptyLabel;
+  final IconData icon;
+  final Future<void> Function() onTake;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final w = context.colors;
+    final id = uuid;
+    if (id == null) {
+      return OutlinedButton.icon(onPressed: onTake, icon: Icon(icon), label: Text(emptyLabel));
+    }
+    final photo = ref.watch(_photoProvider(id)).value;
+    // Berkasnya bisa tidak ada di HP INI: log yang dioper membawa nomor
+    // fotonya, bukan gambarnya.
+    final ada = photo != null && File(photo.path).existsSync();
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: w.surface2,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: w.line),
+      ),
+      child: Row(
+        children: [
+          if (ada)
+            GestureDetector(
+              onTap: () => _showPhotoFull(context, photo.path),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.file(File(photo.path), height: 56, width: 56, fit: BoxFit.cover, cacheHeight: 168),
+              ),
+            )
+          else
+            Container(
+              height: 56,
+              width: 56,
+              decoration: BoxDecoration(color: w.surface, borderRadius: BorderRadius.circular(8)),
+              child: Icon(Icons.image_not_supported_outlined, color: w.faint),
+            ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+                const SizedBox(height: 2),
+                Text(ada ? t(context).tapToEnlarge : t(context).photoNotOnThisPhone,
+                    style: TextStyle(fontSize: 12, color: ada ? w.muted : w.badFg)),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: onTake,
+            icon: const Icon(Icons.refresh, size: 18),
+            label: Text(t(context).retakePhoto),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// One photo of a TM — the delivery note or the slump test — with its label,
 /// tappable to full screen.
 class _CastingPhoto extends ConsumerWidget {
@@ -1882,10 +2077,7 @@ class _CastingPhoto extends ConsumerWidget {
             style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: w.faint)),
         const SizedBox(height: 3),
         GestureDetector(
-          onTap: () => showDialog<void>(
-            context: context,
-            builder: (c) => Dialog(child: InteractiveViewer(child: Image.file(File(photo.path)))),
-          ),
+          onTap: () => _showPhotoFull(context, photo.path),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.file(File(photo.path), height: 90, width: 120, fit: BoxFit.cover, cacheHeight: 270),
@@ -2020,11 +2212,13 @@ class _PauseReasonSheet extends StatelessWidget {
 final _photoProvider = FutureProvider.autoDispose.family<PhotoRow?, String>((ref, uuid) => ref.watch(dbProvider).getPhoto(uuid));
 
 /// New TM entry.
-class _TruckSheet extends StatefulWidget {
+class _TruckSheet extends ConsumerStatefulWidget {
   const _TruckSheet({
     required this.seq,
     this.initial,
     required this.estimatedConcreteBefore,
+    required this.theoreticalM3,
+    required this.pouredSoFarM3,
     required this.takeTicketPhoto,
     required this.takeSlumpPhoto,
     required this.suppliers,
@@ -2039,6 +2233,12 @@ class _TruckSheet extends StatefulWidget {
   final Map<String, Object?>? initial;
 
   final double estimatedConcreteBefore;
+
+  /// What this pile should take, and what the OTHER trucks have already put
+  /// in, so the sheet can say where this truck lands before it is poured.
+  final double theoreticalM3;
+  final double pouredSoFarM3;
+
   final Future<String?> Function() takeTicketPhoto;
   final Future<String?> Function() takeSlumpPhoto;
 
@@ -2049,10 +2249,10 @@ class _TruckSheet extends StatefulWidget {
   final String? supplierName;
 
   @override
-  State<_TruckSheet> createState() => _TruckSheetState();
+  ConsumerState<_TruckSheet> createState() => _TruckSheetState();
 }
 
-class _TruckSheetState extends State<_TruckSheet> {
+class _TruckSheetState extends ConsumerState<_TruckSheet> {
   /// A stored decimal ("7.00") as the field shows it ("7"): trailing zeros
   /// gone, comma for the separator. Typing over "7,00" to fix a slump is
   /// exactly the kind of small friction that makes people skip the fix.
@@ -2080,6 +2280,20 @@ class _TruckSheetState extends State<_TruckSheet> {
 
   /// Chosen supplier id; [_other] = typed by hand, null = none.
   static const _other = -1;
+
+  /// Where the pile lands if this truck's volume is poured, or null when
+  /// nothing can be said (no typed volume, no theoretical volume).
+  double? get _projectedOveruse {
+    final v = parseNumber(_volume.text);
+    if (v == null || v <= 0) return null;
+    return overuseIfAdded(
+      theoreticalM3: widget.theoreticalM3,
+      pouredSoFarM3: widget.pouredSoFarM3,
+      addM3: v,
+    );
+  }
+
+
   late int? _supplierChoice = widget.supplierId ??
       ((widget.supplierName ?? '').isNotEmpty && widget.suppliers.isNotEmpty ? _other : null);
 
@@ -2145,22 +2359,26 @@ class _TruckSheetState extends State<_TruckSheet> {
             // Two photos per TM. The delivery-note NUMBER is no longer typed:
             // it is already on the note in the photo, and a retyped number is
             // one more thing to get wrong at 2 a.m.
-            OutlinedButton.icon(
-              onPressed: () async {
+            _PhotoField(
+              uuid: _photo,
+              label: t(context).deliveryNote,
+              emptyLabel: t(context).photoTicket,
+              icon: Icons.receipt_long_outlined,
+              onTake: () async {
                 final f = await widget.takeTicketPhoto();
                 if (f != null) setState(() => _photo = f);
               },
-              icon: Icon(_photo == null ? Icons.receipt_long_outlined : Icons.check_circle),
-              label: Text(_photo == null ? t(context).photoTicket : t(context).photoTicketDone),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () async {
+            _PhotoField(
+              uuid: _slumpPhoto,
+              label: t(context).slumpTest,
+              emptyLabel: t(context).photoSlump,
+              icon: Icons.science_outlined,
+              onTake: () async {
                 final f = await widget.takeSlumpPhoto();
                 if (f != null) setState(() => _slumpPhoto = f);
               },
-              icon: Icon(_slumpPhoto == null ? Icons.science_outlined : Icons.check_circle),
-              label: Text(_slumpPhoto == null ? t(context).photoSlump : t(context).photoSlumpDone),
             ),
             const SizedBox(height: 12),
             TextField(controller: _truck, decoration: InputDecoration(labelText: t(context).hullNoField)),
@@ -2194,9 +2412,11 @@ class _TruckSheetState extends State<_TruckSheet> {
                   controller: _volume,
                   keyboardType: numeric,
                   inputFormatters: decimalInput(maxIntDigits: 2),
-                  decoration: InputDecoration(labelText: t(context).volumeField, suffixText: 'm³'),
+                  decoration: InputDecoration(labelText: t(context).volumePouredHere, suffixText: 'm³'),
                   onChanged: (_) {
-                    if (_volumeConfirmed) setState(() => _volumeConfirmed = false);
+                    setState(() {
+                      if (_volumeConfirmed) _volumeConfirmed = false;
+                    });
                   },
                 ),
               ),
@@ -2210,6 +2430,12 @@ class _TruckSheetState extends State<_TruckSheet> {
                 ),
               ),
             ]),
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 2),
+              child: Text(t(context).volumeSharedHint,
+                  style: TextStyle(color: context.colors.muted, fontSize: 12.5, height: 1.35)),
+            ),
+            ?_overuseBanner(),
             const SizedBox(height: 12),
             TextField(
               controller: _sounding,
@@ -2224,10 +2450,33 @@ class _TruckSheetState extends State<_TruckSheet> {
             const SizedBox(height: 18),
             SizedBox(
               height: Dimens.minTouch + 4,
-              child: FilledButton(onPressed: _submit, child: Text(_editing ? t(context).saveChanges : t(context).saveTruck)),
+              child: FilledButton(onPressed: _submit,
+                  child: Text(_editing ? t(context).saveChanges : t(context).saveTruck)),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Di mana beton ini mendarat terhadap teoritis.
+  ///
+  /// MEMBERI TAHU, TIDAK PERNAH MENGHALANGI. Overbreak di atas 100% nyata
+  /// terjadi di tanah yang jelek (Daniel, 12 Okt 2026), dan mandor yang
+  /// tidak dapat menyimpan kenyataan akan mengetik angka yang lebih kecil
+  /// supaya bisa lanjut — satu-satunya hasil yang lebih buruk daripada
+  /// angka besar yang benar.
+  Widget? _overuseBanner() {
+    final over = _projectedOveruse;
+    if (over == null || over <= volumeWarnPercent) return null;
+    final used = widget.pouredSoFarM3 + (parseNumber(_volume.text) ?? 0);
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: TerraBanner(
+        kind: over > volumeLoudPercent ? BannerKind.danger : BannerKind.warning,
+        icon: Icons.trending_up,
+        title: t(context).overuseAheadTitle(over.toStringAsFixed(0)),
+        body: t(context).overuseAheadBody(_decimal(used), _decimal(widget.theoreticalM3)),
       ),
     );
   }
@@ -2290,8 +2539,8 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       return;
     }
     final gap = parseNumber(_gap.text);
-    if (gap == null || gap < 0 || gap > 5) {
-      setState(() => _error = t(context).gapInvalid);
+    if (gap == null || gap < 0 || gap > 1) {
+      setState(() => _error = t(context).gapInvalid1m);
       return;
     }
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
@@ -2352,7 +2601,17 @@ class _HeaderSheetState extends State<_HeaderSheet> {
                 decoration: InputDecoration(labelText: widget.suppliers.isEmpty ? t(context).concreteSupplier : t(context).otherSupplierName),
               ),
             const SizedBox(height: 12),
-            TextField(controller: _gap, keyboardType: numeric, inputFormatters: decimalInput(maxIntDigits: 1), decoration: InputDecoration(labelText: t(context).tremieGapField, suffixText: 'm')),
+            TextField(
+              controller: _gap,
+              keyboardType: numeric,
+              inputFormatters: decimalInput(maxIntDigits: 1),
+              decoration: InputDecoration(
+                labelText: t(context).tremieGapField,
+                suffixText: 'm',
+                helperText: t(context).gapFieldHint,
+                helperMaxLines: 2,
+              ),
+            ),
             const SizedBox(height: 12),
             TextField(controller: _note, maxLines: 3, decoration: InputDecoration(labelText: t(context).noteField)),
             const SizedBox(height: 18),

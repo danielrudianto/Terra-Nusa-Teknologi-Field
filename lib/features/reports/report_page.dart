@@ -73,43 +73,18 @@ class _ReportPageState extends ConsumerState<ReportPage> {
   /// sends clients) and hand it to the share sheet: open in a sheet app,
   /// or send by WhatsApp / e-mail.
   Future<void> _downloadExcel(ReportRange range) async {
-    final whole = await showModalBottomSheet<bool>(
+    final choice = await showModalBottomSheet<_ExcelChoice>(
       context: context,
       showDragHandle: true,
-      builder: (c) {
-        final w = c.colors;
-        Widget option(IconData icon, String title, String body, bool value) => ListTile(
-              leading: Icon(icon, color: w.brand),
-              title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
-              subtitle: Text(body),
-              onTap: () => Navigator.pop(c, value),
-            );
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              option(
-                Icons.date_range,
-                t(context).thisPeriod,
-                range.from == range.to
-                    ? longDate(range.from)
-                    : t(context).dateRange(longDate(range.from), longDate(range.to)),
-                false,
-              ),
-              option(Icons.all_inclusive, t(context).fullRecap,
-                  t(context).fullRecapBody(longDate(range.to)), true),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
+      isScrollControlled: true,
+      builder: (c) => _ExcelOptionsSheet(range: range),
     );
-    if (whole == null || !mounted) return;
+    if (choice == null || !mounted) return;
     setState(() => _downloading = true);
     final subject = t(context).excelSubject;
     try {
-      final from = whole ? null : range.from;
-      final bytes = await ref.read(apiProvider).reportExcel(from: from, to: range.to);
+      final from = choice.whole ? null : range.from;
+      final bytes = await ref.read(apiProvider).reportExcel(from: from, to: range.to, sheets: choice.sheets);
       final name = 'Rekap-Tiang-${from == null ? 'lengkap' : isoDate(from)}_${isoDate(range.to)}.xlsx';
       final file = File('${(await getTemporaryDirectory()).path}/$name');
       await file.writeAsBytes(bytes, flush: true);
@@ -433,4 +408,131 @@ class _ProjectCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Apa yang diminta dari layar pilihan: rentangnya, dan lembar mana saja.
+typedef _ExcelChoice = ({bool whole, List<String> sheets});
+
+/// Pilihan sebelum mengunduh: rentang, lalu lembar mana yang dibuat.
+///
+/// Satu berkas memuat TIGA laporan untuk tiga pembaca — rekap tiang untuk
+/// pengawas, mutu beton untuk QC, rekap operator untuk kantor. Yang
+/// mengirimkannya ke klien hampir tidak pernah mau ketiganya sekaligus,
+/// jadi ketiganya dapat dimatikan satu-satu. Minimal satu harus menyala:
+/// berkas tanpa lembar bukan berkas.
+class _ExcelOptionsSheet extends StatefulWidget {
+  const _ExcelOptionsSheet({required this.range});
+
+  final ReportRange range;
+
+  @override
+  State<_ExcelOptionsSheet> createState() => _ExcelOptionsSheetState();
+}
+
+class _ExcelOptionsSheetState extends State<_ExcelOptionsSheet> {
+  bool _whole = false;
+  final _sheets = {'tiang': true, 'beton': true, 'operator': true};
+
+  bool get _none => !_sheets.values.any((v) => v);
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final range = widget.range;
+    Widget period(IconData icon, String title, String body, bool value) => RadioListTile<bool>(
+          value: value,
+          secondary: Icon(icon, color: w.brand),
+          title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+          subtitle: Text(body),
+        );
+    Widget sheet(String key, String title, String body) => SwitchListTile(
+          value: _sheets[key] ?? false,
+          onChanged: (v) => setState(() => _sheets[key] = v),
+          title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+          subtitle: Text(body),
+        );
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, Dimens.pagePadding),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(t(context).excelOptionsTitle,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 10),
+              _GroupLabel(t(context).excelPeriodLabel),
+              RadioGroup<bool>(
+                groupValue: _whole,
+                onChanged: (v) => setState(() => _whole = v ?? false),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    period(
+                      Icons.date_range,
+                      t(context).thisPeriod,
+                      range.from == range.to
+                          ? longDate(range.from)
+                          : t(context).dateRange(longDate(range.from), longDate(range.to)),
+                      false,
+                    ),
+                    period(Icons.all_inclusive, t(context).fullRecap,
+                        t(context).fullRecapBody(longDate(range.to)), true),
+                  ],
+                ),
+              ),
+              const Divider(height: 24),
+              _GroupLabel(t(context).excelSheetsLabel),
+              sheet('tiang', t(context).sheetPiles, t(context).sheetPilesBody),
+              sheet('beton', t(context).sheetConcrete, t(context).sheetConcreteBody),
+              sheet('operator', t(context).sheetOperators, t(context).sheetOperatorsBody),
+              if (_none)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(t(context).pickAtLeastOneSheet,
+                      style: TextStyle(color: w.badFg, fontWeight: FontWeight.w600)),
+                ),
+              const SizedBox(height: 14),
+              SizedBox(
+                height: Dimens.minTouch + 4,
+                child: FilledButton.icon(
+                  onPressed: _none
+                      ? null
+                      : () => Navigator.pop(context, (
+                            whole: _whole,
+                            sheets: [
+                              for (final e in _sheets.entries)
+                                if (e.value) e.key,
+                            ],
+                          )),
+                  icon: const Icon(Icons.download),
+                  label: Text(t(context).download),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GroupLabel extends StatelessWidget {
+  const _GroupLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(left: 4, bottom: 2),
+        child: Text(text.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.9,
+              color: context.colors.faint,
+            )),
+      );
 }

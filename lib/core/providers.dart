@@ -69,6 +69,10 @@ class SessionNotifier extends AsyncNotifier<SessionState> {
     }
     await _save.writeTokens(access, refresh);
     await _save.writeUser(user);
+    // Baru saja mengambil alih: kuncinya sudah dibuka di server, jadi banner
+    // di HP ini harus langsung hilang — bukan menunggu pull berikutnya, yang
+    // di lapangan bisa berarti menunggu sinyal.
+    await ref.read(dbProvider).writeMeta('device_lock', null);
     var permissions = PermissionMap.empty;
     try {
       permissions = await api.permissions();

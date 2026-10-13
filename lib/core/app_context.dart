@@ -4,6 +4,7 @@ import 'config/env.dart';
 import 'db/app_database.dart';
 import 'network/api_client.dart';
 import 'device/device_id.dart';
+import 'device/device_name.dart';
 import 'session/session.dart';
 import 'sync/sync_engine.dart';
 
@@ -31,9 +32,10 @@ class AppContext {
     await Env.loadVersion();
     const storage = FlutterSecureStorage();
     final id = await loadDeviceId(storage);
+    final nama = await loadDeviceName();
     final db = AppDatabase();
     final session = SessionStore(storage);
-    final api = ApiClient(db: db, session: session, deviceId: id);
+    final api = ApiClient(db: db, session: session, deviceId: id, deviceName: nama);
     final engine = SyncEngine(db: db, api: api, session: session);
     return AppContext._(db: db, session: session, api: api, engine: engine, deviceId: id);
   }

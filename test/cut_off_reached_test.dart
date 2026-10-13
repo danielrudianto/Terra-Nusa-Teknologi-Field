@@ -77,4 +77,25 @@ void main() {
     test('deeper than before is refused', () => expect(soundingProblem(13.0, before: 12.0, bottom: 20.4), isNotNull));
     test('below the hole bottom is refused', () => expect(soundingProblem(21.0, before: 22.0, bottom: 20.4), isNotNull));
   });
+
+group('overuse if a truck is added', () {
+    // 10 m³ of hole. The figures below are what the TM sheet checks before
+    // anything is poured.
+    test('still under theory', () => expect(overuseIfAdded(theoreticalM3: 10, pouredSoFarM3: 0, addM3: 7), lessThan(0)));
+    test('exactly on theory is 0%', () => expect(overuseIfAdded(theoreticalM3: 10, pouredSoFarM3: 3, addM3: 7), closeTo(0, 0.001)));
+    test('a little over warns', () {
+      final over = overuseIfAdded(theoreticalM3: 10, pouredSoFarM3: 7, addM3: 5)!;
+      expect(over, closeTo(20, 0.001));
+      expect(over, greaterThan(volumeWarnPercent));
+      expect(over, lessThan(volumeLoudPercent));
+    });
+    test('a shared truck typed whole is held', () {
+      // 7 m³ truck split between two piles, but typed in full on both.
+      final over = overuseIfAdded(theoreticalM3: 10, pouredSoFarM3: 7, addM3: 7)!;
+      expect(over, greaterThan(volumeLoudPercent));
+    });
+    test('no theoretical volume = nothing to say', () {
+      expect(overuseIfAdded(theoreticalM3: 0, pouredSoFarM3: 5, addM3: 7), isNull);
+    });
+  });
 }
