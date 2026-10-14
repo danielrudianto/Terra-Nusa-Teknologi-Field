@@ -4802,5 +4802,79 @@
   "reasonTremieDalamSalah": "Kedalaman ujung tremie tidak masuk akal terhadap dasar lubang",
   "@reasonTremieDalamSalah": {
     "description": "Server rejected the measured tremie depth"
+  },
+  "actualX": "X aktual",
+  "@actualX": {
+    "description": "actualX"
+  },
+  "actualY": "Y aktual",
+  "@actualY": {
+    "description": "actualY"
+  },
+  "actualXRequired": "X aktual — wajib",
+  "@actualXRequired": {
+    "description": "actualXRequired"
+  },
+  "actualYRequired": "Y aktual — wajib",
+  "@actualYRequired": {
+    "description": "actualYRequired"
+  },
+  "actualXYRequiredMsg": "Isi X dan Y aktual pusat lubang. Diukur setelah pengeboran selesai.",
+  "@actualXYRequiredMsg": {
+    "description": "actualXYRequiredMsg"
+  },
+  "actualXYBothMsg": "X dan Y harus diisi dua-duanya.",
+  "@actualXYBothMsg": {
+    "description": "actualXYBothMsg"
+  },
+  "actualXYInvalid": "Koordinat tidak sah.",
+  "@actualXYInvalid": {
+    "description": "actualXYInvalid"
+  },
+  "designXYTitle": "Koordinat rencana",
+  "@designXYTitle": {
+    "description": "designXYTitle"
+  },
+  "designXYBody": "X {x} · Y {y}",
+  "@designXYBody": {
+    "description": "designXYBody",
+    "placeholders": {
+      "x": {
+        "type": "String"
+      },
+      "y": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationBody": "Simpangan {simpangan}, toleransi {toleransi}.",
+  "@deviationBody": {
+    "description": "deviationBody",
+    "placeholders": {
+      "simpangan": {
+        "type": "String"
+      },
+      "toleransi": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationOverTitle": "Simpangan {simpangan} melewati toleransi",
+  "@deviationOverTitle": {
+    "description": "deviationOverTitle",
+    "placeholders": {
+      "simpangan": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationOverBody": "Toleransi proyek ini {toleransi}. Periksa angkanya sebelum menyimpan — kalau benar, laporkan ke kantor.",
+  "@deviationOverBody": {
+    "description": "deviationOverBody",
+    "placeholders": {
+      "toleransi": {
+        "type": "String"
+      }
+    }
   }
 }

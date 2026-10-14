@@ -22,6 +22,7 @@ import '../../core/widgets/view_states.dart';
 import '../casting/handover.dart';
 import '../casting/level_reference.dart';
 import 'drill_readings.dart';
+import 'koordinat_aktual.dart';
 import 'operator_picker.dart';
 import '../../core/i18n.dart';
 
@@ -323,13 +324,29 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         : t(context).readingRecorded(formatMeters(result.depthM), formatTime(result.at)));
   }
 
+  /// Toleransi simpangan proyek titik ini, dalam milimeter. `null` = tidak
+  /// diketahui, dan tidak ada yang dinyatakan di luar batas ketika tidak
+  /// diketahui.
+  double? get _toleranceMm {
+    final id = _pilePoint?['projectID'];
+    final p = (ref.read(projectsProvider).value ?? const [])
+        .where((e) => '${e['id']}' == '$id')
+        .firstOrNull;
+    return toDoubleOrNull(p?['pileToleranceMm']);
+  }
+
+  static String _koordText(double? v) =>
+      v == null ? '' : v.toStringAsFixed(3).replaceAll('.', ',');
+
   Future<void> _finish() async {
     if (_operatorUuid == null && !await _chooseOperator()) return;
     if (!mounted) return;
     final readings = _readings;
     final deepest = deepestM(readings);
     if (deepest == null) return;
-    final result = await showDialog<({double? groundLevel})>(
+    final aktualX = toDoubleOrNull(_pilePoint!['actualX']);
+    final aktualY = toDoubleOrNull(_pilePoint!['actualY']);
+    final result = await showDialog<({double? groundLevel, double? actualX, double? actualY})>(
       context: context,
       builder: (_) => _FinishDialog(
         code: _code,
@@ -339,12 +356,22 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         tipLevel: toDoubleOrNull(_pilePoint!['tipLevel']),
         cutOffLevel: toDoubleOrNull(_pilePoint!['cutOffLevel']),
         groundLevel: _groundLevel,
+        initialX: _koordText(aktualX),
+        initialY: _koordText(aktualY),
+        xyRequired: aktualX == null || aktualY == null,
+        designX: toDoubleOrNull(_pilePoint!['designX']),
+        designY: toDoubleOrNull(_pilePoint!['designY']),
+        toleranceMm: _toleranceMm,
       ),
     );
     if (result == null) return;
     final saved = await _update((d) {
       d['status'] = 'selesai';
       if (result.groundLevel != null) d['groundLevel'] = decimalText(result.groundLevel!, decimals: 3);
+      // Hanya bila ADA ISINYA: kunci kosong membuat jejak auditnya mencatat
+      // koordinat "berubah" pada penutupan yang tidak menyentuhnya.
+      if (result.actualX != null) d['actualX'] = decimalText(result.actualX!, decimals: 3);
+      if (result.actualY != null) d['actualY'] = decimalText(result.actualY!, decimals: 3);
     });
     // Read it back: "selesai dibor" must never be announced over a log that
     // is still running.
@@ -1038,6 +1065,12 @@ class _FinishDialog extends StatefulWidget {
     required this.tipLevel,
     required this.cutOffLevel,
     required this.groundLevel,
+    required this.initialX,
+    required this.initialY,
+    required this.xyRequired,
+    required this.designX,
+    required this.designY,
+    required this.toleranceMm,
   });
 
   final String code;
@@ -1050,17 +1083,28 @@ class _FinishDialog extends StatefulWidget {
   /// Known GS of the point; null when it still has to be typed here.
   final double? groundLevel;
 
+  final String initialX;
+  final String initialY;
+  final bool xyRequired;
+  final double? designX;
+  final double? designY;
+  final double? toleranceMm;
+
   @override
   State<_FinishDialog> createState() => _FinishDialogState();
 }
 
 class _FinishDialogState extends State<_FinishDialog> {
   final _gs = TextEditingController();
+  late final _xInput = TextEditingController(text: widget.initialX);
+  late final _yInput = TextEditingController(text: widget.initialY);
   String? _problem;
 
   @override
   void dispose() {
     _gs.dispose();
+    _xInput.dispose();
+    _yInput.dispose();
     super.dispose();
   }
 
@@ -1079,7 +1123,21 @@ class _FinishDialogState extends State<_FinishDialog> {
         return;
       }
     }
-    Navigator.pop(context, (groundLevel: gs));
+    final salahKoord = koordinatBelumSah(
+      context,
+      _xInput.text,
+      _yInput.text,
+      wajib: widget.xyRequired,
+    );
+    if (salahKoord != null) {
+      setState(() => _problem = salahKoord);
+      return;
+    }
+    Navigator.pop(context, (
+      groundLevel: gs,
+      actualX: parseNumber(_xInput.text),
+      actualY: parseNumber(_yInput.text),
+    ));
   }
 
   @override
@@ -1111,11 +1169,16 @@ class _FinishDialogState extends State<_FinishDialog> {
               tipLevel: widget.tipLevel,
               groundLevel: widget.groundLevel ?? parseNumber(_gs.text),
             ),
+            // Banner galat DI LUAR `if (gsRequired)`.
+            //
+            // Di dalamnya, titik yang GS-nya sudah ada tidak pernah
+            // memperlihatkan galat koordinat: tombolnya ditekan, dialognya
+            // tidak tertutup, dan tidak ada satu pun kalimat yang muncul.
+            if (_problem != null) ...[
+              const SizedBox(height: 8),
+              TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: _problem),
+            ],
             if (widget.gsRequired) ...[
-              if (_problem != null) ...[
-                const SizedBox(height: 8),
-                TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: _problem),
-              ],
               const SizedBox(height: 16),
               TextField(
                 controller: _gs,
@@ -1125,6 +1188,15 @@ class _FinishDialogState extends State<_FinishDialog> {
                 onChanged: (_) => setState(() => _problem = null),
               ),
             ],
+            KoordinatAktualFields(
+              xInput: _xInput,
+              yInput: _yInput,
+              wajib: widget.xyRequired,
+              designX: widget.designX,
+              designY: widget.designY,
+              toleranceMm: widget.toleranceMm,
+              onChanged: () => setState(() => _problem = null),
+            ),
           ],
         ),
       ),

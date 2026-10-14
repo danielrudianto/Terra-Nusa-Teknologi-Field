@@ -14,6 +14,7 @@ import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/widgets/status_badge.dart';
 import '../drilling/drill_readings.dart';
+import '../drilling/koordinat_aktual.dart';
 import 'handover.dart';
 import 'level_reference.dart';
 import 'pile_point_data.dart';
@@ -579,6 +580,23 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
   String _elevation(double? v) =>
       v == null ? t(context).notFilled : '${v >= 0 ? '+' : ''}${v.toStringAsFixed(2).replaceAll('.', ',')}';
 
+  /// Toleransi simpangan titik proyek ini, dalam milimeter.
+  ///
+  /// `null` bila proyeknya belum tertarik — dan ketika tidak diketahui tidak
+  /// ada yang dinyatakan di luar batas. Diganti nol sebagai "aman", setiap
+  /// titik akan diperingatkan merah; diganti angka tetap, proyek yang
+  /// toleransinya memang lain akan diperiksa dengan batas proyek lain.
+  double? get toleranceMm {
+    final p = (ref.read(projectsProvider).value ?? const [])
+        .where((p) => '${p['id']}' == '${widget.projectId}')
+        .firstOrNull;
+    return toDoubleOrNull(p?['pileToleranceMm']);
+  }
+
+  /// Koordinat tersimpan sebagai teks isian; kosong bila belum ada.
+  static String _koordText(double? v) =>
+      v == null ? '' : v.toStringAsFixed(3).replaceAll('.', ',');
+
   /// Mark drilled, with the ground level (GS) measured at the hole.
   ///
   /// GS is REQUIRED when the point has none yet: the casting log cannot start
@@ -589,7 +607,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     final initialDepth = pt.drillDepthM ?? pt.geometry?.plannedDrillLengthM;
     // The dialog owns its text controllers: disposing them here, while the
     // dialog is still animating out, crashes ('_dependents.isEmpty').
-    final result = await showDialog<({double depth, double? groundLevel})>(
+    final result = await showDialog<({double depth, double? groundLevel, double? actualX, double? actualY})>(
       context: context,
       builder: (c) => _DrillDialog(
         code: pt.code,
@@ -598,6 +616,12 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         gsRequired: knownGs == null,
         cutOffLevel: pt.cutOffLevel,
         tipLevel: pt.tipLevel,
+        initialX: _koordText(pt.actualX),
+        initialY: _koordText(pt.actualY),
+        xyRequired: pt.actualX == null || pt.actualY == null,
+        designX: pt.designX,
+        designY: pt.designY,
+        toleranceMm: toleranceMm,
       ),
     );
     if (result == null) return;
@@ -614,6 +638,11 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         'drilledDepthM': decimalText(result.depth),
         'at': isoWithOffset(DateTime.now()),
         if (sendGs) 'groundLevel': decimalText(gs, decimals: 3),
+        // Dikirim hanya bila ADA ISINYA. Server tidak menghapus yang kosong,
+        // tetapi mengirim kunci kosong membuat jejak auditnya mencatat
+        // koordinat "berubah" pada setiap tanda bor yang tidak menyentuhnya.
+        if (result.actualX != null) 'actualX': decimalText(result.actualX!, decimals: 3),
+        if (result.actualY != null) 'actualY': decimalText(result.actualY!, decimals: 3),
       },
     );
     ref.read(syncProvider.notifier).afterSave();
@@ -640,6 +669,12 @@ class _DrillDialog extends StatefulWidget {
     required this.gsRequired,
     required this.cutOffLevel,
     required this.tipLevel,
+    required this.initialX,
+    required this.initialY,
+    required this.xyRequired,
+    required this.designX,
+    required this.designY,
+    required this.toleranceMm,
   });
 
   final String code;
@@ -648,6 +683,12 @@ class _DrillDialog extends StatefulWidget {
   final bool gsRequired;
   final double cutOffLevel;
   final double tipLevel;
+  final String initialX;
+  final String initialY;
+  final bool xyRequired;
+  final double? designX;
+  final double? designY;
+  final double? toleranceMm;
 
   @override
   State<_DrillDialog> createState() => _DrillDialogState();
@@ -656,6 +697,8 @@ class _DrillDialog extends StatefulWidget {
 class _DrillDialogState extends State<_DrillDialog> {
   late final _depthInput = TextEditingController(text: widget.initialDepth);
   late final _gsInput = TextEditingController(text: widget.initialGs);
+  late final _xInput = TextEditingController(text: widget.initialX);
+  late final _yInput = TextEditingController(text: widget.initialY);
   String? _problem;
 
   double? _plannedFor(double? gs) => gs == null ? null : gs - widget.tipLevel;
@@ -664,6 +707,8 @@ class _DrillDialogState extends State<_DrillDialog> {
   void dispose() {
     _depthInput.dispose();
     _gsInput.dispose();
+    _xInput.dispose();
+    _yInput.dispose();
     super.dispose();
   }
 
@@ -693,7 +738,27 @@ class _DrillDialogState extends State<_DrillDialog> {
       setState(() => _problem = farBeyondPlanText(depth, planned));
       return;
     }
-    Navigator.pop(context, (depth: depth, groundLevel: gs));
+    // X/Y AKTUAL diperiksa PALING AKHIR, sesudah kedalamannya.
+    //
+    // Diperiksa lebih dulu, yang kedalamannya salah ketik diberi tahu soal
+    // koordinat — lalu memperbaiki koordinatnya dan ditolak lagi karena
+    // kedalamannya, yang sejak awal yang salah.
+    final salahKoord = koordinatBelumSah(
+      context,
+      _xInput.text,
+      _yInput.text,
+      wajib: widget.xyRequired,
+    );
+    if (salahKoord != null) {
+      setState(() => _problem = salahKoord);
+      return;
+    }
+    Navigator.pop(context, (
+      depth: depth,
+      groundLevel: gs,
+      actualX: parseNumber(_xInput.text),
+      actualY: parseNumber(_yInput.text),
+    ));
   }
 
   @override
@@ -761,6 +826,18 @@ class _DrillDialogState extends State<_DrillDialog> {
                 body: t(context).beyondPlanBody(formatMeters(planned)),
               ),
             ],
+            // X/Y aktual: pusat lubang, diukur sesudah pengeborannya selesai
+            // — jadi di sini, di dialog yang menutupnya, bukan di dialog yang
+            // memulainya.
+            KoordinatAktualFields(
+              xInput: _xInput,
+              yInput: _yInput,
+              wajib: widget.xyRequired,
+              designX: widget.designX,
+              designY: widget.designY,
+              toleranceMm: widget.toleranceMm,
+              onChanged: () => setState(() => _problem = null),
+            ),
           ],
         ),
       ),

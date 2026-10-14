@@ -124,6 +124,21 @@ class FieldPilePoint {
   /// Ground level (GS). May be unknown: it is an as-drilled figure, filled by
   /// the QS when marking the point drilled. A casting cannot start without it.
   double? get groundLevel => localGroundLevel ?? toDoubleOrNull(server['groundLevel']);
+  /// Koordinat RENCANA dan AKTUAL.
+  ///
+  /// Yang rencana terkunci sesudah titiknya dicor dan hanya datang dari
+  /// kantor; yang aktual diukur di lapangan SESUDAH pengeborannya selesai
+  /// dan dikirim HP bersama tanda bor atau penutupan log bor.
+  ///
+  /// Keempatnya boleh kosong, dan kosong harus tetap kosong: dihitung dari
+  /// 0 yang dikarang, simpangan titik yang koordinatnya belum pernah diisi
+  /// akan terbaca sebagai angka yang meyakinkan dan dibandingkan dengan
+  /// toleransi.
+  double? get designX => toDoubleOrNull(server['designX']);
+  double? get designY => toDoubleOrNull(server['designY']);
+  double? get actualX => toDoubleOrNull(server['actualX']);
+  double? get actualY => toDoubleOrNull(server['actualY']);
+
   double get cutOffLevel => toDoubleOrNull(server['cutOffLevel']) ?? 0;
   double get tipLevel => toDoubleOrNull(server['tipLevel']) ?? 0;
 

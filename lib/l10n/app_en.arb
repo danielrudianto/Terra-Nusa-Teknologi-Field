@@ -1015,5 +1015,79 @@
   "reasonTremieDalamSalah": "The tremie bottom depth does not make sense against the hole bottom",
   "@reasonTremieDalamSalah": {
     "description": "Server rejected the measured tremie depth"
+  },
+  "actualX": "Actual X",
+  "@actualX": {
+    "description": "actualX"
+  },
+  "actualY": "Actual Y",
+  "@actualY": {
+    "description": "actualY"
+  },
+  "actualXRequired": "Actual X — required",
+  "@actualXRequired": {
+    "description": "actualXRequired"
+  },
+  "actualYRequired": "Actual Y — required",
+  "@actualYRequired": {
+    "description": "actualYRequired"
+  },
+  "actualXYRequiredMsg": "Enter the actual X and Y of the hole centre. Measured once drilling is finished.",
+  "@actualXYRequiredMsg": {
+    "description": "actualXYRequiredMsg"
+  },
+  "actualXYBothMsg": "X and Y must both be filled in.",
+  "@actualXYBothMsg": {
+    "description": "actualXYBothMsg"
+  },
+  "actualXYInvalid": "The coordinates are not valid.",
+  "@actualXYInvalid": {
+    "description": "actualXYInvalid"
+  },
+  "designXYTitle": "Design coordinates",
+  "@designXYTitle": {
+    "description": "designXYTitle"
+  },
+  "designXYBody": "X {x} · Y {y}",
+  "@designXYBody": {
+    "description": "designXYBody",
+    "placeholders": {
+      "x": {
+        "type": "String"
+      },
+      "y": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationBody": "Deviation {simpangan}, tolerance {toleransi}.",
+  "@deviationBody": {
+    "description": "deviationBody",
+    "placeholders": {
+      "simpangan": {
+        "type": "String"
+      },
+      "toleransi": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationOverTitle": "Deviation {simpangan} is over tolerance",
+  "@deviationOverTitle": {
+    "description": "deviationOverTitle",
+    "placeholders": {
+      "simpangan": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationOverBody": "This project's tolerance is {toleransi}. Check the figures before saving — if they are right, report it to the office.",
+  "@deviationOverBody": {
+    "description": "deviationOverBody",
+    "placeholders": {
+      "toleransi": {
+        "type": "String"
+      }
+    }
   }
 }
