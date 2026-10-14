@@ -4876,5 +4876,74 @@
         "type": "String"
       }
     }
+  },
+  "castDoneTitle": "Sudah selesai dicor",
+  "@castDoneTitle": {
+    "description": "castDoneTitle"
+  },
+  "castDoneVolume": "Beton terkirim",
+  "@castDoneVolume": {
+    "description": "castDoneVolume"
+  },
+  "castDonePlanned": "Teoritis rencana",
+  "@castDonePlanned": {
+    "description": "castDonePlanned"
+  },
+  "castDoneVsPlanned": "{rencana} m³ ({selisih}%)",
+  "@castDoneVsPlanned": {
+    "description": "castDoneVsPlanned",
+    "placeholders": {
+      "rencana": {
+        "type": "String"
+      },
+      "selisih": {
+        "type": "String"
+      }
+    }
+  },
+  "castDoneTrucks": "Jumlah TM",
+  "@castDoneTrucks": {
+    "description": "castDoneTrucks"
+  },
+  "castDoneTopDepth": "Muka beton terakhir tercatat",
+  "@castDoneTopDepth": {
+    "description": "castDoneTopDepth"
+  },
+  "castDoneHoleDepth": "Kedalaman lubang",
+  "@castDoneHoleDepth": {
+    "description": "castDoneHoleDepth"
+  },
+  "castDoneAt": "Selesai cor",
+  "@castDoneAt": {
+    "description": "castDoneAt"
+  },
+  "slumpPhotoFirst": "Foto slump TM pertama",
+  "@slumpPhotoFirst": {
+    "description": "slumpPhotoFirst"
+  },
+  "slumpPhotoWaitingFirst": "Foto slump menunggu TM pertama",
+  "@slumpPhotoWaitingFirst": {
+    "description": "slumpPhotoWaitingFirst"
+  },
+  "slumpPhotoParkedFirst": "Foto slump disimpan untuk TM pertama.",
+  "@slumpPhotoParkedFirst": {
+    "description": "slumpPhotoParkedFirst"
+  },
+  "finishTruckAction": "Selesai TM",
+  "@finishTruckAction": {
+    "description": "finishTruckAction"
+  },
+  "notifSoundingDue": "TM {seq} selesai — sounding belum diisi",
+  "@notifSoundingDue": {
+    "description": "notifSoundingDue",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "notifSoundingDueBody": "Buka log cor di HP dan isi sounding muka beton sesudah tuang. Tertanam tremie dan pemeriksaan volume dihitung dari angka itu.",
+  "@notifSoundingDueBody": {
+    "description": "notifSoundingDueBody"
   }
 }

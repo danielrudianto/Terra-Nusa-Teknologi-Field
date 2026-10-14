@@ -681,7 +681,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final uuid = await _takeSlumpPhoto();
     if (uuid == null) return;
     await _simpanSlumpMenunggu((uuid: uuid, at: DateTime.now()));
-    if (mounted) showSnack(context, t(context).slumpPhotoParked, icon: Icons.science_outlined);
+    if (mounted) {
+      showSnack(
+        context,
+        // Sama dengan tombolnya: "untuk TM berikutnya" sebelum ada TM
+        // pertama menyatakan sesuatu yang belum ada.
+        _trucks.isEmpty ? t(context).slumpPhotoParkedFirst : t(context).slumpPhotoParked,
+        icon: Icons.science_outlined,
+      );
+    }
   }
 
   Future<bool> _updateTruck(String truckUuid, void Function(Map<Object?, Object?> t) f) => _update((d) {
@@ -1392,6 +1400,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           if (!_readOnly && !_finished)
             _SlumpMenungguCard(
               menunggu: _slumpMenunggu,
+              // Belum ada TM sama sekali = fotonya untuk TM PERTAMA, bukan
+              // "TM berikutnya". Uji slump memang dilakukan pada tiap TM,
+              // termasuk yang pertama — yang salah cuma kalimatnya, dan
+              // kalimat yang menyebut "berikutnya" sebelum ada yang pertama
+              // membuat QS mengira ia sedang memotret untuk TM kedua.
+              pertama: _trucks.isEmpty,
               onAmbil: _fotoSlumpDuluan,
               onBuang: _slumpMenunggu == null ? null : () => _simpanSlumpMenunggu(null),
             ),
@@ -2238,9 +2252,17 @@ class _PhotoField extends ConsumerWidget {
 /// supaya QS tahu fotonya sudah di tangan aplikasi dan tidak memotret dua
 /// kali, serta bisa membuangnya kalau ternyata keliru.
 class _SlumpMenungguCard extends ConsumerWidget {
-  const _SlumpMenungguCard({required this.menunggu, required this.onAmbil, required this.onBuang});
+  const _SlumpMenungguCard({
+    required this.menunggu,
+    required this.pertama,
+    required this.onAmbil,
+    required this.onBuang,
+  });
 
   final ({String uuid, DateTime at})? menunggu;
+
+  /// Belum ada satu pun TM pada log ini.
+  final bool pertama;
   final VoidCallback onAmbil;
   final VoidCallback? onBuang;
 
@@ -2254,7 +2276,7 @@ class _SlumpMenungguCard extends ConsumerWidget {
         child: OutlinedButton.icon(
           onPressed: onAmbil,
           icon: const Icon(Icons.science_outlined),
-          label: Text(t(context).slumpPhotoAhead),
+          label: Text(pertama ? t(context).slumpPhotoFirst : t(context).slumpPhotoAhead),
         ),
       );
     }
@@ -2292,7 +2314,7 @@ class _SlumpMenungguCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(t(context).slumpPhotoWaiting,
+                  Text(pertama ? t(context).slumpPhotoWaitingFirst : t(context).slumpPhotoWaiting,
                       style: TextStyle(fontWeight: FontWeight.w700, color: w.infoFg)),
                   const SizedBox(height: 2),
                   Text(t(context).slumpPhotoWaitingBody(formatTime(m.at)),

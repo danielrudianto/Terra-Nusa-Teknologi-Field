@@ -90,6 +90,16 @@ class FieldPilePoint {
   double? get castingVolumeM3 => toDoubleOrNull(server['castingVolumeM3']);
   DateTime? get castingLastAt => _waktu(server['castingLastAt']);
 
+  /// Muka beton TERAKHIR TERCATAT, meter dari GS. Null bila tidak ada
+  /// satu pun sounding sesudah tuang.
+  ///
+  /// "Terakhir tercatat", bukan "akhir": server mengambil yang TERKECIL
+  /// dari seluruh sounding sesudah tuang — muka beton naik selama
+  /// pengecoran, jadi yang terkecil adalah keadaan terakhir. Pada log yang
+  /// TM terakhirnya tidak disounding, angka ini datang dari TM sebelumnya,
+  /// dan kalimat "terakhir tercatat" tetap benar sedangkan "akhir" tidak.
+  double? get castingTopDepthM => toDoubleOrNull(server['castingTopDepthM']);
+
   static DateTime? _waktu(Object? v) => v == null ? null : DateTime.tryParse('$v');
 
   /// A colleague standing at the point has asked for the log THIS phone

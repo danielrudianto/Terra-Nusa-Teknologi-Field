@@ -1089,5 +1089,74 @@
         "type": "String"
       }
     }
+  },
+  "castDoneTitle": "Casting finished",
+  "@castDoneTitle": {
+    "description": "castDoneTitle"
+  },
+  "castDoneVolume": "Concrete delivered",
+  "@castDoneVolume": {
+    "description": "castDoneVolume"
+  },
+  "castDonePlanned": "Theoretical plan",
+  "@castDonePlanned": {
+    "description": "castDonePlanned"
+  },
+  "castDoneVsPlanned": "{rencana} m³ ({selisih}%)",
+  "@castDoneVsPlanned": {
+    "description": "castDoneVsPlanned",
+    "placeholders": {
+      "rencana": {
+        "type": "String"
+      },
+      "selisih": {
+        "type": "String"
+      }
+    }
+  },
+  "castDoneTrucks": "Trucks",
+  "@castDoneTrucks": {
+    "description": "castDoneTrucks"
+  },
+  "castDoneTopDepth": "Last recorded concrete level",
+  "@castDoneTopDepth": {
+    "description": "castDoneTopDepth"
+  },
+  "castDoneHoleDepth": "Hole depth",
+  "@castDoneHoleDepth": {
+    "description": "castDoneHoleDepth"
+  },
+  "castDoneAt": "Finished at",
+  "@castDoneAt": {
+    "description": "castDoneAt"
+  },
+  "slumpPhotoFirst": "Slump photo for the first truck",
+  "@slumpPhotoFirst": {
+    "description": "slumpPhotoFirst"
+  },
+  "slumpPhotoWaitingFirst": "Slump photo waiting for the first truck",
+  "@slumpPhotoWaitingFirst": {
+    "description": "slumpPhotoWaitingFirst"
+  },
+  "slumpPhotoParkedFirst": "Slump photo saved for the first truck.",
+  "@slumpPhotoParkedFirst": {
+    "description": "slumpPhotoParkedFirst"
+  },
+  "finishTruckAction": "Finish truck",
+  "@finishTruckAction": {
+    "description": "finishTruckAction"
+  },
+  "notifSoundingDue": "Truck {seq} finished — sounding not entered",
+  "@notifSoundingDue": {
+    "description": "notifSoundingDue",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "notifSoundingDueBody": "Open the casting log on the phone and enter the concrete sounding after the pour. Tremie embedment and the volume checks are computed from that figure.",
+  "@notifSoundingDueBody": {
+    "description": "notifSoundingDueBody"
   }
 }

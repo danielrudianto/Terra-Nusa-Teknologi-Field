@@ -422,19 +422,32 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
               // di sini dan tidak akan pernah ada, jadi tanpa ringkasan ini
               // layarnya cuma menampilkan angka rencana — orang tahu titiknya
               // sudah dicor tetapi tidak bisa melihat satu pun angka hasilnya.
+              //
+              // SUDAH SELESAI DAN SEDANG BERJALAN ADALAH DUA KARTU BERBEDA.
+              //
+              // Yang selesai dulu memakai kartu kemajuan yang sama: judulnya
+              // "Kemajuan cor", angkanya "TM ke-4", dan bilah kemajuan serta
+              // "catatan terakhir 1 hari lalu" di bawahnya. Ketiganya bahasa
+              // sesuatu yang MASIH BERJALAN — padahal betonnya sudah
+              // mengeras kemarin, dan "terakhir 1 hari lalu" terbaca sebagai
+              // HP yang tertinggal mengirim, bukan sebagai pekerjaan yang
+              // memang sudah usai.
               if (pt.casting == null && (pt.castingTruckCount ?? 0) > 0 && !elsewhere)
-                _KemajuanCard(
-                  label: t(context).castProgressLabel,
-                  utama: t(context).castProgressMain(
-                    '${pt.castingTruckCount}',
-                    (pt.castingVolumeM3 ?? 0).toStringAsFixed(2).replaceAll('.', ','),
-                    pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ','),
+                if (pt.stage == 'sudah_cor')
+                  _SelesaiCorCard(point: pt)
+                else
+                  _KemajuanCard(
+                    label: t(context).castProgressLabel,
+                    utama: t(context).castProgressMain(
+                      '${pt.castingTruckCount}',
+                      (pt.castingVolumeM3 ?? 0).toStringAsFixed(2).replaceAll('.', ','),
+                      pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ','),
+                    ),
+                    rasio: pt.plannedTheoreticalVolumeM3 < 0.01
+                        ? null
+                        : ((pt.castingVolumeM3 ?? 0) / pt.plannedTheoreticalVolumeM3).clamp(0.0, 1.0),
+                    kapan: pt.castingLastAt,
                   ),
-                  rasio: pt.plannedTheoreticalVolumeM3 < 0.01
-                      ? null
-                      : ((pt.castingVolumeM3 ?? 0) / pt.plannedTheoreticalVolumeM3).clamp(0.0, 1.0),
-                  kapan: pt.castingLastAt,
-                ),
               if (!drilled && allows && !elsewhere)
                 TerraBanner(
                   kind: BannerKind.info,
@@ -859,6 +872,78 @@ class _DrillDialogState extends State<_DrillDialog> {
 /// Belum ada catatan sama sekali juga sebuah jawaban ("belum ada catatan
 /// terkirim"), bukan alasan menyembunyikan kartunya: layar kosong membuat
 /// orang mengira fiturnya rusak.
+/// HASIL pengecoran yang SUDAH SELESAI — bukan kemajuannya.
+///
+/// DIMINTA DANIEL, 14 Oktober 2026: *"harusnya kalau udah beres ya udah
+/// kasih datanya aja bang ... sudah selesai cor, cor terakhir sampai berapa
+/// meter, terus kasih ringkasan, jadinya kecor berapa m³"*.
+///
+/// Tidak ada bilah kemajuan dan tidak ada "terakhir sekian jam lalu" di
+/// sini. Keduanya menerangkan sesuatu yang sedang berlangsung: bilah yang
+/// berhenti di 97% pada tiang yang sudah jadi terbaca sebagai pekerjaan
+/// yang kurang, padahal volume beton memang tidak pernah persis sama
+/// dengan teoretisnya.
+class _SelesaiCorCard extends StatelessWidget {
+  const _SelesaiCorCard({required this.point});
+
+  final FieldPilePoint point;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final l = t(context);
+    final volume = point.castingVolumeM3 ?? 0;
+    final rencana = point.plannedTheoreticalVolumeM3;
+    // Selisih terhadap teoretis disebut hanya bila rencananya diketahui.
+    // Dihitung dari rencana nol, angkanya tak hingga.
+    final selisih = rencana < 0.01 ? null : (volume - rencana) / rencana * 100;
+    final selesai = point.castingLastAt;
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: w.okBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: w.okFg.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.check_circle, size: 18, color: w.okFg),
+              const SizedBox(width: 8),
+              Text(l.castDoneTitle,
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: w.okFg)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _InfoRow(l.castDoneVolume, '${volume.toStringAsFixed(2).replaceAll('.', ',')} m³'),
+          _InfoRow(
+            l.castDonePlanned,
+            selisih == null
+                ? '${rencana.toStringAsFixed(2).replaceAll('.', ',')} m³'
+                : l.castDoneVsPlanned(
+                    rencana.toStringAsFixed(2).replaceAll('.', ','),
+                    '${selisih >= 0 ? '+' : ''}${selisih.toStringAsFixed(1).replaceAll('.', ',')}',
+                  ),
+          ),
+          _InfoRow(l.castDoneTrucks, '${point.castingTruckCount ?? 0}'),
+          // Muka beton TERAKHIR TERCATAT, bukan "akhir": pada log yang TM
+          // terakhirnya tidak disounding, angkanya datang dari TM
+          // sebelumnya — dan hanya kalimat pertama yang tetap benar.
+          if (point.castingTopDepthM != null)
+            _InfoRow(l.castDoneTopDepth, formatMeters(point.castingTopDepthM)),
+          if (point.drillDepthM != null)
+            _InfoRow(l.castDoneHoleDepth, formatMeters(point.drillDepthM)),
+          if (selesai != null)
+            _InfoRow(l.castDoneAt, '${longDate(selesai)} ${formatTime(selesai)}'),
+        ],
+      ),
+    );
+  }
+}
+
 class _KemajuanCard extends StatelessWidget {
   const _KemajuanCard({required this.label, required this.utama, required this.rasio, required this.kapan});
 

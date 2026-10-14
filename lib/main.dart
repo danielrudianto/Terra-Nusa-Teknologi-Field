@@ -8,6 +8,7 @@ import 'app.dart';
 import 'core/app_context.dart';
 import 'core/config/env.dart';
 import 'core/providers.dart';
+import 'core/device/aksi_notifikasi.dart';
 import 'core/device/notifications.dart';
 import 'core/sync/background_sync.dart';
 import 'core/util/app_log.dart';
@@ -24,9 +25,15 @@ Future<void> main() async {
   // Refresh token rejected mid-use → "Masuk lagi" (sign in again) banner.
   appContext.api.onSessionExpired = () => container.read(sessionProvider.notifier).markExpired();
 
-  await Notifications.init((payload, action) {
-    if (payload != null && payload.startsWith('/')) container.read(routerProvider).go(payload);
-  });
+  await Notifications.init(
+    (payload, action) {
+      // "Selesai TM" dari arloji sudah dikerjakan di isolate latar; yang
+      // sampai ke sini hanya ketukan yang memang meminta layarnya dibuka.
+      if (action == Notifications.actionFinishNow) return;
+      if (payload != null && payload.startsWith('/')) container.read(routerProvider).go(payload);
+    },
+    diLatar: tanganiAksiNotifikasiLatar,
+  );
   final initialRoute = await Notifications.initialRoute();
 
   try {

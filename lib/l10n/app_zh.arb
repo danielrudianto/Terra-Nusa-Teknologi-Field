@@ -1089,5 +1089,74 @@
         "type": "String"
       }
     }
+  },
+  "castDoneTitle": "浇筑已完成",
+  "@castDoneTitle": {
+    "description": "castDoneTitle"
+  },
+  "castDoneVolume": "实际供应方量",
+  "@castDoneVolume": {
+    "description": "castDoneVolume"
+  },
+  "castDonePlanned": "理论设计方量",
+  "@castDonePlanned": {
+    "description": "castDonePlanned"
+  },
+  "castDoneVsPlanned": "{rencana} m³（{selisih}%）",
+  "@castDoneVsPlanned": {
+    "description": "castDoneVsPlanned",
+    "placeholders": {
+      "rencana": {
+        "type": "String"
+      },
+      "selisih": {
+        "type": "String"
+      }
+    }
+  },
+  "castDoneTrucks": "罐车数",
+  "@castDoneTrucks": {
+    "description": "castDoneTrucks"
+  },
+  "castDoneTopDepth": "最后记录的混凝土面",
+  "@castDoneTopDepth": {
+    "description": "castDoneTopDepth"
+  },
+  "castDoneHoleDepth": "孔深",
+  "@castDoneHoleDepth": {
+    "description": "castDoneHoleDepth"
+  },
+  "castDoneAt": "浇筑完成",
+  "@castDoneAt": {
+    "description": "castDoneAt"
+  },
+  "slumpPhotoFirst": "首车坍落度照片",
+  "@slumpPhotoFirst": {
+    "description": "slumpPhotoFirst"
+  },
+  "slumpPhotoWaitingFirst": "坍落度照片待首车登记",
+  "@slumpPhotoWaitingFirst": {
+    "description": "slumpPhotoWaitingFirst"
+  },
+  "slumpPhotoParkedFirst": "坍落度照片已为首车保存。",
+  "@slumpPhotoParkedFirst": {
+    "description": "slumpPhotoParkedFirst"
+  },
+  "finishTruckAction": "结束罐车",
+  "@finishTruckAction": {
+    "description": "finishTruckAction"
+  },
+  "notifSoundingDue": "第 {seq} 车已结束——探测尚未填写",
+  "@notifSoundingDue": {
+    "description": "notifSoundingDue",
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
+  },
+  "notifSoundingDueBody": "请在手机上打开浇筑记录，填写浇筑后的混凝土面探测值。导管埋深与方量核对均由该数值计算。",
+  "@notifSoundingDueBody": {
+    "description": "notifSoundingDueBody"
   }
 }

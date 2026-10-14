@@ -27,6 +27,16 @@ class Notifications {
   static const pauseReminderEvery = Duration(minutes: 3);
   static const actionFinishTruck = 'finish_truck';
 
+  /// "Selesai TM" yang DIKERJAKAN TANPA MEMBUKA LAYAR — dipakai dari arloji.
+  ///
+  /// Berbeda dari [actionFinishTruck], yang membuka log cor di HP. Di
+  /// pergelangan tangan, tombol yang menyuruh mengeluarkan HP dari saku
+  /// tidak menghemat satu pun gerakan — dan itulah satu-satunya alasan
+  /// tombolnya ada di sana.
+  static const actionFinishNow = 'finish_truck_now';
+
+  static const _soundingId = 7004;
+
   /// Translations for code with no widget tree.
   ///
   /// Null only before the first build (a cold start in the background
@@ -45,11 +55,18 @@ class Notifications {
   static const _paused = Color(0xFFB4690E);
 
   /// `onTapped(payload, action)` — the payload holds the destination route.
-  static Future<void> init(void Function(String? payload, String? action) onTapped) async {
+  static Future<void> init(
+    void Function(String? payload, String? action) onTapped, {
+    void Function(NotificationResponse)? diLatar,
+  }) async {
     tzdata.initializeTimeZones();
     await _plugin.initialize(
       settings: const InitializationSettings(android: AndroidInitializationSettings('@drawable/ic_notification')),
       onDidReceiveNotificationResponse: (r) => onTapped(r.payload, r.actionId),
+      // Ditekan dari ARLOJI, aplikasinya kerap tidak berjalan sama sekali.
+      // Tanpa penangan latar ini, ketukannya hanya meluncurkan aplikasi —
+      // yaitu persis yang hendak dihindari.
+      onDidReceiveBackgroundNotificationResponse: diLatar,
     );
   }
 
@@ -132,12 +149,58 @@ class Notifications {
           maxProgress: 100,
           progress: progress ?? 0,
           actions: [
+            // SELESAI TM lebih dulu: di arloji hanya tombol pertama yang
+            // terbaca tanpa menggulir, dan itulah yang dicari saat tuangnya
+            // berhenti.
+            //
+            // `showsUserInterface: false` — dikerjakan di isolate latar,
+            // tanpa membuka apa pun. Lihat `aksi_notifikasi.dart`.
+            AndroidNotificationAction(
+              actionFinishNow,
+              L10n.current?.finishTruckAction ?? 'Selesai TM',
+              showsUserInterface: false,
+              cancelNotification: false,
+            ),
             AndroidNotificationAction(actionFinishTruck, L10n.current?.openCastLog ?? 'Buka log cor', showsUserInterface: true),
           ],
         ),
       ),
     );
   }
+
+  /// SOUNDING SESUDAH TUANG yang belum diisi, sesudah TM ditutup dari arloji.
+  ///
+  /// Berdering dan bergetar, bukan diam: dari sounding inilah tertanam
+  /// tremie, muka beton akhir, dan seluruh pemeriksaan volume dihitung.
+  /// Ditutup dari arloji tanpa pengingat ini, angka itu tidak akan pernah
+  /// terisi — dan tidak ada satu pun galat yang mengatakannya.
+  static Future<void> showSoundingDue({
+    required String route,
+    required String title,
+    required String body,
+  }) {
+    return _plugin.show(
+      id: _soundingId,
+      title: title,
+      body: body,
+      payload: route,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'casting_reminder',
+          'Pengingat cor',
+          channelDescription: 'Getar saat satu TM sudah 20 menit belum selesai dicor',
+          importance: Importance.high,
+          priority: Priority.high,
+          vibrationPattern: _buzz,
+          category: AndroidNotificationCategory.reminder,
+          color: _brand,
+          styleInformation: BigTextStyleInformation(body, contentTitle: title),
+        ),
+      ),
+    );
+  }
+
+  static Future<void> clearSoundingDue() => _plugin.cancel(id: _soundingId);
 
   /// Same slot as the stopwatch, without a running clock: Android's
   /// notification clock cannot be paused, so a paused pour shows text only.
