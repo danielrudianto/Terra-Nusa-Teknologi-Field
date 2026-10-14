@@ -1,18 +1,32 @@
 import 'dart:convert';
 
-/// '0.2.1' / '0.2.1+7' / 'v0.2' → [0, 2, 1] / [0, 2, 1] / [0, 2]. Unreadable = [0].
+/// `[major, minor, patch, build]` — ALWAYS four numbers, zero-filled.
 ///
-/// The same reading as `urai_versi` on the server: the build number after
-/// '+' is ignored and trailing zeros do not count, so 0.2 == 0.2.0.
+/// 'v1.0.1+14' → [1, 0, 1, 14] · '0.2' → [0, 2, 0, 0] · unreadable →
+/// [0, 0, 0, 0].
+///
+/// THE BUILD NUMBER COUNTS, as of 14 Oct 2026. It used to be dropped along
+/// with everything after '+', so 1.0.0+10 and 1.0.0+13 read the SAME and a
+/// release that only raised the build number could not be forced.
+///
+/// MUST STAY IDENTICAL to `urai_versi` on the server, down to the
+/// zero-filling. The server answers 426 by its own reading, and the phone
+/// decides by this one whether to show the update screen — disagree, and the
+/// phone that the server refuses hides the screen that explains why, leaving
+/// the crew with a sync that fails in silence.
 List<int> parseVersion(String? text) {
-  final core = (text ?? '').trim().replaceFirst(RegExp('^[vV]'), '').split('+').first.split('-').first;
+  final trimmed = (text ?? '').trim().replaceFirst(RegExp('^[vV]'), '');
+  final plus = trimmed.indexOf('+');
+  final core = (plus < 0 ? trimmed : trimmed.substring(0, plus)).split('-').first;
+  final buildText = plus < 0 ? '' : trimmed.substring(plus + 1).split('-').first;
   final parts = [
     for (final p in core.split('.')) int.tryParse(p.replaceAll(RegExp(r'\D'), '')) ?? 0,
   ];
-  while (parts.length > 1 && parts.last == 0) {
-    parts.removeLast();
+  while (parts.length < 3) {
+    parts.add(0);
   }
-  return parts.isEmpty ? [0] : parts;
+  final digits = buildText.replaceAll(RegExp(r'\D'), '');
+  return [parts[0], parts[1], parts[2], int.tryParse(digits) ?? 0];
 }
 
 /// Negative when [a] is older than [b], 0 when equal, positive when newer.
@@ -20,8 +34,8 @@ List<int> parseVersion(String? text) {
 int compareVersions(String? a, String? b) {
   final x = parseVersion(a);
   final y = parseVersion(b);
-  for (var i = 0; i < x.length || i < y.length; i++) {
-    final d = (i < x.length ? x[i] : 0) - (i < y.length ? y[i] : 0);
+  for (var i = 0; i < x.length; i++) {
+    final d = x[i] - y[i];
     if (d != 0) return d;
   }
   return 0;
