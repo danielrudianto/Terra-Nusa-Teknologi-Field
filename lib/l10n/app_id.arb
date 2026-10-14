@@ -187,7 +187,7 @@
   "@notifTitle": {
     "description": "Halaman Pengaturan: notifTitle"
   },
-  "notifOn": "Aktif. HP bergetar saat TM lebih dari 20 menit dan selama cor dijeda.",
+  "notifOn": "Aktif. HP bergetar saat TM lebih dari 20 menit dan selama cor dijeda. Jam tangan yang sudah terhubung ke HP ikut menerima pengingat dan tombol Selesai TM — tanpa setelan tambahan di sini.",
   "@notifOn": {
     "description": "Halaman Pengaturan: notifOn"
   },

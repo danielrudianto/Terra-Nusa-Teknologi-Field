@@ -60,7 +60,7 @@
   "projectsMissingTitle": "No project list on this phone yet",
   "projectsMissingBody": "Pull down on Home to fetch it from the server. Signal is needed once only.",
   "notifTitle": "Vibrating reminders",
-  "notifOn": "On. The phone vibrates when a truck passes 20 minutes and while a pour is paused.",
+  "notifOn": "On. The phone buzzes when a truck passes 20 minutes and while a pour is paused. A watch already paired to the phone receives the reminders and the Finish truck button too — no extra setting here.",
   "notifOff": "Off. Tap to allow; without it the casting reminders never appear.",
   "powerTitle": "Battery & auto-start",
   "powerOk": "Unrestricted. Reminders and auto-send keep running with the screen off.",
