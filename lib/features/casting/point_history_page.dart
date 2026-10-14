@@ -61,21 +61,37 @@ class PointHistoryPage extends ConsumerWidget {
 
   Widget _isi(BuildContext context, Map<String, Object?> d) {
     final w = context.colors;
+    final titik = ((d['titik'] as Map?) ?? const {}).cast<String, Object?>();
     final castings = (d['castings'] as List?) ?? const [];
     final jejak = (d['jejak'] as List?) ?? const [];
+    final dikonfirmasi = titik['checkedAt'] == null
+        ? null
+        : DateTime.tryParse('${titik['checkedAt']}');
     return ListView(
       padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 40),
       children: [
+        // Titik yang sudah dikonfirmasi tidak dapat lagi dibetulkan dari
+        // mana pun. Itu harus terbaca sebelum angka-angkanya, bukan sesudah
+        // orang mencoba mengubah sesuatu dan ditolak tanpa sebab yang jelas.
+        if (dikonfirmasi != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: TerraBanner(
+              kind: BannerKind.ok,
+              icon: Icons.verified,
+              title: t(context).pointConfirmedTitle,
+              body: t(context).pointConfirmedBody(
+                titik['checkedByName']?.toString() ?? t(context).colleague,
+                '${longDate(dikonfirmasi)} ${formatTime(dikonfirmasi)}',
+              ),
+            ),
+          ),
         if (castings.isEmpty)
           EmptyState(message: t(context).pointHistoryNoCasting)
         else
           for (final c in castings) _KartuCor(cor: (c as Map).cast<String, Object?>()),
         if (jejak.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.only(top: 18, bottom: 8),
-            child: Text(t(context).pointHistoryTrail,
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: w.ink)),
-          ),
+          _JudulBagian(t(context).pointHistoryTrail),
           for (final j in jejak) _BarisJejak(jejak: (j as Map).cast<String, Object?>()),
         ],
       ],
@@ -95,6 +111,11 @@ class _KartuCor extends StatelessWidget {
     final h = ((cor['hitungan'] as Map?) ?? const {}).cast<String, Object?>();
     final tm = ((cor['trucks'] as List?) ?? const []).map((x) => (x as Map).cast<String, Object?>()).toList()
       ..sort((a, b) => (toIntOrNull(a['seq']) ?? 0).compareTo(toIntOrNull(b['seq']) ?? 0));
+    final perTm = <int, Map<String, Object?>>{
+      for (final x in ((h['perTm'] as List?) ?? const []))
+        (toIntOrNull((x as Map)['seq']) ?? 0): x.cast<String, Object?>(),
+    };
+    final tremie = ((h['tremieRingkas'] as Map?) ?? const {}).cast<String, Object?>();
     final dihapus = cor['isDelete'] == true || cor['isDelete'] == 1;
     final dariKantor = '${cor['source']}' == 'kantor';
     final volume = toDoubleOrNull(h['volumeAktualM3']);
@@ -145,7 +166,12 @@ class _KartuCor extends StatelessWidget {
                 '${h['selesaiCor'] == null ? '…' : formatTime(DateTime.parse('${h['selesaiCor']}'))}'),
           if (tm.isNotEmpty) ...[
             const Divider(height: 22),
-            for (final t0 in tm) _BarisTm(tm: t0),
+            for (final t0 in tm)
+              _BarisTm(tm: t0, hitung: perTm[toIntOrNull(t0['seq']) ?? 0]),
+          ],
+          if ((toIntOrNull(tremie['jumlahSegmen']) ?? 0) > 0) ...[
+            const Divider(height: 22),
+            _SusunanTremie(ringkas: tremie),
           ],
           if (cor['note'] != null && '${cor['note']}'.trim().isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -159,9 +185,15 @@ class _KartuCor extends StatelessWidget {
 
 /// Satu TM di dalam kartu log cor.
 class _BarisTm extends StatelessWidget {
-  const _BarisTm({required this.tm});
+  const _BarisTm({required this.tm, this.hitung});
 
   final Map<String, Object?> tm;
+
+  /// Baris `perTm` dari server untuk TM ini, bila ada: tertanamnya ujung
+  /// tremie dihitung di SANA, bukan di sini. Dua tempat yang menghitungnya
+  /// sendiri-sendiri akan berselisih justru pada log yang sudah dikoreksi
+  /// kantor — dan yang memeriksa tidak punya cara tahu mana yang benar.
+  final Map<String, Object?>? hitung;
 
   @override
   Widget build(BuildContext context) {
@@ -188,13 +220,14 @@ class _BarisTm extends StatelessWidget {
                     if (tm['slumpCm'] != null) t(context).slumpOf(_angka(toDoubleOrNull(tm['slumpCm']) ?? 0, 1)),
                     if (tm['truckNo'] != null) '${tm['truckNo']}',
                   ].join(' · '),
-                  style: TextStyle(color: w.ink, fontSize: 13.5, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: w.ink, fontWeight: FontWeight.w600),
                 ),
                 if (mulai != null)
                   Text(
                     '${formatTime(mulai)} – ${selesai == null ? '…' : formatTime(selesai)}',
-                    style: TextStyle(color: w.muted, fontSize: 12.5),
+                    style: TextStyle(color: w.muted, fontSize: 13),
                   ),
+                if (hitung != null) _Tertanam(hitung: hitung!),
               ],
             ),
           ),
@@ -231,10 +264,10 @@ class _BarisJejak extends StatelessWidget {
                     if (siapa != null) siapa,
                     if (kapan != null) '${longDate(kapan)} ${formatTime(kapan)}',
                   ].join(' · '),
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5, color: w.ink),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: w.ink),
                 ),
                 if (jejak['note'] != null)
-                  Text('${jejak['note']}', style: TextStyle(color: w.muted, fontSize: 12.5, height: 1.35)),
+                  Text('${jejak['note']}', style: TextStyle(color: w.muted, fontSize: 13, height: 1.35)),
               ],
             ),
           ),
@@ -244,6 +277,91 @@ class _BarisJejak extends StatelessWidget {
   }
 }
 
+/// Tertanamnya ujung bawah tremie, sebelum dan sesudah satu TM.
+///
+/// Dua baris label-nilai seperti di kartu TM pada form cor, bukan bentuk
+/// sendiri: yang memeriksa membaca dua layar itu bergantian.
+///
+/// Diwarnai, bukan hanya ditulis — yang memeriksa sedang menyisir puluhan TM
+/// dan tidak akan membandingkan tiap angka dengan ambang di kepalanya.
+class _Tertanam extends StatelessWidget {
+  const _Tertanam({required this.hitung});
+
+  final Map<String, Object?> hitung;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final awal = toDoubleOrNull(hitung['terbenamAwalM']);
+    final akhir = toDoubleOrNull(hitung['terbenamAkhirM']);
+    if (awal == null && akhir == null) return const SizedBox.shrink();
+    final warna = switch (hitung['terbenamStatus']?.toString()) {
+      'kurang' => w.badFg,
+      'lebih' => w.warnFg,
+      _ => null,
+    };
+    return Column(
+      children: [
+        if (awal != null)
+          _Baris(t(context).embedBeforeLabel, '${_angka(awal)} m', warna: warna),
+        if (akhir != null)
+          _Baris(t(context).embedAfterLabel, '${_angka(akhir)} m', warna: warna),
+      ],
+    );
+  }
+}
+
+/// Susunan tremie satu log cor: berapa batang, panjang masing-masing, dan
+/// yang mana sudah dicabut setelah TM ke berapa.
+///
+/// Angka "Tremie terpasang 28,3 m" saja tidak dapat dibantah maupun
+/// dibenarkan oleh siapa pun yang tidak ada di lokasi. Susunannya bisa.
+class _SusunanTremie extends StatelessWidget {
+  const _SusunanTremie({required this.ringkas});
+
+  final Map<String, Object?> ringkas;
+
+  @override
+  Widget build(BuildContext context) {
+    final segmen = ((ringkas['segmen'] as List?) ?? const [])
+        .map((x) => (x as Map).cast<String, Object?>())
+        .toList();
+    final jarak = toDoubleOrNull(ringkas['jarakBottomM']);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _JudulBagian(
+          t(context).tremieSection,
+          t(context).tremieSummary(
+            segmen.length,
+            _angka(toDoubleOrNull(ringkas['totalPanjangM']) ?? 0, 1),
+            jarak == null ? '-' : '${_angka(jarak, 2)} m',
+          ),
+        ),
+        // Dari paling bawah ke atas, sama dengan urutan pemasangannya di
+        // lapangan — supaya yang membaca dapat mencocokkannya dengan apa
+        // yang ia ingat menyusunnya.
+        for (final sg in segmen)
+          _Baris(
+            [
+              '#${sg['posisi']}',
+              if (sg['jenis'] == 'bottom') t(context).tremieBottomTitle,
+            ].join(' · '),
+            [
+              '${_angka(toDoubleOrNull(sg['panjangM']) ?? 0, 1)} m',
+              sg['dicabutSetelahTm'] == null
+                  ? t(context).tremieStillFitted
+                  : t(context).tremiePulledAfter(toIntOrNull(sg['dicabutSetelahTm']) ?? 0),
+            ].join(' · '),
+          ),
+      ],
+    );
+  }
+}
+
+/// Baris label-nilai. Gayanya DISALIN dari `value()` di `casting_form.dart`
+/// — padding, ukuran, dan tebalnya sama persis, supaya layar ini tidak
+/// terbaca sebagai aplikasi lain.
 class _Baris extends StatelessWidget {
   const _Baris(this.label, this.value, {this.warna});
 
@@ -255,12 +373,36 @@ class _Baris extends StatelessWidget {
   Widget build(BuildContext context) {
     final w = context.colors;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
           Expanded(child: Text(label, style: TextStyle(color: w.muted, fontSize: 13))),
-          Text(value,
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: warna ?? w.ink)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w600, color: warna ?? w.ink)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Judul bagian. Gayanya DISALIN dari `_SectionTitle` di `casting_form.dart`;
+/// bedanya hanya `body` boleh kosong, sebab tidak setiap bagian di sini
+/// punya kalimat penjelas.
+class _JudulBagian extends StatelessWidget {
+  const _JudulBagian(this.title, [this.body]);
+
+  final String title;
+  final String? body;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: w.ink)),
+          if (body != null) Text(body!, style: TextStyle(color: w.muted, fontSize: 13)),
         ],
       ),
     );

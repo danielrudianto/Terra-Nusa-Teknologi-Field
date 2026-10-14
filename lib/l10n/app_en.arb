@@ -866,5 +866,65 @@
   "castStartEnd": "Casting start – end",
   "@castStartEnd": {
     "description": "Label of the casting start and end time"
+  },
+  "drillLogNotClosed": "Log still open",
+  "@drillLogNotClosed": {
+    "description": "Badge on a drilling row whose hole is drilled but whose drill log was reopened and never closed again"
+  },
+  "embedBeforeLabel": "Embedment before",
+  "@embedBeforeLabel": {
+    "description": "Tremie embedment in fresh concrete before this truck is poured"
+  },
+  "embedAfterLabel": "Embedment after",
+  "@embedAfterLabel": {
+    "description": "Tremie embedment in fresh concrete after this truck is poured"
+  },
+  "tremieSummary": "{n} sections · {total} m · bottom end {gap} above the hole bottom",
+  "@tremieSummary": {
+    "description": "One-line summary of the tremie string",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieStillFitted": "still fitted",
+  "@tremieStillFitted": {
+    "description": "A tremie section that was never pulled out"
+  },
+  "tremiePulledAfter": "pulled after truck {seq}",
+  "@tremiePulledAfter": {
+    "description": "When a tremie section was removed",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "pointConfirmedTitle": "Point confirmed",
+  "@pointConfirmedTitle": {
+    "description": "Banner title on a point whose drilling and casting have been confirmed"
+  },
+  "pointConfirmedBody": "Confirmed by {who}, {when}. The drilling and casting data of this point can no longer be changed until the confirmation is reopened from the office.",
+  "@pointConfirmedBody": {
+    "description": "Who confirmed the point and when, and what that means",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonTitikDikonfirmasi": "This point has been confirmed by the office — ask them to reopen the confirmation first",
+  "@reasonTitikDikonfirmasi": {
+    "description": "Server rejected the push because the point is already confirmed"
   }
 }

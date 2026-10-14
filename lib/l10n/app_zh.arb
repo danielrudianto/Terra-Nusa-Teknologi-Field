@@ -866,5 +866,65 @@
   "castStartEnd": "浇筑起止",
   "@castStartEnd": {
     "description": "Label of the casting start and end time"
+  },
+  "drillLogNotClosed": "记录未关闭",
+  "@drillLogNotClosed": {
+    "description": "Badge on a drilling row whose hole is drilled but whose drill log was reopened and never closed again"
+  },
+  "embedBeforeLabel": "浇筑前埋深",
+  "@embedBeforeLabel": {
+    "description": "Tremie embedment in fresh concrete before this truck is poured"
+  },
+  "embedAfterLabel": "浇筑后埋深",
+  "@embedAfterLabel": {
+    "description": "Tremie embedment in fresh concrete after this truck is poured"
+  },
+  "tremieSummary": "{n} 节 · {total} m · 下端距孔底 {gap}",
+  "@tremieSummary": {
+    "description": "One-line summary of the tremie string",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieStillFitted": "仍在孔内",
+  "@tremieStillFitted": {
+    "description": "A tremie section that was never pulled out"
+  },
+  "tremiePulledAfter": "第 {seq} 车后拔出",
+  "@tremiePulledAfter": {
+    "description": "When a tremie section was removed",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "pointConfirmedTitle": "桩点已确认",
+  "@pointConfirmedTitle": {
+    "description": "Banner title on a point whose drilling and casting have been confirmed"
+  },
+  "pointConfirmedBody": "由 {who} 于 {when} 确认。在办公室撤销确认前，本桩点的钻孔和浇筑数据不可更改。",
+  "@pointConfirmedBody": {
+    "description": "Who confirmed the point and when, and what that means",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonTitikDikonfirmasi": "该桩点已由办公室确认——请先请办公室撤销确认",
+  "@reasonTitikDikonfirmasi": {
+    "description": "Server rejected the push because the point is already confirmed"
   }
 }

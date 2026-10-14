@@ -112,7 +112,13 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     // saat operator membutuhkannya — dan GS diketik dari ingatan berjam-jam
     // kemudian. Satu GS yang meleset menggeser semua turunannya: panjang bor
     // rencana, kedalaman cut-off, volume teoritis, lalu overbreak.
-    if (_groundLevel == null && !_finished && !_handedAway && _pilePoint!['status'] != 'sudah_cor') {
+    // Titik terkonfirmasi tidak dimintai GS: tidak ada yang boleh ditulis
+    // lagi di situ, jadi dialognya cuma menghalangi orang membaca.
+    if (_groundLevel == null &&
+        !_finished &&
+        !_handedAway &&
+        _pilePoint!['checkedAt'] == null &&
+        _pilePoint!['status'] != 'sudah_cor') {
       await _mintaGs(pertamaKali: true);
     }
     // Handed over: the colleague's phone buzzes now, not this one.
@@ -385,9 +391,12 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     final w = context.colors;
     final readings = _readings;
     final cast = _pilePoint!['status'] == 'sudah_cor';
+    // Titik yang sudah dikonfirmasi kantor: server menolak setiap kiriman
+    // untuk log bor ini (TITIK_DIKONFIRMASI), jadi layarnya hanya dibaca.
+    final dikonfirmasi = _pilePoint!['checkedAt'] != null;
     // Tanpa GS tidak ada yang boleh dicatat: itulah arti "GS wajib dulu".
-    final canEdit = !_finished && !cast && !_handedAway && _groundLevel != null;
-    final canOffer = _row != null && !_finished && !cast && !_handedAway;
+    final canEdit = !_finished && !cast && !dikonfirmasi && !_handedAway && _groundLevel != null;
+    final canOffer = _row != null && !_finished && !cast && !dikonfirmasi && !_handedAway;
 
     return Scaffold(
       appBar: AppBar(

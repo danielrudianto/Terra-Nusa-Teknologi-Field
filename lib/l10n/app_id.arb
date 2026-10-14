@@ -4662,5 +4662,65 @@
   "castStartEnd": "Mulai – selesai cor",
   "@castStartEnd": {
     "description": "Label of the casting start and end time"
+  },
+  "drillLogNotClosed": "Log belum ditutup",
+  "@drillLogNotClosed": {
+    "description": "Badge on a drilling row whose hole is drilled but whose drill log was reopened and never closed again"
+  },
+  "embedBeforeLabel": "Tertanam awal",
+  "@embedBeforeLabel": {
+    "description": "Tremie embedment in fresh concrete before this truck is poured"
+  },
+  "embedAfterLabel": "Tertanam akhir",
+  "@embedAfterLabel": {
+    "description": "Tremie embedment in fresh concrete after this truck is poured"
+  },
+  "tremieSummary": "{n} batang · {total} m · ujung bawah {gap} di atas dasar lubang",
+  "@tremieSummary": {
+    "description": "One-line summary of the tremie string",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieStillFitted": "masih terpasang",
+  "@tremieStillFitted": {
+    "description": "A tremie section that was never pulled out"
+  },
+  "tremiePulledAfter": "dicabut setelah TM {seq}",
+  "@tremiePulledAfter": {
+    "description": "When a tremie section was removed",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "pointConfirmedTitle": "Titik sudah dikonfirmasi",
+  "@pointConfirmedTitle": {
+    "description": "Banner title on a point whose drilling and casting have been confirmed"
+  },
+  "pointConfirmedBody": "Dikonfirmasi {who}, {when}. Data bor dan cor titik ini tidak dapat diubah lagi sampai konfirmasinya dibuka dari kantor.",
+  "@pointConfirmedBody": {
+    "description": "Who confirmed the point and when, and what that means",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonTitikDikonfirmasi": "Titik ini sudah dikonfirmasi kantor — minta kantor membuka konfirmasinya dulu",
+  "@reasonTitikDikonfirmasi": {
+    "description": "Server rejected the push because the point is already confirmed"
   }
 }

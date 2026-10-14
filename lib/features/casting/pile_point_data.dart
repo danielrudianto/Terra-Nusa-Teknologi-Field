@@ -62,6 +62,18 @@ class FieldPilePoint {
   int? get castingHolderId => toIntOrNull(server['castingHolderID']);
   String? get castingHolderName => server['castingHolderName']?.toString();
 
+  /// Titik yang sudah DIKONFIRMASI kantor: bor dan cornya dinyatakan benar,
+  /// dan server menolak kiriman apa pun untuknya (`TITIK_DIKONFIRMASI`).
+  ///
+  /// Dibaca di layar untuk menutup tombol-tombolnya. Tanpa ini QS menekan
+  /// "Mulai log cor" atau menambah bacaan bor, kirimannya ditolak jauh
+  /// kemudian saat sinkron, dan yang ia lihat cuma dokumen merah di antrean
+  /// tanpa sebab yang dapat ia perbaiki sendiri.
+  DateTime? get checkedAt =>
+      server['checkedAt'] == null ? null : DateTime.tryParse('${server['checkedAt']}');
+  String? get checkedByName => server['checkedByName']?.toString();
+  bool get isChecked => checkedAt != null;
+
   // -------------------------------------------------------------------
   // Kemajuan titik yang sedang dikerjakan HP lain
   // -------------------------------------------------------------------

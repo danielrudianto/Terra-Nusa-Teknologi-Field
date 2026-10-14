@@ -375,9 +375,22 @@ class _ProjectCard extends StatelessWidget {
                   if (x['operatorName'] != null) t(context).operatorShort('${x['operatorName']}'),
                   if (x['byName'] != null) '${x['byName']}',
                 ].where((s) => s.isNotEmpty).join(' · '),
+                // Dua pertanyaan yang berbeda, dan lencananya menjawab
+                // keduanya. Lubangnya sudah jadi belum -> status TITIK.
+                // Lognya sudah ditutup belum -> status LOG. Log yang dibuka
+                // lagi untuk membetulkan satu bacaan tidak membatalkan lubang
+                // yang sudah dibor, jadi titik yang sedang dicor tidak boleh
+                // lagi muncul sebagai "Sedang dibor".
                 badge: x['status'] == 'selesai'
                     ? StatusBadge(text: t(context).statusDone, bg: w.okBg, fg: w.okFg)
-                    : StatusBadge(text: t(context).stageDrilling, bg: w.warnBg, fg: w.warnFg),
+                    : (x['pointStatus'] == 'sudah_bor' || x['pointStatus'] == 'sudah_cor')
+                        ? StatusBadge(
+                            text: t(context).drillLogNotClosed,
+                            bg: w.infoBg,
+                            fg: w.infoFg,
+                            icon: Icons.lock_open,
+                          )
+                        : StatusBadge(text: t(context).stageDrilling, bg: w.warnBg, fg: w.warnFg),
               ),
           ],
           if (casting.isNotEmpty) ...[

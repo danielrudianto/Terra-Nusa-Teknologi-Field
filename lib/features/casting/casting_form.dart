@@ -1957,14 +1957,37 @@ class _TruckCard extends StatelessWidget {
       depthAfterM: toDoubleOrNull(truck['concreteDepthAfterM']),
     );
 
-    Widget value(String label, String body, {VoidCallback? onTap, bool edited = false}) => InkWell(
+    // Tertanamnya ujung bawah tremie di beton segar, sebelum dan sesudah TM
+    // ini. Ujung tremie SELAMA TM ini memakai cabutan sampai TM sebelumnya:
+    // segmen yang dicabut setelah TM ini belum terangkat waktu betonnya
+    // dituang, jadi memakainya akan melaporkan tertanam yang tidak pernah
+    // ada.
+    //
+    // Dua angka, bukan satu. Yang sebelum menjawab "apakah ujungnya masih
+    // cukup dalam waktu beton ini mulai masuk"; yang sesudah menjawab
+    // "apakah sekarang sudah terlalu dalam sehingga perlu dicabut". Satu
+    // angka saja menyembunyikan salah satu dari dua kegagalan yang berbeda.
+    const batasTanam = EmbedmentLimits();
+    final tremieBottom = castingState.tremieBottomAfter(seq - 1);
+    final soundingSebelum = toDoubleOrNull(truck['concreteDepthBeforeM']);
+    final soundingSesudah = toDoubleOrNull(truck['concreteDepthAfterM']);
+    final tertanamAwal = soundingSebelum == null ? null : tremieBottom - soundingSebelum;
+    final tertanamAkhir = soundingSesudah == null ? null : tremieBottom - soundingSesudah;
+    Color? warnaTanam(double? v) {
+      if (v == null) return null;
+      if (v < batasTanam.minimumM - 0.005) return w.badFg;
+      if (v > batasTanam.maximumM + 0.005) return w.warnFg;
+      return null;
+    }
+
+    Widget value(String label, String body, {VoidCallback? onTap, bool edited = false, Color? warna}) => InkWell(
           onTap: locked ? null : onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(
               children: [
                 Expanded(child: Text(label, style: TextStyle(color: w.muted, fontSize: 13))),
-                Text(body, style: TextStyle(fontWeight: FontWeight.w600, color: w.ink)),
+                Text(body, style: TextStyle(fontWeight: FontWeight.w600, color: warna ?? w.ink)),
                 if (edited) Padding(padding: const EdgeInsets.only(left: 4), child: Icon(Icons.edit, size: 13, color: w.warnFg)),
                 if (onTap != null && !locked) Icon(Icons.chevron_right, size: 16, color: w.faint),
               ],
@@ -2023,6 +2046,10 @@ class _TruckCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           value(t(context).tremieFitted, '${_decimal(truck['tremieLengthM'])} m'),
+          if (tertanamAwal != null)
+            value(t(context).embedBeforeLabel, formatMeters(tertanamAwal), warna: warnaTanam(tertanamAwal)),
+          if (tertanamAkhir != null)
+            value(t(context).embedAfterLabel, formatMeters(tertanamAkhir), warna: warnaTanam(tertanamAkhir)),
           value(t(context).start, start == null ? '–' : formatTime(start), onTap: start == null ? null : onEditStart, edited: truck['startEdited'] == true),
           value(t(context).finish, end == null ? '–' : formatTime(end), onTap: end == null ? null : onEditEnd, edited: truck['endEdited'] == true),
           if (pauses.isNotEmpty) ...[

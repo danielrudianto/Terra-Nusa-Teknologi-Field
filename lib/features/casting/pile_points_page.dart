@@ -239,9 +239,19 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
   /// Tanpa ini, satu-satunya cara melihat kemajuan terbaru adalah menutup
   /// lembarnya, menarik daftarnya, lalu membukanya lagi — tiga langkah untuk
   /// satu pertanyaan yang ditanyakan berkali-kali dalam sehari.
-  Future<void> _segarkanLembar(void Function(void Function()) ulang) async {
+  /// Tarik dari server. TIDAK membangun ulang lembarnya sendiri: lembarnya
+  /// berlangganan lewat `Consumer`, jadi ia memperbarui diri begitu datanya
+  /// benar-benar sampai.
+  ///
+  /// Dulu di sini ada `ulang(() {})` sesudah `run()`. Itu membangun ulang
+  /// lembar SEBELUM stream drift mengantar baris barunya — jadi lembarnya
+  /// digambar ulang dengan data lama, dan karena `ref.read` tidak
+  /// berlangganan apa pun, ia tidak pernah dibangun ulang lagi ketika
+  /// datanya tiba. Tombol muat ulang tampak tidak melakukan apa-apa, dan
+  /// titik yang dikerjakan HP lain menampilkan pemegang serta kemajuan yang
+  /// sudah basi sampai lembarnya ditutup dan dibuka lagi.
+  Future<void> _segarkanLembar() async {
     await ref.read(syncProvider.notifier).run(diminta: true);
-    if (mounted) ulang(() {});
   }
 
   Future<void> _showActions(FieldPilePoint awal) async {
@@ -249,7 +259,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     // Satu akun, satu HP: HP yang sudah digantikan dan lewat masa
     // tenggang hanya boleh mengirim sisa antreannya, tidak membuka
     // pekerjaan baru. Sebabnya terbaca di banner Beranda.
-    final allows = ref.watch(canRecordProvider) && (session?.allows('field_casting', 'create') ?? false);
+    final bolehCatat = ref.watch(canRecordProvider) && (session?.allows('field_casting', 'create') ?? false);
     final w = context.colors;
     // The log is missing from THIS phone but the server says this very account
     // holds it (another phone of his, or a reinstall). Nobody can read a
@@ -259,14 +269,19 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (c) => StatefulBuilder(
-        builder: (c, ulangLembar) {
-          // Titik dibaca ULANG dari provider tiap bangun: sesudah sinkron,
+      builder: (c) => Consumer(
+        builder: (c, ref, _) {
+          // Titik DIAWASI, bukan dibaca sekali: sesudah sinkron, pemegang dan
           // angka kemajuannya ikut baru tanpa lembarnya perlu ditutup.
-          final pt = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const <FieldPilePoint>[])
+          final pt = (ref.watch(fieldPilePointsProvider(widget.projectId)).value ?? const <FieldPilePoint>[])
                   .where((x) => x.uuid == awal.uuid)
                   .firstOrNull ??
               awal;
+          // Titik yang sudah dikonfirmasi kantor hanya boleh DIBACA. Server
+          // menolak seluruh kirimannya; membiarkan tombolnya hidup di sini
+          // berarti QS bekerja setengah jam lalu menemukan dokumennya merah
+          // di antrean, dengan sebab yang tidak dapat ia perbaiki sendiri.
+          final allows = bolehCatat && !pt.isChecked;
           final g = pt.geometry;
           final drilled = pt.isDrilled;
           final elsewhere = pt.castedElsewhere && pt.stage != 'sudah_cor';
@@ -298,7 +313,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   ),
                   IconButton(
                     tooltip: t(context).refresh,
-                    onPressed: () => _segarkanLembar(ulangLembar),
+                    onPressed: _segarkanLembar,
                     icon: const Icon(Icons.refresh),
                   ),
                 ],
@@ -318,6 +333,16 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   icon: Icons.terrain_outlined,
                   title: t(context).gsMissingTitle,
                   body: t(context).gsMissingBody,
+                ),
+              if (pt.isChecked)
+                TerraBanner(
+                  kind: BannerKind.ok,
+                  icon: Icons.verified,
+                  title: t(context).pointConfirmedTitle,
+                  body: t(context).pointConfirmedBody(
+                    pt.checkedByName ?? t(context).colleague,
+                    '${longDate(pt.checkedAt!)} ${formatTime(pt.checkedAt!)}',
+                  ),
                 ),
               if (elsewhere) ...[
                 TerraBanner(
