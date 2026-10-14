@@ -14,17 +14,30 @@ class CastingState {
   CastingState._({
     required this.geometry,
     required this.bottomGapM,
+    required this.tremieStartMeasured,
     required this.segments,
     required this.trucks,
   });
 
   factory CastingState.from(PileGeometry geometry, Map<String, Object?> doc) {
+    // Ujung bawah tremie saat mulai cor: DIUKUR bila ada, diturunkan dari
+    // celah bila tidak.
+    //
+    // Celahnya dulu diisi tangan sebagai asumsi dan seluruh angka tertanam
+    // berdiri di atasnya. Sejak 14 Okt 2026 QS mengukur kedalaman ujung
+    // tremie langsung, dan celahnya menjadi turunan. Log lama tidak punya
+    // kolomnya — angkanya tidak boleh bergeser hanya karena kolomnya
+    // bertambah, jadi jalur lamanya dipertahankan.
+    final diukur = toDoubleOrNull(doc['tremieDepthStartM']);
     return CastingState._(
       geometry: geometry,
+      tremieStartMeasured: diukur != null,
       // 1 m di atas dasar lubang (Daniel, 12 Okt 2026 — sebelumnya 0,30 m).
       // Log cor yang sudah ada menyimpan angkanya sendiri, jadi yang lama
       // tetap 0,30; hanya log baru yang mulai dari 1 m.
-      bottomGapM: toDoubleOrNull(doc['tremieBottomGapM']) ?? 1.00,
+      bottomGapM: diukur != null
+          ? geometry.bottomDepthM - diukur
+          : toDoubleOrNull(doc['tremieBottomGapM']) ?? 1.00,
       segments: [
         for (final s in (doc['tremie'] as List?) ?? const [])
           TremieSegment.fromJson((s as Map).cast<String, Object?>()),
@@ -36,7 +49,13 @@ class CastingState {
   }
 
   final PileGeometry geometry;
+
+  /// Celah ujung tremie di atas dasar lubang. DITURUNKAN dari kedalaman
+  /// tremie terukur bila ada; angka yang diisi tangan bila tidak.
   final double bottomGapM;
+
+  /// Celahnya datang dari kedalaman tremie yang DIUKUR, bukan dari asumsi.
+  final bool tremieStartMeasured;
 
   /// Ordered by position, 1 = BOTTOM-MOST.
   final List<TremieSegment> segments;

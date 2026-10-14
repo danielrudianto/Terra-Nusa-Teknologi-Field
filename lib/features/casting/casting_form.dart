@@ -1100,7 +1100,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         suppliersNarrowed: offer.narrowed,
         supplierId: toIntOrNull(_doc!['supplierID']),
         supplier: _doc!['supplierName']?.toString(),
-        gap: toDoubleOrNull(_doc!['tremieBottomGapM']) ?? 1.00,
+        bottomDepthM: _castingState.geometry.bottomDepthM,
+        tremieDepthStartM: toDoubleOrNull(_doc!['tremieDepthStartM']),
         note: _doc!['note']?.toString(),
       ),
     );
@@ -1112,6 +1113,23 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _finishCasting() async {
     final unsounded = _unsoundedTruck;
     if (unsounded != null && !await _askSoundingAfter(unsounded)) return;
+
+    // Dua angka yang hanya dapat diukur di lokasi, dan yang tanpanya seluruh
+    // angka tertanam log ini kosong selamanya. Ditahan DI SINI, bukan
+    // dibiarkan ditolak server sesudah QS pulang: yang menolak nanti tidak
+    // dapat lagi menurunkan meteran ke dalam lubang.
+    if (toDoubleOrNull(_doc!['tremieDepthStartM']) == null) {
+      if (mounted) showSnack(context, t(context).tremieDepthNeeded);
+      return;
+    }
+    final pertama = _trucks.isEmpty
+        ? null
+        : _trucks.reduce((a, b) => (toIntOrNull(a['seq']) ?? 0) <= (toIntOrNull(b['seq']) ?? 0) ? a : b);
+    if (pertama != null && toDoubleOrNull(pertama['concreteDepthBeforeM']) == null) {
+      if (mounted) showSnack(context, t(context).soundingBeforeNeeded);
+      return;
+    }
+
     final k = _castingState;
     final last = k.lastSeq;
     final level = k.concreteAfter(last);
@@ -1971,7 +1989,19 @@ class _TruckCard extends StatelessWidget {
     final tremieBottom = castingState.tremieBottomAfter(seq - 1);
     final soundingSebelum = toDoubleOrNull(truck['concreteDepthBeforeM']);
     final soundingSesudah = toDoubleOrNull(truck['concreteDepthAfterM']);
-    final tertanamAwal = soundingSebelum == null ? null : tremieBottom - soundingSebelum;
+    // Muka beton SEBELUM TM ini: soundingnya sendiri bila ada, kalau tidak
+    // keadaan sesudah TM sebelumnya.
+    //
+    // QS menyounding sesudah menuang, bukan sebelum; memakai soundingnya
+    // sendiri saja membuat baris ini kosong di hampir setiap TM. `concreteAfter`
+    // memulangkan sounding TM sebelumnya bila ada, dan menaksir dari volume
+    // bila tidak — taksiran itu DITANDAI "(perkiraan)", seperti di seluruh
+    // layar ini. TM #1 tidak punya tertanam awal sama sekali: belum ada beton.
+    final mukaSebelum = seq > 1 ? castingState.concreteAfter(seq - 1) : null;
+    final tertanamAwal = soundingSebelum != null
+        ? tremieBottom - soundingSebelum
+        : (mukaSebelum == null ? null : tremieBottom - mukaSebelum.depthM);
+    final awalPerkiraan = soundingSebelum == null && mukaSebelum != null && !mukaSebelum.measured;
     final tertanamAkhir = soundingSesudah == null ? null : tremieBottom - soundingSesudah;
     Color? warnaTanam(double? v) {
       if (v == null) return null;
@@ -2047,7 +2077,11 @@ class _TruckCard extends StatelessWidget {
           const SizedBox(height: 6),
           value(t(context).tremieFitted, '${_decimal(truck['tremieLengthM'])} m'),
           if (tertanamAwal != null)
-            value(t(context).embedBeforeLabel, formatMeters(tertanamAwal), warna: warnaTanam(tertanamAwal)),
+            value(
+              t(context).embedBeforeLabel,
+              '${formatMeters(tertanamAwal)}${awalPerkiraan ? t(context).estimateSuffix : ''}',
+              warna: warnaTanam(tertanamAwal),
+            ),
           if (tertanamAkhir != null)
             value(t(context).embedAfterLabel, formatMeters(tertanamAkhir), warna: warnaTanam(tertanamAkhir)),
           value(t(context).start, start == null ? '–' : formatTime(start), onTap: start == null ? null : onEditStart, edited: truck['startEdited'] == true),
@@ -2725,7 +2759,8 @@ class _HeaderSheet extends StatefulWidget {
     required this.suppliersNarrowed,
     required this.supplierId,
     required this.supplier,
-    required this.gap,
+    required this.bottomDepthM,
+    required this.tremieDepthStartM,
     required this.note,
   });
 
@@ -2739,7 +2774,12 @@ class _HeaderSheet extends StatefulWidget {
   final List<Map<String, Object?>> suppliers;
   final int? supplierId;
   final String? supplier;
-  final double gap;
+
+  /// Dasar lubang dari GS. Celahnya dihitung dari sini, tidak diisi tangan.
+  final double bottomDepthM;
+
+  /// Kedalaman ujung bawah tremie dari GS, hasil ukur. Kosong = belum diukur.
+  final double? tremieDepthStartM;
   final String? note;
 
   @override
@@ -2749,7 +2789,8 @@ class _HeaderSheet extends StatefulWidget {
 class _HeaderSheetState extends State<_HeaderSheet> {
   late final _grade = TextEditingController(text: widget.grade == null ? '' : _decimal(widget.grade, d: 1));
   late final _supplier = TextEditingController(text: widget.supplier ?? '');
-  late final _gap = TextEditingController(text: _decimal(widget.gap));
+  late final _gap = TextEditingController(
+      text: widget.tremieDepthStartM == null ? '' : _decimal(widget.tremieDepthStartM));
   late final _note = TextEditingController(text: widget.note ?? '');
   String? _error;
 
@@ -2772,9 +2813,18 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       setState(() => _error = "Mutu fc' tidak masuk akal.");
       return;
     }
-    final gap = parseNumber(_gap.text);
-    if (gap == null || gap < 0 || gap > 1) {
-      setState(() => _error = t(context).gapInvalid1m);
+    // DIUKUR, bukan diasumsikan: yang diisi QS adalah kedalaman ujung bawah
+    // tremie dari GS, dan celahnya dihitung. Dua angka yang menyatakan hal
+    // yang sama, dua-duanya diisi tangan, pasti berselisih suatu saat — dan
+    // tidak ada aturan yang menentukan mana yang dipakai hitungan.
+    final dalam = parseNumber(_gap.text);
+    if (dalam == null) {
+      setState(() => _error = t(context).tremieDepthRequired);
+      return;
+    }
+    final gap = widget.bottomDepthM - dalam;
+    if (gap < -0.005 || gap > 1.005) {
+      setState(() => _error = t(context).tremieDepthInvalid(formatMeters(widget.bottomDepthM)));
       return;
     }
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
@@ -2784,7 +2834,10 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       // Picked from the list: id + its name. Typed: name only.
       'supplierID': picked == null ? null : toIntOrNull(picked['id']),
       'supplierName': picked == null ? orNull(_supplier) : '${picked['name']}',
-      'tremieBottomGapM': decimalText(gap),
+      'tremieDepthStartM': decimalText(dalam),
+      // Celahnya ikut dikirim: server lama tidak mengenal kolom terukurnya,
+      // dan hitungannya mundur ke sini.
+      'tremieBottomGapM': decimalText(gap < 0 ? 0 : gap),
       'note': orNull(_note),
     });
   }
@@ -2838,11 +2891,11 @@ class _HeaderSheetState extends State<_HeaderSheet> {
             TextField(
               controller: _gap,
               keyboardType: numeric,
-              inputFormatters: decimalInput(maxIntDigits: 1),
+              inputFormatters: decimalInput(maxIntDigits: 3),
               decoration: InputDecoration(
-                labelText: t(context).tremieGapField,
+                labelText: t(context).tremieDepthField,
                 suffixText: 'm',
-                helperText: t(context).gapFieldHint,
+                helperText: t(context).tremieDepthHint(formatMeters(widget.bottomDepthM)),
                 helperMaxLines: 2,
               ),
             ),

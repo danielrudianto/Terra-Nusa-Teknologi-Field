@@ -41,6 +41,9 @@ void main() {
   group('planTruck', () {
     test('D1000, 7 m³: one cut of 1+2 m after 4.9 m³', () {
       final r = planTruck(
+        // Dipatok ke 6 m, ambang yang dipakai prototipe asal angka-angka
+        // di uji ini. Ambang yang BERLAKU diuji di grup `EmbedmentLimits`.
+        limits: const EmbedmentLimits(maximumM: 6.0),
         diameterMm: 1000,
         tremieBottomM: 19.7,
         segments: _segments([3, 3, 3, 3, 3, 3, 2, 1]),
@@ -63,6 +66,9 @@ void main() {
 
     test('D800, 7 m³: three cuts', () {
       final r = planTruck(
+        // Dipatok ke 6 m, ambang yang dipakai prototipe asal angka-angka
+        // di uji ini. Ambang yang BERLAKU diuji di grup `EmbedmentLimits`.
+        limits: const EmbedmentLimits(maximumM: 6.0),
         diameterMm: 800,
         tremieBottomM: 19.7,
         segments: _segments([3, 3, 3, 3, 3, 3, 2, 1]),
@@ -80,6 +86,9 @@ void main() {
 
     test('concrete stops at the cut-off', () {
       final r = planTruck(
+        // Dipatok ke 6 m, ambang yang dipakai prototipe asal angka-angka
+        // di uji ini. Ambang yang BERLAKU diuji di grup `EmbedmentLimits`.
+        limits: const EmbedmentLimits(maximumM: 6.0),
         diameterMm: 600,
         tremieBottomM: 3.0,
         segments: _segments([3, 1]),
@@ -93,6 +102,9 @@ void main() {
 
     test('first TM: tremie tip above the bottom is NOT a warning', () {
       final r = planTruck(
+        // Dipatok ke 6 m, ambang yang dipakai prototipe asal angka-angka
+        // di uji ini. Ambang yang BERLAKU diuji di grup `EmbedmentLimits`.
+        limits: const EmbedmentLimits(maximumM: 6.0),
         diameterMm: 1000,
         tremieBottomM: 19.7,
         segments: _segments([3, 3, 3, 3, 3, 3, 2, 1]),
@@ -106,6 +118,9 @@ void main() {
 
     test('short embedment in the middle of casting is warned about', () {
       final r = planTruck(
+        // Dipatok ke 6 m, ambang yang dipakai prototipe asal angka-angka
+        // di uji ini. Ambang yang BERLAKU diuji di grup `EmbedmentLimits`.
+        limits: const EmbedmentLimits(maximumM: 6.0),
         diameterMm: 1000,
         tremieBottomM: 10.0,
         segments: _segments([3, 3, 3]),
@@ -146,6 +161,23 @@ void main() {
       expect(k.concreteAfter(1).depthM, 11.2);
       expect(k.concreteAfter(1).measured, isTrue);
       expect(k.embedmentAfter(1), closeTo(6.9, 1e-9));
+    });
+  });
+
+  group('EmbedmentLimits', () {
+    test('ambang yang berlaku: 1-9 m', () {
+      /*
+       * ANGKA YANG SAMA ada di `TERBENAM_MAKS_M` pada `utils/field_hitung.py`.
+       *
+       * Menggeser salah satunya saja membuat HP menyatakan sebuah TM aman
+       * sementara layar pemeriksaan menyatakannya bermasalah — dan yang
+       * membaca kedua layar itu tidak punya cara mengetahui mana yang benar.
+       *
+       * Diubah dari 6 m ke 9 m atas permintaan Daniel, 14 Oktober 2026.
+       */
+      const l = EmbedmentLimits();
+      expect(l.minimumM, 1.0);
+      expect(l.maximumM, 9.0);
     });
   });
 }

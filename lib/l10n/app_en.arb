@@ -361,7 +361,6 @@
   "noPoYetBody": "Showing every concrete supplier; the list narrows by itself once the office raises a PO. Every truck can still pick its own supplier.",
   "defaultSupplier": "Default concrete supplier (batching plant)",
   "concreteSupplier": "Concrete supplier (batching plant)",
-  "tremieGapField": "Tremie end gap above the bottom",
   "noteField": "Note",
   "hangAboveGs": "{top}–{bottom} m above ground level",
   "hangAcrossGs": "{top} m above ground level down to {bottom} m deep",
@@ -752,8 +751,6 @@
   "pullNowBody": "Truck #{seq} is finished, embedment {emb}. Pull {which} to bring it to {after}.",
   "pulledAlready": "Already pulled",
   "notYetPull": "Not pulled yet",
-  "gapInvalid1m": "Tremie end gap must be 0–1 m.",
-  "gapFieldHint": "How far the tremie’s lower end sits above the hole bottom. Default 1 m.",
   "overbreakCheckedTag": "[overbreak diperiksa]",
   "excelOptionsTitle": "Download Excel",
   "excelPeriodLabel": "Range",
@@ -926,5 +923,97 @@
   "reasonTitikDikonfirmasi": "This point has been confirmed by the office — ask them to reopen the confirmation first",
   "@reasonTitikDikonfirmasi": {
     "description": "Server rejected the push because the point is already confirmed"
+  },
+  "drillSection": "Drilling",
+  "@drillSection": {
+    "description": "Heading of the drilling section on the point history screen"
+  },
+  "castSection": "Casting",
+  "@castSection": {
+    "description": "Heading of the casting section on the point history screen"
+  },
+  "deepestLabel": "Deepest",
+  "@deepestLabel": {
+    "description": "Deepest depth ever read on a drill log"
+  },
+  "drillDurationLabel": "Drilling time",
+  "@drillDurationLabel": {
+    "description": "Time from the first reading to the last"
+  },
+  "avgRateLabel": "Average rate",
+  "@avgRateLabel": {
+    "description": "Final depth divided by the drilling time"
+  },
+  "slowestSegmentLabel": "Slowest segment",
+  "@slowestSegmentLabel": {
+    "description": "The segment between two readings where drilling was slowest"
+  },
+  "metresPerHour": "{v} m/h",
+  "@metresPerHour": {
+    "description": "A drilling rate",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "curveNeedsTwo": "The curve needs at least two readings whose time and depth can be read.",
+  "@curveNeedsTwo": {
+    "description": "Shown instead of the curve when there are fewer than two usable readings"
+  },
+  "readingUnreadable": "This reading's time or depth cannot be read - correct it from the office.",
+  "@readingUnreadable": {
+    "description": "A reading that cannot be plotted, shown so somebody can fix it"
+  },
+  "trailCount": "{n} changes",
+  "@trailCount": {
+    "description": "How many audit entries the collapsed trail holds",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tremieDepthField": "Tremie bottom depth from GS",
+  "@tremieDepthField": {
+    "description": "Measured depth of the tremie bottom end when casting starts"
+  },
+  "tremieDepthHint": "Measured once the tremie is assembled, before the first truck. Hole bottom {dasar}; the gap is computed from this.",
+  "@tremieDepthHint": {
+    "description": "Helper under the tremie depth field",
+    "placeholders": {
+      "dasar": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieDepthRequired": "Fill in the tremie bottom depth first.",
+  "@tremieDepthRequired": {
+    "description": "The tremie depth field was left empty"
+  },
+  "tremieDepthInvalid": "The tremie bottom must sit between the hole bottom ({dasar}) and 1 m above it.",
+  "@tremieDepthInvalid": {
+    "description": "The typed tremie depth is not plausible",
+    "placeholders": {
+      "dasar": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieDepthNeeded": "The tremie bottom depth is missing - open Casting data and measure it first.",
+  "@tremieDepthNeeded": {
+    "description": "Blocks finishing the casting until the tremie depth is recorded"
+  },
+  "soundingBeforeNeeded": "The before-sounding of truck #1 is missing - without it there is never an embedment-before.",
+  "@soundingBeforeNeeded": {
+    "description": "Blocks finishing the casting until the first truck's before-sounding is recorded"
+  },
+  "reasonSoundingAwalKosong": "The before-sounding of the first truck is missing",
+  "@reasonSoundingAwalKosong": {
+    "description": "Server rejected the casting because the first before-sounding is missing"
+  },
+  "reasonTremieDalamSalah": "The tremie bottom depth does not make sense against the hole bottom",
+  "@reasonTremieDalamSalah": {
+    "description": "Server rejected the measured tremie depth"
   }
 }

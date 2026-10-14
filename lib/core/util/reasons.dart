@@ -48,6 +48,8 @@ String reasonTextOf(AppLocalizations l, String? code, [String? detail]) {
     'SOUNDING_KOSONG' => l.reasonSoundingKosong,
     'LOG_BOR_SUDAH_ADA' => l.reasonLogBorSudahAda,
     'TITIK_DIKONFIRMASI' => l.reasonTitikDikonfirmasi,
+    'SOUNDING_AWAL_KOSONG' => l.reasonSoundingAwalKosong,
+    'TREMIE_DALAM_SALAH' => l.reasonTremieDalamSalah,
     'KEDALAMAN_MUNDUR' => l.reasonKedalamanMundur,
     'BOR_KOSONG' => l.reasonBorKosong,
     'ENTRI_GANDA' => l.reasonEntriGanda,

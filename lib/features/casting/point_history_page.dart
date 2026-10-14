@@ -10,6 +10,8 @@ import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/i18n.dart';
+import '../drilling/bor_kurva.dart';
+import '../drilling/bor_kurva_view.dart';
 
 /// Riwayat satu titik, dibaca LANGSUNG dari server.
 ///
@@ -62,6 +64,7 @@ class PointHistoryPage extends ConsumerWidget {
   Widget _isi(BuildContext context, Map<String, Object?> d) {
     final w = context.colors;
     final titik = ((d['titik'] as Map?) ?? const {}).cast<String, Object?>();
+    final drillLogs = (d['drillLogs'] as List?) ?? const [];
     final castings = (d['castings'] as List?) ?? const [];
     final jejak = (d['jejak'] as List?) ?? const [];
     final dikonfirmasi = titik['checkedAt'] == null
@@ -86,14 +89,20 @@ class PointHistoryPage extends ConsumerWidget {
               ),
             ),
           ),
+        if (drillLogs.isNotEmpty) ...[
+          _JudulBagian(t(context).drillSection),
+          for (final b in drillLogs) _KartuBor(log: (b as Map).cast<String, Object?>()),
+        ],
         if (castings.isEmpty)
           EmptyState(message: t(context).pointHistoryNoCasting)
-        else
+        else ...[
+          _JudulBagian(t(context).castSection),
           for (final c in castings) _KartuCor(cor: (c as Map).cast<String, Object?>()),
-        if (jejak.isNotEmpty) ...[
-          _JudulBagian(t(context).pointHistoryTrail),
-          for (final j in jejak) _BarisJejak(jejak: (j as Map).cast<String, Object?>()),
         ],
+        if (jejak.isNotEmpty)
+          _JejakLipat(
+            jejak: [for (final j in jejak) (j as Map).cast<String, Object?>()],
+          ),
       ],
     );
   }
@@ -233,6 +242,193 @@ class _BarisTm extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Satu log bor: ringkasan, kurva kedalaman vs waktu, lalu bacaannya.
+///
+/// Bentuknya SAMA dengan dialog riwayat di web — angka ringkasan di atas,
+/// kurva, lalu daftar bacaan. Yang memeriksa membaca dua layar itu
+/// bergantian untuk titik yang sama; dua susunan yang berbeda memaksanya
+/// mencari ulang tiap kali ia berpindah.
+class _KartuBor extends StatelessWidget {
+  const _KartuBor({required this.log});
+
+  final Map<String, Object?> log;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final bacaan = [
+      for (final e in (log['entries'] as List?) ?? const [])
+        (e as Map).cast<String, Object?>(),
+    ];
+    final titik = titikKurvaBor(bacaan);
+    final ringkas = ringkasBor(bacaan);
+    final baris = barisBacaan(bacaan);
+    final dihapus = log['isDelete'] == true || log['isDelete'] == 1;
+    final selesai = '${log['status']}' == 'selesai';
+
+    return ListCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  log['date'] == null ? '-' : longDate(DateTime.parse('${log['date']}')),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink),
+                ),
+              ),
+              if (dihapus)
+                StatusBadge(text: t(context).deletedLabel, bg: w.badBg, fg: w.badFg)
+              else if (selesai)
+                StatusBadge(text: t(context).statusDone, bg: w.okBg, fg: w.okFg)
+              else
+                StatusBadge(text: t(context).stageDrilling, bg: w.warnBg, fg: w.warnFg),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            [
+              if (log['operatorName'] != null) t(context).operatorShort('${log['operatorName']}'),
+              if (log['groundLevel'] != null)
+                'GS ${_angka(toDoubleOrNull(log['groundLevel']) ?? 0, 3)}',
+              t(context).readingsCount(ringkas.jumlahBacaan),
+            ].join(' · '),
+            style: TextStyle(color: w.muted, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          // Kurvanya butuh sedikitnya dua bacaan yang dapat digambar. Dengan
+          // satu bacaan yang tergambar hanyalah satu titik, dan sumbu
+          // waktunya tidak punya rentang sama sekali.
+          if (titik.length >= 2)
+            KurvaBor(titik: titik, ringkas: ringkas)
+          else
+            Text(t(context).curveNeedsTwo, style: TextStyle(color: w.faint, fontSize: 13)),
+          if (baris.isNotEmpty) ...[
+            const Divider(height: 22),
+            for (final b in baris) _BarisBacaanBor(baris: b),
+          ],
+          if (log['note'] != null && '${log['note']}'.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text('${log['note']}',
+                style: TextStyle(color: w.muted, fontSize: 13, height: 1.4)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Satu bacaan kedalaman.
+///
+/// Bacaan yang JAM atau kedalamannya tidak terbaca tetap ditampilkan, dengan
+/// warna galat. Dibuang dari daftar ini, ia tidak muncul di layar mana pun —
+/// sehingga tidak ada yang dapat membetulkannya, dan kedalaman akhir titik
+/// itu diam-diam tetap salah.
+class _BarisBacaanBor extends StatelessWidget {
+  const _BarisBacaanBor({required this.baris});
+
+  final BarisBacaan baris;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    if (!baris.tergambar) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, size: 15, color: w.badFg),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(t(context).readingUnreadable,
+                  style: TextStyle(color: w.badFg, fontSize: 13, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
+    }
+    final jam = DateTime.fromMillisecondsSinceEpoch(baris.waktu!);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 46,
+            child: Text(formatTime(jam),
+                style: TextStyle(fontWeight: FontWeight.w700, color: w.brandStrong, fontSize: 13)),
+          ),
+          Expanded(
+            child: Text(
+              [
+                formatMeters(baris.dalam),
+                if (baris.deltaM != null) '+${_angka(baris.deltaM!)} m',
+                if (baris.lajuMPerJam != null)
+                  t(context).metresPerHour(_angka(baris.lajuMPerJam!, 1)),
+              ].join(' · '),
+              style: TextStyle(color: w.ink, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Jejak koreksi yang dapat DIBENTANGKAN, tertutup sejak awal.
+///
+/// Sama dengan panel jejak di web. Dibentangkan sejak awal, lima puluh baris
+/// audit mendorong angka-angka yang justru sedang dicari ke bawah layar —
+/// dan jejaknya hanya dibuka ketika ada yang dipertanyakan.
+class _JejakLipat extends StatefulWidget {
+  const _JejakLipat({required this.jejak});
+
+  final List<Map<String, Object?>> jejak;
+
+  @override
+  State<_JejakLipat> createState() => _JejakLipatState();
+}
+
+class _JejakLipatState extends State<_JejakLipat> {
+  bool _terbuka = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _terbuka = !_terbuka),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t(context).pointHistoryTrail,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w800, fontSize: 17, color: w.ink)),
+                      Text(t(context).trailCount(widget.jejak.length),
+                          style: TextStyle(color: w.muted, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                Icon(_terbuka ? Icons.expand_less : Icons.expand_more, color: w.muted),
+              ],
+            ),
+          ),
+        ),
+        if (_terbuka)
+          for (final j in widget.jejak) _BarisJejak(jejak: j),
+      ],
     );
   }
 }

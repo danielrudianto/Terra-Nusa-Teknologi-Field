@@ -2004,10 +2004,6 @@
   "@concreteSupplier": {
     "description": "concreteSupplier"
   },
-  "tremieGapField": "Celah ujung tremie di atas dasar",
-  "@tremieGapField": {
-    "description": "tremieGapField"
-  },
   "noteField": "Catatan",
   "@noteField": {
     "description": "noteField"
@@ -4301,14 +4297,6 @@
   "@notYetPull": {
     "description": "notYetPull"
   },
-  "gapInvalid1m": "Celah ujung tremie 0–1 m.",
-  "@gapInvalid1m": {
-    "description": "gapInvalid1m"
-  },
-  "gapFieldHint": "Jarak ujung bawah tremie di atas dasar lubang. Bawaannya 1 m.",
-  "@gapFieldHint": {
-    "description": "gapFieldHint"
-  },
   "overbreakCheckedTag": "[overbreak diperiksa]",
   "@overbreakCheckedTag": {
     "description": "Penanda tetap di catatan log. SAMA di tiga bahasa: dipakai layar untuk tahu pertanyaan overbreak sudah dijawab, jadi menerjemahkannya akan membuat pertanyaan itu muncul lagi di bahasa lain."
@@ -4722,5 +4710,97 @@
   "reasonTitikDikonfirmasi": "Titik ini sudah dikonfirmasi kantor — minta kantor membuka konfirmasinya dulu",
   "@reasonTitikDikonfirmasi": {
     "description": "Server rejected the push because the point is already confirmed"
+  },
+  "drillSection": "Pengeboran",
+  "@drillSection": {
+    "description": "Heading of the drilling section on the point history screen"
+  },
+  "castSection": "Pengecoran",
+  "@castSection": {
+    "description": "Heading of the casting section on the point history screen"
+  },
+  "deepestLabel": "Terdalam",
+  "@deepestLabel": {
+    "description": "Deepest depth ever read on a drill log"
+  },
+  "drillDurationLabel": "Lama bor",
+  "@drillDurationLabel": {
+    "description": "Time from the first reading to the last"
+  },
+  "avgRateLabel": "Laju rata-rata",
+  "@avgRateLabel": {
+    "description": "Final depth divided by the drilling time"
+  },
+  "slowestSegmentLabel": "Ruas paling lambat",
+  "@slowestSegmentLabel": {
+    "description": "The segment between two readings where drilling was slowest"
+  },
+  "metresPerHour": "{v} m/jam",
+  "@metresPerHour": {
+    "description": "A drilling rate",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "curveNeedsTwo": "Kurvanya perlu sedikitnya dua bacaan yang jam dan kedalamannya terbaca.",
+  "@curveNeedsTwo": {
+    "description": "Shown instead of the curve when there are fewer than two usable readings"
+  },
+  "readingUnreadable": "Bacaan ini jam atau kedalamannya tidak terbaca - betulkan dari kantor.",
+  "@readingUnreadable": {
+    "description": "A reading that cannot be plotted, shown so somebody can fix it"
+  },
+  "trailCount": "{n} perubahan",
+  "@trailCount": {
+    "description": "How many audit entries the collapsed trail holds",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tremieDepthField": "Kedalaman ujung tremie dari GS",
+  "@tremieDepthField": {
+    "description": "Measured depth of the tremie bottom end when casting starts"
+  },
+  "tremieDepthHint": "Diukur saat tremie sudah tersusun, sebelum TM pertama. Dasar lubang {dasar}; celahnya dihitung dari sini.",
+  "@tremieDepthHint": {
+    "description": "Helper under the tremie depth field",
+    "placeholders": {
+      "dasar": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieDepthRequired": "Isi kedalaman ujung tremie dulu.",
+  "@tremieDepthRequired": {
+    "description": "The tremie depth field was left empty"
+  },
+  "tremieDepthInvalid": "Ujung tremie harus di antara dasar lubang ({dasar}) dan 1 m di atasnya.",
+  "@tremieDepthInvalid": {
+    "description": "The typed tremie depth is not plausible",
+    "placeholders": {
+      "dasar": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieDepthNeeded": "Kedalaman ujung tremie belum diisi — buka Data cor dan ukur dulu.",
+  "@tremieDepthNeeded": {
+    "description": "Blocks finishing the casting until the tremie depth is recorded"
+  },
+  "soundingBeforeNeeded": "Sounding sebelum TM #1 belum diisi — tanpa itu tertanam awalnya tidak pernah ada.",
+  "@soundingBeforeNeeded": {
+    "description": "Blocks finishing the casting until the first truck's before-sounding is recorded"
+  },
+  "reasonSoundingAwalKosong": "Sounding sebelum TM pertama belum diisi",
+  "@reasonSoundingAwalKosong": {
+    "description": "Server rejected the casting because the first before-sounding is missing"
+  },
+  "reasonTremieDalamSalah": "Kedalaman ujung tremie tidak masuk akal terhadap dasar lubang",
+  "@reasonTremieDalamSalah": {
+    "description": "Server rejected the measured tremie depth"
   }
 }

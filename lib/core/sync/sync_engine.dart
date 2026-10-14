@@ -14,6 +14,7 @@ import '../util/app_log.dart';
 import '../util/clock_drift.dart';
 import '../util/app_version.dart';
 import '../util/format.dart';
+import '../device/camera.dart';
 import '../device/device_lock.dart';
 
 /// Summary of one sync round — for the banner on Home and the background log.
@@ -240,7 +241,7 @@ class SyncEngine {
         '/field/photos/${f.uuid}',
         data: Stream<List<int>>.value(bytes),
         options: Options(
-          contentType: 'image/jpeg',
+          contentType: photoContentType(bytes),
           sendTimeout: const Duration(minutes: 2),
           headers: {
             Headers.contentLengthHeader: bytes.length,
@@ -437,3 +438,4 @@ class _PermintaanOper {
   final String? requestedAt;
   final String? requesterName;
 }
+

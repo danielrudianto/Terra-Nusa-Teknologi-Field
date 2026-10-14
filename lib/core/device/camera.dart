@@ -15,19 +15,43 @@ import '../util/format.dart';
 import 'photo_stamp.dart';
 import '../i18n.dart';
 
+/// Format every photo is stored and uploaded in.
+///
+/// WEBP, asked for by Daniel on 14 Oct 2026 ("kalau bisa dalam bentuk webp
+/// aja deh biar makin kecil lagi"). At the same visible quality it is about
+/// a third smaller than JPEG, which is why the budgets below could come
+/// down by a third without the ticket figures getting any harder to read.
+///
+/// The WIDTHS are deliberately unchanged. A narrower picture loses the
+/// figures on the ticket outright, and those figures are the only reason
+/// the photo is kept.
+///
+/// Android only — `CompressFormat.webp` is not supported by
+/// flutter_image_compress on iOS, and this app has no iOS target.
+const _uploadFormat = CompressFormat.webp;
+
+/// Extension matching [_uploadFormat].
+const _uploadExt = 'webp';
+
 /// Size limits per photo kind, after compression.
 ///
 /// The server accepts 200 kB at most. Face and attendance photos can be small;
 /// the TM ticket is allowed to be larger because its figures must be legible
 /// when checked at the office.
+///
+/// These are the budget the compression loop aims AT, not what the format
+/// happens to produce — so moving to WebP shrinks nothing by itself. It buys
+/// quality headroom, and the budget has to be lowered to spend it. Cut by
+/// ~30% on 14 Oct 2026, which lands each kind at roughly the JPEG quality
+/// it had before.
 const _targets = {
-  'wajah': (width: 720, kb: 60),
-  'absen_masuk': (width: 1024, kb: 80),
-  'absen_pulang': (width: 1024, kb: 80),
-  'tiket_tm': (width: 1400, kb: 160),
+  'wajah': (width: 720, kb: 40),
+  'absen_masuk': (width: 1024, kb: 55),
+  'absen_pulang': (width: 1024, kb: 55),
+  'tiket_tm': (width: 1400, kb: 110),
   // Same as the ticket: the slump cone and the tape must stay readable when
   // the office checks the figure the foreman typed.
-  'slump_tm': (width: 1400, kb: 160),
+  'slump_tm': (width: 1400, kb: 110),
 };
 
 /// Album the stamped copies go to in the phone's gallery.
@@ -87,10 +111,29 @@ Future<SavedPhoto?> takePhoto({
   int? faceCount;
   if (countFaces) faceCount = await _countFaces(raw.path);
 
-  final target = _targets[kind] ?? (width: 1024, kb: 80);
+  final target = _targets[kind] ?? (width: 1024, kb: 55);
+  final maxBytes = target.kb * 1024;
+
+  // `bytes` is the copy that is stored and uploaded, in [_uploadFormat].
+  //
+  // `galleryBytes` is a SEPARATE JPEG, encoded from the same source rather
+  // than re-encoded from `bytes`: `gal` names the gallery file itself, and a
+  // name ending in `.jpg` holding WebP does not open in the gallery on some
+  // phones. Encoded from the WebP instead, the copy the foreman keeps would
+  // carry two rounds of loss for no reason. It never goes to the server, so
+  // its size costs nobody any quota.
   final Uint8List bytes;
+  Uint8List? galleryBytes;
   if (caption == null) {
-    bytes = await _compress(raw.path, target.width, target.kb * 1024);
+    bytes = await _compress(raw.path, target.width, maxBytes);
+    if (saveToGallery) {
+      galleryBytes = await _compress(
+        raw.path,
+        target.width,
+        maxBytes,
+        format: CompressFormat.jpeg,
+      );
+    }
   } else {
     // Re-encode first at the target width: this applies the EXIF rotation, so
     // the caption is drawn along the bottom of the picture as the foreman
@@ -104,13 +147,21 @@ Future<SavedPhoto?> takePhoto({
     );
     if (upright == null) throw StateError(L10n.current?.photoUnreadable ?? 'Foto tidak dapat dibaca.');
     final stamped = await stampPhoto(upright, await caption(takenAt));
-    bytes = await _compressBytes(stamped, target.width, target.kb * 1024);
+    bytes = await _compressBytes(stamped, target.width, maxBytes);
+    if (saveToGallery) {
+      galleryBytes = await _compressBytes(
+        stamped,
+        target.width,
+        maxBytes,
+        format: CompressFormat.jpeg,
+      );
+    }
   }
 
   final dir = Directory(p.join((await getApplicationDocumentsDirectory()).path, 'foto'));
   await dir.create(recursive: true);
   final uuid = newUuid();
-  final dest = p.join(dir.path, '$uuid.jpg');
+  final dest = p.join(dir.path, '$uuid.$_uploadExt');
   await File(dest).writeAsBytes(bytes, flush: true);
   try {
     await File(raw.path).delete();
@@ -130,7 +181,9 @@ Future<SavedPhoto?> takePhoto({
       userId: userId,
     ),
   );
-  final gallery = saveToGallery ? await _copyToGallery(bytes, '${kind}_$uuid') : GalleryCopy.notRequested;
+  final gallery = galleryBytes == null
+      ? GalleryCopy.notRequested
+      : await _copyToGallery(galleryBytes, '${kind}_$uuid');
   return SavedPhoto(uuid: uuid, path: dest, faceCount: faceCount, sizeBytes: bytes.length, gallery: gallery);
 }
 
@@ -161,7 +214,12 @@ Future<int?> _countFaces(String path) async {
 }
 
 /// Same as [_compress], for bytes already in memory (the stamped PNG).
-Future<Uint8List> _compressBytes(Uint8List image, int width, int maxBytes) async {
+Future<Uint8List> _compressBytes(
+  Uint8List image,
+  int width,
+  int maxBytes, {
+  CompressFormat format = _uploadFormat,
+}) async {
   Uint8List? result;
   var w = width;
   for (var round = 0; round < 4; round++) {
@@ -171,7 +229,7 @@ Future<Uint8List> _compressBytes(Uint8List image, int width, int maxBytes) async
         minWidth: w,
         minHeight: w,
         quality: quality,
-        format: CompressFormat.jpeg,
+        format: format,
       );
       if (result.length <= maxBytes) return result;
     }
@@ -182,7 +240,12 @@ Future<Uint8List> _compressBytes(Uint8List image, int width, int maxBytes) async
 }
 
 /// Lower the quality, then the width, until it is under the limit.
-Future<Uint8List> _compress(String path, int width, int maxBytes) async {
+Future<Uint8List> _compress(
+  String path,
+  int width,
+  int maxBytes, {
+  CompressFormat format = _uploadFormat,
+}) async {
   Uint8List? result;
   var w = width;
   for (var round = 0; round < 4; round++) {
@@ -192,7 +255,7 @@ Future<Uint8List> _compress(String path, int width, int maxBytes) async {
         minWidth: w,
         minHeight: w,
         quality: quality,
-        format: CompressFormat.jpeg,
+        format: format,
       );
       if (result != null && result.length <= maxBytes) return result;
     }
@@ -200,4 +263,28 @@ Future<Uint8List> _compress(String path, int width, int maxBytes) async {
   }
   if (result == null) throw StateError('Foto tidak dapat dikompres.');
   return result;
+}
+
+/// Content type of a stored photo, read from its BYTES.
+///
+/// Not from the extension, and not a constant: the upload queue holds both
+/// formats at once right after the WebP change (14 Oct 2026). A phone that
+/// updates while photos are still waiting keeps `.jpg` files in that queue,
+/// and they have to go up as JPEG — the server records the type it is told
+/// alongside the bytes it is given, so one constant would mislabel one side
+/// or the other, and the office would be served a picture its browser
+/// refuses to draw.
+String photoContentType(List<int> bytes) {
+  // RIFF....WEBP — the four length bytes sit in the middle, so this cannot
+  // be a single prefix comparison.
+  const riff = [0x52, 0x49, 0x46, 0x46];
+  const webp = [0x57, 0x45, 0x42, 0x50];
+  if (bytes.length >= 12) {
+    var cocok = true;
+    for (var i = 0; i < 4; i++) {
+      if (bytes[i] != riff[i] || bytes[8 + i] != webp[i]) cocok = false;
+    }
+    if (cocok) return 'image/webp';
+  }
+  return 'image/jpeg';
 }

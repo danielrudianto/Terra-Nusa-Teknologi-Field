@@ -6,9 +6,15 @@ import 'volume.dart';
 ///
 /// The tremie's bottom end must always be EMBEDDED in fresh concrete: at least
 /// 1 m (less than that, new concrete can break through the concrete level and mix with
-/// mud), at most 6 m (more than that, the concrete no longer flows
+/// mud), at most 9 m (more than that, the concrete no longer flows
 /// out and the tremie can get jammed). Safe target: leave ±2 m after
 /// each cut.
+///
+/// Batas atasnya 9 m, bukan 6 (Daniel, 14 Oktober 2026). Angka yang SAMA ada
+/// di `TERBENAM_MAKS_M` pada `utils/field_hitung.py`; menggeser salah satunya
+/// saja membuat HP menyatakan sebuah TM aman sementara layar pemeriksaan
+/// menyatakannya bermasalah, dan yang membaca tidak punya cara mengetahui
+/// mana yang benar.
 ///
 /// What gets removed is always the TOP segment (the one attached to the hopper), and the
 /// bottom-most segment is never removed — it is the one that is embedded.
@@ -22,7 +28,7 @@ import 'volume.dart';
 /// `test/cut_plan_test.dart` were taken from that prototype.
 
 class EmbedmentLimits {
-  const EmbedmentLimits({this.minimumM = 1.0, this.maximumM = 6.0, this.targetM = 2.0});
+  const EmbedmentLimits({this.minimumM = 1.0, this.maximumM = 9.0, this.targetM = 2.0});
 
   final double minimumM;
   final double maximumM;

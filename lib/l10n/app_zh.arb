@@ -361,7 +361,6 @@
   "noPoYetBody": "显示全部混凝土供应商；办公室开具采购单后列表会自动收窄。每车仍可单独选择供应商。",
   "defaultSupplier": "默认混凝土供应商（搅拌站）",
   "concreteSupplier": "混凝土供应商（搅拌站）",
-  "tremieGapField": "导管下端距孔底间隙",
   "noteField": "备注",
   "hangAboveGs": "高出地面 {top}–{bottom} m",
   "hangAcrossGs": "自高出地面 {top} m 至深度 {bottom} m",
@@ -752,8 +751,6 @@
   "pullNowBody": "第 {seq} 车已完成，埋深 {emb}。拔 {which} 后埋深为 {after}。",
   "pulledAlready": "已拔出",
   "notYetPull": "尚未拔出",
-  "gapInvalid1m": "导管下端间隙须为 0–1 m。",
-  "gapFieldHint": "导管下端距孔底的距离。默认 1 m。",
   "overbreakCheckedTag": "[overbreak diperiksa]",
   "excelOptionsTitle": "下载 Excel",
   "excelPeriodLabel": "范围",
@@ -926,5 +923,97 @@
   "reasonTitikDikonfirmasi": "该桩点已由办公室确认——请先请办公室撤销确认",
   "@reasonTitikDikonfirmasi": {
     "description": "Server rejected the push because the point is already confirmed"
+  },
+  "drillSection": "钻孔",
+  "@drillSection": {
+    "description": "Heading of the drilling section on the point history screen"
+  },
+  "castSection": "浇筑",
+  "@castSection": {
+    "description": "Heading of the casting section on the point history screen"
+  },
+  "deepestLabel": "最深",
+  "@deepestLabel": {
+    "description": "Deepest depth ever read on a drill log"
+  },
+  "drillDurationLabel": "钻孔时长",
+  "@drillDurationLabel": {
+    "description": "Time from the first reading to the last"
+  },
+  "avgRateLabel": "平均速度",
+  "@avgRateLabel": {
+    "description": "Final depth divided by the drilling time"
+  },
+  "slowestSegmentLabel": "最慢区段",
+  "@slowestSegmentLabel": {
+    "description": "The segment between two readings where drilling was slowest"
+  },
+  "metresPerHour": "{v} 米/小时",
+  "@metresPerHour": {
+    "description": "A drilling rate",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "curveNeedsTwo": "曲线至少需要两条时间和深度均可读取的记录。",
+  "@curveNeedsTwo": {
+    "description": "Shown instead of the curve when there are fewer than two usable readings"
+  },
+  "readingUnreadable": "该记录的时间或深度无法读取——请从办公室更正。",
+  "@readingUnreadable": {
+    "description": "A reading that cannot be plotted, shown so somebody can fix it"
+  },
+  "trailCount": "{n} 条更改",
+  "@trailCount": {
+    "description": "How many audit entries the collapsed trail holds",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tremieDepthField": "导管下端距地面深度",
+  "@tremieDepthField": {
+    "description": "Measured depth of the tremie bottom end when casting starts"
+  },
+  "tremieDepthHint": "导管组装完成后、第一车浇筑前测量。孔底 {dasar}；间隙由此计算。",
+  "@tremieDepthHint": {
+    "description": "Helper under the tremie depth field",
+    "placeholders": {
+      "dasar": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieDepthRequired": "请先填写导管下端深度。",
+  "@tremieDepthRequired": {
+    "description": "The tremie depth field was left empty"
+  },
+  "tremieDepthInvalid": "导管下端必须位于孔底（{dasar}）与其上方 1 米之间。",
+  "@tremieDepthInvalid": {
+    "description": "The typed tremie depth is not plausible",
+    "placeholders": {
+      "dasar": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieDepthNeeded": "尚未填写导管下端深度——请先打开浇筑资料并测量。",
+  "@tremieDepthNeeded": {
+    "description": "Blocks finishing the casting until the tremie depth is recorded"
+  },
+  "soundingBeforeNeeded": "第 1 车浇筑前的测深尚未填写——缺少它就永远没有浇筑前埋深。",
+  "@soundingBeforeNeeded": {
+    "description": "Blocks finishing the casting until the first truck's before-sounding is recorded"
+  },
+  "reasonSoundingAwalKosong": "第一车浇筑前的测深尚未填写",
+  "@reasonSoundingAwalKosong": {
+    "description": "Server rejected the casting because the first before-sounding is missing"
+  },
+  "reasonTremieDalamSalah": "导管下端深度与孔底不符",
+  "@reasonTremieDalamSalah": {
+    "description": "Server rejected the measured tremie depth"
   }
 }
