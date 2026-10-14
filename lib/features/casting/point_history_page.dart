@@ -62,7 +62,6 @@ class PointHistoryPage extends ConsumerWidget {
   }
 
   Widget _isi(BuildContext context, Map<String, Object?> d) {
-    final w = context.colors;
     final titik = ((d['titik'] as Map?) ?? const {}).cast<String, Object?>();
     final drillLogs = (d['drillLogs'] as List?) ?? const [];
     final castings = (d['castings'] as List?) ?? const [];
@@ -457,7 +456,7 @@ class _BarisJejak extends StatelessWidget {
               children: [
                 Text(
                   [
-                    if (siapa != null) siapa,
+                    ?siapa,
                     if (kapan != null) '${longDate(kapan)} ${formatTime(kapan)}',
                   ].join(' · '),
                   style: TextStyle(fontWeight: FontWeight.w600, color: w.ink),
