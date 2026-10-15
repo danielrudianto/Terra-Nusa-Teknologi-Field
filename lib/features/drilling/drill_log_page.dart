@@ -439,6 +439,31 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     final dikonfirmasi = _pilePoint!['checkedAt'] != null;
     // Tanpa GS tidak ada yang boleh dicatat: itulah arti "GS wajib dulu".
     final canEdit = !_finished && !cast && !dikonfirmasi && !_handedAway && _groundLevel != null;
+    /*
+     * MENUTUP log boleh walau titiknya sudah dicor. MENAMBAH bacaan tidak.
+     *
+     * Sampai 15 Okt 2026 keduanya memakai `canEdit` yang sama, dan itu
+     * menjebak: begitu titiknya dicor — dari HP lain, atau dari kantor —
+     * tombol "Selesai bor" ikut mati, sedangkan dari kantor log bor yang
+     * titiknya sudah punya log cor juga TIDAK boleh dihapus. Lognya
+     * tertinggal terbuka selamanya, dan titiknya terbaca "sedang dibor"
+     * padahal betonnya sudah mengeras. Kejadian di PP.B48.
+     *
+     * Bedanya masuk akal kalau dibaca sebagai pernyataan tentang lubang:
+     * bacaan kedalaman BARU di lubang yang sudah terisi beton tidak mungkin
+     * benar, sedangkan menutup catatan pengeboran yang memang sudah selesai
+     * hanya merapikan yang sudah terjadi.
+     *
+     * Server menerima ini — `simpan_log_bor` menolak `SUDAH_DICOR` hanya
+     * saat log DIBUAT, bukan saat diperbarui — dan tidak menurunkan status
+     * titiknya: `if data.status == "selesai" and titik["status"] !=
+     * "sudah_cor"`. Jadi titik yang sudah dicor tetap `sudah_cor`.
+     *
+     * Empat syarat lain tetap: server benar-benar menolak kiriman dari log
+     * yang sudah ditutup, titik yang dikonfirmasi kantor, log yang sudah
+     * dioper, dan penyelesaian tanpa GS (GS_KOSONG).
+     */
+    final canFinish = !_finished && !dikonfirmasi && !_handedAway && _groundLevel != null;
     final canOffer = _row != null && !_finished && !cast && !dikonfirmasi && !_handedAway;
     // SATU sebab, yang paling menentukan — tidak daftar.
     //
@@ -459,6 +484,19 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                 : _groundLevel == null
                     ? t(context).blockedNeedGs
                     : null;
+    /*
+     * Sebab untuk tombol SELESAI — tanpa cabang "sudah dicor", sebab bagi
+     * tombol itu dicor bukan lagi halangan. Memakai `halangan` yang sama
+     * akan menerangkan tombol yang hidup dengan kalimat yang menyatakan ia
+     * mati.
+     */
+    final String? halanganSelesai = dikonfirmasi
+        ? t(context).blockedConfirmed
+        : _handedAway
+            ? t(context).handedOverTo(_holderName ?? t(context).colleague)
+            : _groundLevel == null
+                ? t(context).blockedNeedGs
+                : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -588,8 +626,8 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                         child: SizedBox(
                           height: Dimens.minTouch + 4,
                           child: BlockedAction(
-                            reason: canEdit ? null : halangan,
-                            child: OutlinedButton(onPressed: canEdit ? _finish : null, child: Text(t(context).finishDrilling)),
+                            reason: canFinish ? null : halanganSelesai,
+                            child: OutlinedButton(onPressed: canFinish ? _finish : null, child: Text(t(context).finishDrilling)),
                           ),
                         ),
                       ),

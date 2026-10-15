@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/decimal_input.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
