@@ -19,6 +19,8 @@ import '../../core/util/format.dart';
 import '../../core/widgets/app_snack.dart';
 import '../../core/widgets/number_dialog.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/widgets/blocked_action.dart';
+import '../../core/widgets/confirm.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
@@ -1191,6 +1193,20 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   }
 
   Future<void> _reopenCasting() async {
+    // Sama seperti pada log bor: satu ketukan pada tombol di dalam banner
+    // "Cor selesai" membuka kembali seluruh lognya tanpa satu pun
+    // pertanyaan. Volume beton yang sudah dilaporkan ke kantor termasuk di
+    // dalamnya.
+    if (!await askConfirm(
+      context,
+      icon: Icons.lock_open_outlined,
+      title: t(context).castReopenConfirmTitle,
+      body: t(context).castReopenConfirmBody,
+      confirmLabel: t(context).reopen,
+    )) {
+      return;
+    }
+    if (!mounted) return;
     if (!await _update((d) => d['status'] = 'berjalan')) return;
     if (mounted) showSnack(context, t(context).castReopened, icon: Icons.lock_open_outlined);
   }
@@ -1504,10 +1520,18 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                                       icon: const Icon(Icons.play_arrow),
                                       label: Text(t(context).startTruck('${lastTruck['seq']}')),
                                     )
-                                  : FilledButton.icon(
-                                      onPressed: _tremie.isEmpty ? null : _newTruck,
-                                      icon: const Icon(Icons.local_shipping_outlined),
-                                      label: Text(_tremie.isEmpty ? t(context).tremieFirst : t(context).truckArrived(seq + 1)),
+                                  // Labelnya sudah berganti jadi "Susun
+                                  // tremie dulu", jadi yang kurang bukan APA
+                                  // melainkan DI MANA — dan itu yang dijawab
+                                  // kalau tombolnya tetap ditekan.
+                                  : BlockedAction(
+                                      reason: _tremie.isEmpty ? t(context).blockedNeedTremie : null,
+                                      icon: Icons.plumbing,
+                                      child: FilledButton.icon(
+                                        onPressed: _tremie.isEmpty ? null : _newTruck,
+                                        icon: const Icon(Icons.local_shipping_outlined),
+                                        label: Text(_tremie.isEmpty ? t(context).tremieFirst : t(context).truckArrived(seq + 1)),
+                                      ),
                                     ),
                         ),
                       ),

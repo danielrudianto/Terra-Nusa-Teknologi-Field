@@ -8,6 +8,7 @@
   "navAttendance": "Absensi",
   "navCasting": "Cor",
   "navQueue": "Antrean",
+  "navSettings": "Pengaturan",
   "navAttendanceSoon": "Absensi belum aktif — segera hadir.",
   "@navAttendanceSoon": {
     "description": "Snackbar saat tab Absensi yang nonaktif ditekan"
@@ -4945,5 +4946,19 @@
   "notifSoundingDueBody": "Buka log cor di HP dan isi sounding muka beton sesudah tuang. Tertanam tremie dan pemeriksaan volume dihitung dari angka itu.",
   "@notifSoundingDueBody": {
     "description": "notifSoundingDueBody"
-  }
+  },
+  "drillLockedConfirmedTitle": "Sudah diperiksa kantor — terkunci",
+  "drillLockedConfirmedBody": "Titik ini sudah diperiksa dan disetujui, jadi log bornya tidak bisa diubah lagi. Kalau ada angka yang salah, minta kantor membuka konfirmasinya dulu.",
+  "drillLockedCastTitle": "Sudah dicor — terkunci",
+  "drillLockedCastBody": "Betonnya sudah masuk, jadi log bor ini tertutup untuk selamanya. Tidak ada lagi yang bisa diubah di layar ini.",
+  "drillNeedGsTitle": "Isi ground level dulu",
+  "drillNeedGsBody": "Semua kedalaman dihitung turun dari ground level, jadi belum ada yang bisa dicatat sebelum itu terisi. Ketuk baris ground level di atas untuk mengisinya.",
+  "blockedNeedGs": "Isi ground level dulu — ketuk baris di atas.",
+  "blockedConfirmed": "Sudah diperiksa kantor; log ini tidak bisa diubah lagi.",
+  "blockedCast": "Sudah dicor; log bor sudah tertutup untuk selamanya.",
+  "blockedNeedTremie": "Susun pipa tremie dulu, baru tambah TM.",
+  "drillReopenConfirmTitle": "Buka lagi log bor ini?",
+  "drillReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, kedalamannya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
+  "castReopenConfirmTitle": "Buka lagi log cor ini?",
+  "castReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, TM dan volumenya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah."
 }

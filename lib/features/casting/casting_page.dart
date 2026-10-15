@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/widgets/page_header.dart';
@@ -25,7 +26,7 @@ class CastingPage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: projects.when(
-          loading: () => const LoadingState(),
+          loading: () => const SkeletonCards(leading: false),
           error: (e, _) => ErrorState(title: t(context).projectsLoadError, message: '$e'),
           data: (all) {
             // The user's own project on top, marked.
@@ -43,8 +44,10 @@ class CastingPage extends ConsumerWidget {
                   message: t(context).noCastingProjects,
                   icon: Icons.domain_disabled,
                 ),
-              for (final p in items)
-                Consumer(builder: (context, ref, _) {
+              for (final (i, p) in items.indexed)
+                AppearIn(
+                  order: i,
+                  child: Consumer(builder: (context, ref, _) {
                   final count = ref.watch(pilePointsProvider((p['id'] as num).toInt())).value?.length;
                   final isMine = '${p['id']}' == '$mine';
                   return ListCard(
@@ -72,7 +75,8 @@ class CastingPage extends ConsumerWidget {
                       ],
                     ),
                   );
-                }),
+                  }),
+                ),
             ],
           );
           },

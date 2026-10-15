@@ -17,6 +17,8 @@ import '../../core/util/reasons.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/widgets/blocked_action.dart';
+import '../../core/widgets/confirm.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/view_states.dart';
 import '../casting/handover.dart';
@@ -387,6 +389,20 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
 
   Future<void> _reopen() async {
     final l = t(context);
+    // Membuka log yang SUDAH ditutup, tanpa ditanya apa pun, hanya dari satu
+    // ketukan pada tombol teks di dalam banner hijau — persis tempat jempol
+    // mendarat setelah membaca "Sudah dibor sampai 22,00 m". Log bor adalah
+    // bukti; yang membukanya kembali harus menyatakan niatnya.
+    if (!await askConfirm(
+      context,
+      icon: Icons.lock_open_outlined,
+      title: l.drillReopenConfirmTitle,
+      body: l.drillReopenConfirmBody,
+      confirmLabel: l.reopen,
+    )) {
+      return;
+    }
+    if (!mounted) return;
     if (!await _update((d) => d['status'] = 'berjalan')) return;
     _snack(l.drillReopened);
   }
@@ -424,6 +440,25 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     // Tanpa GS tidak ada yang boleh dicatat: itulah arti "GS wajib dulu".
     final canEdit = !_finished && !cast && !dikonfirmasi && !_handedAway && _groundLevel != null;
     final canOffer = _row != null && !_finished && !cast && !dikonfirmasi && !_handedAway;
+    // SATU sebab, yang paling menentukan — tidak daftar.
+    //
+    // `canEdit` di atas digabung dari LIMA syarat, dan sampai 15 Okt 2026
+    // tidak satu pun dari kelimanya pernah disebut: tombolnya sekadar mati.
+    // Yang paling sering kena adalah dua yang paling tidak kelihatan —
+    // kantor sudah mengonfirmasi titiknya, dan ground level belum diisi —
+    // dan keduanya tidak ada hubungannya dengan apa pun yang terlihat di
+    // layar ini. Urutannya dari yang paling permanen: yang sudah dicor tidak
+    // bisa dibuka oleh siapa pun, yang belum ber-GS bisa diselesaikan
+    // sendiri dalam satu ketukan.
+    final String? halangan = cast
+        ? t(context).blockedCast
+        : dikonfirmasi
+            ? t(context).blockedConfirmed
+            : _handedAway
+                ? t(context).handedOverTo(_holderName ?? t(context).colleague)
+                : _groundLevel == null
+                    ? t(context).blockedNeedGs
+                    : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -467,12 +502,40 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
             ),
           if (_row?.sendStatus == 'rejected' && !_handedAway)
             TerraBanner(kind: BannerKind.danger, title: t(context).rejectedByServer, body: reasonText(context, _row!.reason, _row!.detail)),
+          // Terkunci dari LUAR layar ini. Keduanya mematikan setiap tombol
+          // dan tidak meninggalkan jejak apa pun yang bisa dibaca: tanpa
+          // banner ini, satu-satunya keterangan yang didapat pengguna adalah
+          // bahwa aplikasinya tidak menanggapi.
+          if (cast)
+            TerraBanner(
+              kind: BannerKind.info,
+              icon: Icons.lock_outline,
+              title: t(context).drillLockedCastTitle,
+              body: t(context).drillLockedCastBody,
+            )
+          else if (dikonfirmasi)
+            TerraBanner(
+              kind: BannerKind.info,
+              icon: Icons.verified_outlined,
+              title: t(context).drillLockedConfirmedTitle,
+              body: t(context).drillLockedConfirmedBody,
+            ),
           _DepthHero(readings: readings, plannedM: _plannedM, diameterMm: toIntOrNull(_pilePoint!['diameterMm']), finished: _finished),
           _GsRow(
             groundLevel: _groundLevel,
             plannedM: _plannedM,
             onChange: _finished || cast || _handedAway ? null : () => _mintaGs(),
           ),
+          // DI BAWAH barisnya, bukan di atas: isinya menyuruh mengetuk baris
+          // itu, dan petunjuk yang menyebut "di atas" harus benar-benar ada
+          // di bawah yang ditunjuknya.
+          if (_groundLevel == null && !cast && !dikonfirmasi && !_handedAway)
+            TerraBanner(
+              kind: BannerKind.warning,
+              icon: Icons.height,
+              title: t(context).drillNeedGsTitle,
+              body: t(context).drillNeedGsBody,
+            ),
           _OperatorRow(uuid: _operatorUuid, onChange: canEdit ? _chooseOperator : null),
           if (_finished)
             TerraBanner(
@@ -507,12 +570,15 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
           child: _finished
               ? SizedBox(
                   height: Dimens.minTouch + 4,
-                  child: FilledButton.icon(
-                    onPressed: cast
-                        ? null
-                        : () => context.pushReplacement('/casting/log/${newUuid()}?pilePoint=${_doc!['pilePointUuid']}'),
-                    icon: const Icon(Icons.play_arrow),
-                    label: Text(t(context).startCastLog),
+                  child: BlockedAction(
+                    reason: cast ? t(context).blockedCast : null,
+                    child: FilledButton.icon(
+                      onPressed: cast
+                          ? null
+                          : () => context.pushReplacement('/casting/log/${newUuid()}?pilePoint=${_doc!['pilePointUuid']}'),
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(t(context).startCastLog),
+                    ),
                   ),
                 )
               : Row(
@@ -521,7 +587,10 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                       Expanded(
                         child: SizedBox(
                           height: Dimens.minTouch + 4,
-                          child: OutlinedButton(onPressed: canEdit ? _finish : null, child: Text(t(context).finishDrilling)),
+                          child: BlockedAction(
+                            reason: canEdit ? null : halangan,
+                            child: OutlinedButton(onPressed: canEdit ? _finish : null, child: Text(t(context).finishDrilling)),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -530,10 +599,13 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                       flex: 2,
                       child: SizedBox(
                         height: Dimens.minTouch + 4,
-                        child: FilledButton.icon(
-                          onPressed: canEdit ? () => _addOrEdit() : null,
-                          icon: const Icon(Icons.add),
-                          label: Text(t(context).recordDepth),
+                        child: BlockedAction(
+                          reason: canEdit ? null : halangan,
+                          child: FilledButton.icon(
+                            onPressed: canEdit ? () => _addOrEdit() : null,
+                            icon: const Icon(Icons.add),
+                            label: Text(t(context).recordDepth),
+                          ),
                         ),
                       ),
                     ),

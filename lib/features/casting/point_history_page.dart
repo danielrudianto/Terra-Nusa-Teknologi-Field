@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/status_badge.dart';
@@ -43,7 +44,7 @@ class PointHistoryPage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(_historyProvider(pileId)),
         child: data.when(
-          loading: () => const LoadingState(),
+          loading: () => const SkeletonCards(leading: false),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(Dimens.pagePadding),
             children: [
@@ -90,13 +91,15 @@ class PointHistoryPage extends ConsumerWidget {
           ),
         if (drillLogs.isNotEmpty) ...[
           _JudulBagian(t(context).drillSection),
-          for (final b in drillLogs) _KartuBor(log: (b as Map).cast<String, Object?>()),
+          for (final (i, b) in drillLogs.indexed)
+            AppearIn(order: i, child: _KartuBor(log: (b as Map).cast<String, Object?>())),
         ],
         if (castings.isEmpty)
           EmptyState(message: t(context).pointHistoryNoCasting)
         else ...[
           _JudulBagian(t(context).castSection),
-          for (final c in castings) _KartuCor(cor: (c as Map).cast<String, Object?>()),
+          for (final (i, c) in castings.indexed)
+            AppearIn(order: i, child: _KartuCor(cor: (c as Map).cast<String, Object?>())),
         ],
         if (jejak.isNotEmpty)
           _JejakLipat(

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
@@ -64,7 +65,7 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: workers.when(
-          loading: () => const LoadingState(),
+          loading: () => const SkeletonCards(),
           error: (e, _) => ErrorState(title: t(context).workersLoadError, message: '$e'),
           data: (all) => _list(all, codes),
         ),
@@ -129,7 +130,7 @@ class _WorkersPageState extends ConsumerState<WorkersPage> {
           ),
           const SizedBox(height: 12),
           if (items.isEmpty) EmptyState(message: t(context).noMatchingWorkers),
-          for (final k in items) _card(k, codes),
+          for (final (i, k) in items.indexed) AppearIn(order: i, child: _card(k, codes)),
         ],
       ],
     );

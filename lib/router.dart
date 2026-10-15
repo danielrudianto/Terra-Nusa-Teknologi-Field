@@ -25,8 +25,9 @@ import 'core/providers.dart';
 ///   /login
 ///   /home                         ┐
 ///   /attendance                   │ shell with bottom navigation
-///   /casting                      │
-///   /queue                        ┘
+///   /casting                      │ (Absensi has no tab while it is off)
+///   /queue                        │
+///   /settings                     ┘ rightmost tab
 ///   /attendance/new?project=ID    new attendance form
 ///   /attendance/:uuid             open attendance
 ///   /workers                      all workers, filterable by project
@@ -37,7 +38,6 @@ import 'core/providers.dart';
 ///   /casting/point/:id/history    server-side history of one pile point
 ///   /drilling/log/:uuid           drill log (new or continued)
 ///   /reports                      daily drilling & casting report (directors)
-///   /settings
 final routerProvider = Provider<GoRouter>((ref) {
   final flags = _SessionListenable(ref);
   final router = GoRouter(
@@ -76,6 +76,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [GoRoute(path: '/attendance', builder: (_, _) => const AttendancePage())]),
           StatefulShellBranch(routes: [GoRoute(path: '/casting', builder: (_, _) => const CastingPage())]),
           StatefulShellBranch(routes: [GoRoute(path: '/queue', builder: (_, _) => const QueuePage())]),
+          // Pengaturan adalah TAB, bukan layar yang ditumpuk. Diminta Daniel
+          // 15 Okt 2026: begitu tab Absensi dicabut, bilah bawah tinggal tiga
+          // dan terlihat bolong — dan Pengaturan memang tujuan yang dicari
+          // berulang kali (ganti proyek, panduan daya), bukan sekali jalan.
+          //
+          // Karena ia cabang, menuju ke sini HARUS dengan `go`, bukan `push`:
+          // `push` menumpuk shell KEDUA di atas shell yang sedang jalan,
+          // lengkap dengan bilah bawahnya sendiri.
+          StatefulShellBranch(routes: [GoRoute(path: '/settings', builder: (_, _) => const SettingsPage())]),
         ],
       ),
       GoRoute(
@@ -109,7 +118,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: '/reports', builder: (_, _) => const ReportPage()),
-      GoRoute(path: '/settings', builder: (_, _) => const SettingsPage()),
     ],
   );
   ref.onDispose(() {

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../theme/color_tokens.dart';
+import '../theme/dimens.dart';
 
 /// EMPTY list — nothing needs to be done.
 class EmptyState extends StatelessWidget {
@@ -60,12 +63,49 @@ class ErrorState extends StatelessWidget {
   }
 }
 
-class LoadingState extends StatelessWidget {
+/// Spinner — for a screen whose shape is NOT known in advance (a form being
+/// read from the phone's own database). A screen that is a list of cards gets
+/// `SkeletonCards` instead, which keeps its layout while it waits.
+///
+/// Held back for a beat before it appears. Most reads here finish in well
+/// under that: a spinner that flashes for 40 ms and vanishes is not progress,
+/// it is a blink, and the eye reads a blink as something going wrong.
+class LoadingState extends StatefulWidget {
   const LoadingState({super.key});
 
   @override
-  Widget build(BuildContext context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 56),
-        child: Center(child: CircularProgressIndicator()),
+  State<LoadingState> createState() => _LoadingStateState();
+}
+
+class _LoadingStateState extends State<LoadingState> {
+  static const _hold = Duration(milliseconds: 180);
+  bool _show = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(_hold, () {
+      if (mounted) setState(() => _show = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 56),
+        child: Center(
+          child: AnimatedOpacity(
+            opacity: _show ? 1 : 0,
+            duration: Dimens.motionMedium,
+            curve: Curves.easeOut,
+            child: const CircularProgressIndicator(),
+          ),
+        ),
       );
 }

@@ -10,6 +10,7 @@ import '../../core/network/api_error.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/status_badge.dart';
@@ -161,7 +162,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ),
             const SizedBox(height: 14),
             ...report.when<List<Widget>>(
-              loading: () => const [Padding(padding: EdgeInsets.only(top: 40), child: LoadingState())],
+              loading: () => const [SkeletonCards(rows: 3, leading: false)],
               error: (e, _) => [
                 ErrorState(
                   title: t(context).reportLoadError,

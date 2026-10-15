@@ -86,7 +86,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
             )
           : null,
       body: data.when(
-        loading: () => const LoadingState(),
+        loading: () => const SkeletonCards(),
         error: (e, _) => ErrorState(title: t(context).pointsLoadError, message: '$e'),
         data: (all) {
           final matching = _search.isEmpty
@@ -187,7 +187,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       child: Text(t(context).castProgress(castCount, all.length), style: TextStyle(color: w.muted)),
                     ),
                     if (items.isEmpty) EmptyState(message: t(context).noMatchingPoints),
-                    for (final pt in items) _card(pt),
+                    for (final (i, pt) in items.indexed) AppearIn(order: i, child: _card(pt)),
                   ],
                 ),
                 ),

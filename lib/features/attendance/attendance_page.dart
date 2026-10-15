@@ -37,7 +37,7 @@ class AttendancePage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: doc.when(
-        loading: () => const LoadingState(),
+        loading: () => const SkeletonCards(),
         error: (e, _) => ErrorState(title: t(context).attendanceLoadError, message: '$e'),
         data: (items) => ListView(
           padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 96),

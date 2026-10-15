@@ -43,7 +43,7 @@ class HomePage extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: t(context).settingsTitle,
-            onPressed: () => context.push('/settings'),
+            onPressed: () => context.go('/settings'),
             icon: CircleAvatar(
               radius: 16,
               backgroundColor: w.brandSoft,
@@ -62,46 +62,55 @@ class HomePage extends ConsumerWidget {
             const StatusBanners(),
             const PowerBanner(),
             const _WatchedCard(),
-            if (projects.isEmpty)
-              TerraBanner(
-                kind: BannerKind.info,
-                title: t(context).projectsMissingTitle,
-                body: t(context).projectsMissingHome,
-              ),
-            if (!canAttend && !canCast)
-              TerraBanner(
-                kind: BannerKind.warning,
-                title: t(context).noFieldAccess,
-                body: t(context).noFieldAccessBody,
-              ),
-            if (canAttend)
-              _Shortcut(
-                icon: Icons.how_to_reg,
-                title: t(context).shortcutAttendance,
-                body: t(context).shortcutAttendanceBody,
-                onTap: () => context.push('/attendance/new'),
-              ),
-            if (canCast)
-              _Shortcut(
-                icon: Icons.foundation,
-                title: t(context).shortcutCasting,
-                body: t(context).shortcutCastingBody,
-                onTap: () => context.go('/casting'),
-              ),
-            if (canViewWorkers)
-              _Shortcut(
-                icon: Icons.groups_outlined,
-                title: t(context).shortcutWorkers,
-                body: t(context).shortcutWorkersBody,
-                onTap: () => context.push('/workers'),
-              ),
-            if (canReport)
-              _Shortcut(
-                icon: Icons.insights,
-                title: t(context).shortcutReports,
-                body: t(context).shortcutReportsBody,
-                onTap: () => context.push('/reports'),
-              ),
+            // Berdatangan bertingkat, bukan sekaligus.
+            //
+            // Urutannya dihitung dari daftar yang SUDAH disaring, bukan dari
+            // posisi di dalam `children`: sebuah blok yang tidak lolos
+            // izinnya tidak boleh tetap memakan satu hitungan dan menyisakan
+            // jeda untuk kartu yang tidak ada.
+            for (final (i, blok) in [
+              if (projects.isEmpty)
+                TerraBanner(
+                  kind: BannerKind.info,
+                  title: t(context).projectsMissingTitle,
+                  body: t(context).projectsMissingHome,
+                ),
+              if (!canAttend && !canCast)
+                TerraBanner(
+                  kind: BannerKind.warning,
+                  title: t(context).noFieldAccess,
+                  body: t(context).noFieldAccessBody,
+                ),
+              if (canAttend)
+                _Shortcut(
+                  icon: Icons.how_to_reg,
+                  title: t(context).shortcutAttendance,
+                  body: t(context).shortcutAttendanceBody,
+                  onTap: () => context.push('/attendance/new'),
+                ),
+              if (canCast)
+                _Shortcut(
+                  icon: Icons.foundation,
+                  title: t(context).shortcutCasting,
+                  body: t(context).shortcutCastingBody,
+                  onTap: () => context.go('/casting'),
+                ),
+              if (canViewWorkers)
+                _Shortcut(
+                  icon: Icons.groups_outlined,
+                  title: t(context).shortcutWorkers,
+                  body: t(context).shortcutWorkersBody,
+                  onTap: () => context.push('/workers'),
+                ),
+              if (canReport)
+                _Shortcut(
+                  icon: Icons.insights,
+                  title: t(context).shortcutReports,
+                  body: t(context).shortcutReportsBody,
+                  onTap: () => context.push('/reports'),
+                ),
+            ].indexed)
+              AppearIn(order: i, child: blok),
           ],
         ),
       ),
@@ -269,7 +278,7 @@ class _Hero extends ConsumerWidget {
                     pill(
                       Icons.location_city_outlined,
                       project == null ? t(context).homePickProject : '${project['code']} · ${project['name']}',
-                      onTap: () => context.push('/settings'),
+                      onTap: () => context.go('/settings'),
                     ),
                     pill(
                       pending == 0 ? Icons.cloud_done_outlined : Icons.cloud_upload_outlined,

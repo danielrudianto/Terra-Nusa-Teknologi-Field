@@ -14,6 +14,7 @@ import '../../core/providers.dart';
 import '../../core/theme/appearance.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/app_log.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
@@ -37,12 +38,14 @@ class SettingsPage extends ConsumerWidget {
     final photo = ref.watch(pendingPhotoCountProvider).value ?? 0;
 
     return Scaffold(
-      appBar: AppBar(),
+      // Judulnya di bilah atas, bukan di badan — Pengaturan sekarang TAB,
+      // dan halaman tab lain (Cor, Antrean) menaruh judulnya di situ. Bilah
+      // kosong dengan judul di bawahnya adalah bentuk halaman yang DITUMPUK,
+      // lengkap dengan ruang untuk panah balik yang tidak ada lagi.
+      appBar: AppBar(title: Text(t(context).settingsTitle)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, 32),
+        padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 4, Dimens.pagePadding, 32),
         children: [
-          Text(t(context).settingsTitle, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: w.ink)),
-          const SizedBox(height: 16),
 
           // --- account ----------------------------------------------------
           _Box(
@@ -422,7 +425,11 @@ class _Tile extends StatelessWidget {
     final w = context.colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
+      // Menyusut saat ditekan, sama seperti ListCard. Riaknya tetap ada —
+      // TapScale memantau pointer, bukan gestur, jadi tap tetap milik
+      // InkWell di dalamnya.
+      child: TapScale(
+        child: Material(
         color: selected ? w.brandSoft : w.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
@@ -459,6 +466,7 @@ class _Tile extends StatelessWidget {
                   Icon(Icons.check_circle, color: w.brand),
               ],
             ),
+          ),
           ),
         ),
       ),

@@ -5,6 +5,7 @@
   "navAttendance": "考勤",
   "navCasting": "浇筑",
   "navQueue": "待发送",
+  "navSettings": "设置",
   "navAttendanceSoon": "考勤功能尚未开放——敬请期待。",
   "comingSoon": "敬请期待",
   "homeGreeting": "你好，{name}",
@@ -1158,5 +1159,19 @@
   "notifSoundingDueBody": "请在手机上打开浇筑记录，填写浇筑后的混凝土面探测值。导管埋深与方量核对均由该数值计算。",
   "@notifSoundingDueBody": {
     "description": "notifSoundingDueBody"
-  }
+  },
+  "drillLockedConfirmedTitle": "办公室已复核——已锁定",
+  "drillLockedConfirmedBody": "该桩点已复核并通过，钻孔记录不能再修改。如有数据错误，请先让办公室撤销复核。",
+  "drillLockedCastTitle": "已浇筑——已锁定",
+  "drillLockedCastBody": "混凝土已灌入，钻孔记录永久关闭。此页面上的内容不能再更改。",
+  "drillNeedGsTitle": "请先填写地面标高",
+  "drillNeedGsBody": "所有深度都是从地面标高往下量的，未填写之前无法记录任何数据。请点击上方的地面标高一行填写。",
+  "blockedNeedGs": "请先填写地面标高——点击上方那一行。",
+  "blockedConfirmed": "办公室已复核；此记录不能再修改。",
+  "blockedCast": "已浇筑；钻孔记录已永久关闭。",
+  "blockedNeedTremie": "请先组好导管，再添加罐车。",
+  "drillReopenConfirmTitle": "重新打开这份钻孔记录？",
+  "drillReopenConfirmBody": "该记录已关闭。重新打开后可以添加和修改深度数据，办公室也会看到这份记录曾被重新打开。确实有数据错误时才这样做。",
+  "castReopenConfirmTitle": "重新打开这份浇筑记录？",
+  "castReopenConfirmBody": "该记录已关闭。重新打开后可以添加和修改罐车与方量数据，办公室也会看到这份记录曾被重新打开。确实有数据错误时才这样做。"
 }

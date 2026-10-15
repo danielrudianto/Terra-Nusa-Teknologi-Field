@@ -5,6 +5,7 @@
   "navAttendance": "Attendance",
   "navCasting": "Casting",
   "navQueue": "Queue",
+  "navSettings": "Settings",
   "navAttendanceSoon": "Attendance is not active yet — coming soon.",
   "comingSoon": "Coming soon",
   "homeGreeting": "Hello, {name}",
@@ -1158,5 +1159,19 @@
   "notifSoundingDueBody": "Open the casting log on the phone and enter the concrete sounding after the pour. Tremie embedment and the volume checks are computed from that figure.",
   "@notifSoundingDueBody": {
     "description": "notifSoundingDueBody"
-  }
+  },
+  "drillLockedConfirmedTitle": "Checked by the office — locked",
+  "drillLockedConfirmedBody": "This point has been checked and approved, so its drill log can no longer be changed. If a figure is wrong, ask the office to undo the check first.",
+  "drillLockedCastTitle": "Already cast — locked",
+  "drillLockedCastBody": "Concrete has gone in, so the drill log is closed for good. Nothing on this screen can be changed any more.",
+  "drillNeedGsTitle": "Fill in the ground level first",
+  "drillNeedGsBody": "Every depth is measured down from the ground level, so nothing can be recorded until it is set. Tap the ground level row above to fill it in.",
+  "blockedNeedGs": "Fill in the ground level first — tap the row above.",
+  "blockedConfirmed": "Checked by the office; this log can no longer be changed.",
+  "blockedCast": "Already cast; the drill log is closed for good.",
+  "blockedNeedTremie": "Set up the tremie string first, then add the truck.",
+  "drillReopenConfirmTitle": "Open this drill log again?",
+  "drillReopenConfirmBody": "The log is closed now. Opening it again lets depths be added and changed, and the office will see that it was reopened. Only do this if a figure really is wrong.",
+  "castReopenConfirmTitle": "Open this casting log again?",
+  "castReopenConfirmBody": "The log is closed now. Opening it again lets trucks and volumes be added and changed, and the office will see that it was reopened. Only do this if a figure really is wrong."
 }

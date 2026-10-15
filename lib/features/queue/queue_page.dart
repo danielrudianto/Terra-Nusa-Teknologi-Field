@@ -7,6 +7,7 @@ import '../../core/db/app_database.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/util/reasons.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
@@ -45,7 +46,7 @@ class QueuePage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: doc.when(
-          loading: () => const LoadingState(),
+          loading: () => const SkeletonCards(leading: false),
           error: (e, _) => ErrorState(title: t(context).queueLoadError, message: '$e'),
           data: (items) => ListView(
             padding: const EdgeInsets.all(Dimens.pagePadding),
@@ -61,27 +62,30 @@ class QueuePage extends ConsumerWidget {
               ),
               if (items.isEmpty && photos.isEmpty)
                 EmptyState(message: t(context).allSent, icon: Icons.cloud_done_outlined),
-              for (final d in items) _DocumentCard(d: d),
+              for (final (i, d) in items.indexed) AppearIn(order: i, child: _DocumentCard(d: d)),
               if (photos.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(t(context).photosSection, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                 const SizedBox(height: 6),
-                for (final f in photos)
-                  ListCard(
-                    edgeColor: f.sendStatus == 'rejected' ? w.badFg : null,
-                    child: Row(
-                      children: [
-                        Icon(Icons.image_outlined, color: w.muted),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '${t(context).photoLine(_photoKindLabel(context, f.kind), '${(f.sizeBytes / 1024).round()}', formatTime(f.takenAt))}'
-                            '${f.reason == null ? '' : '\n${reasonText(context, f.reason)}'}',
-                            style: TextStyle(color: w.ink, fontSize: 13),
+                for (final (i, f) in photos.indexed)
+                  AppearIn(
+                    order: i,
+                    child: ListCard(
+                      edgeColor: f.sendStatus == 'rejected' ? w.badFg : null,
+                      child: Row(
+                        children: [
+                          Icon(Icons.image_outlined, color: w.muted),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              '${t(context).photoLine(_photoKindLabel(context, f.kind), '${(f.sizeBytes / 1024).round()}', formatTime(f.takenAt))}'
+                              '${f.reason == null ? '' : '\n${reasonText(context, f.reason)}'}',
+                              style: TextStyle(color: w.ink, fontSize: 13),
+                            ),
                           ),
-                        ),
-                        StatusBadge.sendStatus(context, f.sendStatus == 'pending' ? (f.attempts > 0 ? 'failed' : 'pending') : f.sendStatus),
-                      ],
+                          StatusBadge.sendStatus(context, f.sendStatus == 'pending' ? (f.attempts > 0 ? 'failed' : 'pending') : f.sendStatus),
+                        ],
+                      ),
                     ),
                   ),
               ],
