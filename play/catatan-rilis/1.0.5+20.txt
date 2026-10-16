@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.5 (20) — Isian tak hilang, cabut tremie pasti
+
+<id>
+Dua penjaga supaya catatan lapangan tidak hilang dan tidak tercatat keliru.
+
+• Menutup lembar TM yang isiannya belum disimpan kini ditanya lebih dulu, dengan pilihan Simpan. Dulu isiannya langsung hilang tanpa pertanyaan — termasuk foto surat jalan yang baru dipotret.
+• Menandai tremie tercabut dari daftar kini dikonfirmasi, dan menyebut sisa tertanamnya. Bila TM-nya sudah selesai dituang, peringatannya lebih tegas: cabutan yang tidak benar-benar terjadi tidak boleh tercatat.
+</id>
+<en-US>
+Two guards so site records are neither lost nor wrongly recorded.
+
+• Closing a truck sheet with unsaved entries now asks first, with a Save option. Before, entries were dropped without a question — including a delivery-note photo just taken.
+• Marking a tremie section as pulled from the list now asks for confirmation and states the remaining embedment. If that truck has finished pouring, the warning is stronger: a pull that did not happen must not be recorded.
+</en-US>
+<zh-CN>
+两道防护，让工地记录不会丢失、也不会记错。
+
+• 关闭尚有未保存内容的车次页时会先询问，并提供保存选项。此前内容会直接丢失，包括刚拍摄的送货单照片。
+• 从列表中标记导管节已拔出时会先确认，并显示剩余埋深。若该车已浇筑完毕，提示更为明确：并未实际发生的拔管不得记录。
+</zh-CN>

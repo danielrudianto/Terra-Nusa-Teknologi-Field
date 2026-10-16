@@ -403,7 +403,19 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// Tick a segment as removed, unless that leaves less than 1 m of tremie in
   /// the concrete. From a sounded level that is a hard stop; from an
   /// estimate the QS may go on after a warning, since the estimate can be off.
-  Future<void> _toggleRemoved(String segmentUuid, int? seq) async {
+  /// Tandai/batalkan satu segmen tremie sebagai TERCABUT.
+  ///
+  /// [tanya] hanya dinyalakan dari DAFTAR tremie — satu ketukan di daftar
+  /// itulah yang menulis `removedAt` tanpa pertanyaan apa pun. Dua jalur
+  /// lainnya (`_askPullTremie` sesudah TM beres, dan tombol pada kartu
+  /// saran) SUDAH bertanya; menanyai orang dua kali di satu tindakan hanya
+  /// melatihnya menekan "ya" tanpa membaca.
+  ///
+  /// Dilaporkan Daniel, 16 Okt 2026 pada SP.B41: dua segmen bertanda
+  /// dicabut jam 18:56 dan 19:17, sementara penuangan TM terakhir selesai
+  /// 18:51. Keduanya tidak pernah benar-benar dicabut — panjang tremie yang
+  /// tercatat per TM membuktikannya — dan membetulkannya butuh SQL.
+  Future<void> _toggleRemoved(String segmentUuid, int? seq, {bool tanya = false}) async {
     if (seq != null) {
       final k = _castingState;
       final seg = k.segments.where((s) => s.uuid == segmentUuid).firstOrNull;
@@ -430,6 +442,36 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           ),
         );
         if (goOn != true) return;
+      }
+    }
+    if (tanya && seq != null) {
+      final seg = _castingState.segments.where((x) => x.uuid == segmentUuid).firstOrNull;
+      if (seg != null) {
+        final snap = _snapshotNow(_castingState);
+        final sisa = snap.tremieBottomM - seg.lengthM - snap.concreteNowM;
+        // TM itu sudah SELESAI dituang: tidak ada tremie yang sedang
+        // bergerak, jadi cabutan yang ditandai sekarang hampir pasti
+        // ketukan beres-beres. Dibuat `danger` supaya tombolnya tidak
+        // berada di tempat yang biasa ditekan tanpa dibaca.
+        final tm = _trucks.where((x) => toIntOrNull(x['seq']) == seq).firstOrNull;
+        final sudahSelesai = tm?['endAt'] != null;
+        final setuju = await askConfirm(
+          context,
+          icon: Icons.north,
+          danger: sudahSelesai,
+          title: t(context).pullTickTitle,
+          body: [
+            t(context).pullTickBody(
+              seg.position,
+              _decimal(seg.lengthM),
+              seq,
+              formatMeters(math.max(sisa, 0)),
+            ),
+            if (sudahSelesai) t(context).pullTickAfterPour(seq),
+          ].join('\n\n'),
+          confirmLabel: t(context).pulledAlready,
+        );
+        if (!setuju) return;
       }
     }
     await _setRemoved(segmentUuid, seq);
@@ -1405,7 +1447,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
             onAddBottom: _addBottom,
             onCustom: _customSegment,
             onRemoveTop: _removeTopSegment,
-            onToggleRemoved: _toggleRemoved,
+            onToggleRemoved: (uuid, seq) => _toggleRemoved(uuid, seq, tanya: true),
           ),
 
           // --- recommendation -----------------------------------------------
@@ -2589,8 +2631,126 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   late String? _slumpPhoto = widget.initial?['slumpPhotoUuid']?.toString() ?? widget.slumpPhotoUuid;
   String? _error;
 
-  /// Chosen supplier id; [_other] = typed by hand, null = none.
-  static const _other = -1;
+  // ── MENUTUP LEMBAR TIDAK BOLEH MEMBUANG KERJA LAPANGAN ────────────────
+  //
+  // Dilaporkan Daniel, 16 Okt 2026: QS memotret surat jalan, lalu menutup
+  // lembar ini tanpa menekan Simpan. Fotonya sendiri sudah tersimpan dan
+  // ikut naik lewat antrean foto — yang hilang hanya TAUTANNYA ke TM ini.
+  // Akibatnya fotonya menjadi yatim di server dan TM-nya terbaca "tanpa
+  // foto", dan satu kejadian butuh penelusuran SQL untuk menemukannya
+  // kembali.
+  //
+  // Dialognya MENAWARKAN SIMPAN, bukan hanya memperingatkan: yang
+  // diinginkan orangnya memang menyimpan, dan memperingatkan lalu
+  // menyuruhnya mencari tombolnya sendiri hanya memindahkan masalahnya.
+  //
+  // Menutup dialog tanpa memilih TIDAK menutup lembarnya — hanya "Buang"
+  // yang membuang, dan itu harus ditekan sadar.
+  //
+  // Polanya menyalin `attendance_form.dart`, bukan bentuk baru.
+
+  /// Isian saat lembar DIBUKA. Diambil di `initState`, bukan `late` yang
+  /// dibaca belakangan: yang dibaca belakangan akan merekam isian yang
+  /// sudah diubah orangnya, dan pembandingnya selalu mengatakan "tidak ada
+  /// perubahan".
+  final Map<String, String?> _awal = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _awal.addAll(_isianSekarang());
+  }
+
+  bool get _adaPerubahan {
+    final kini = _isianSekarang();
+    return kini.keys.any((k) => kini[k] != _awal[k]);
+  }
+
+  /// Tutup lembar; tanya lebih dahulu bila ada yang belum tersimpan.
+  Future<void> _tutup() async {
+    if (!_adaPerubahan) {
+      Navigator.pop(context);
+      return;
+    }
+    final simpan = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        icon: const Icon(Icons.save_outlined, size: 32),
+        title: Text(t(c).unsavedTitle, textAlign: TextAlign.center),
+        content: Text(t(c).unsavedBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(t(c).discard),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(t(c).save),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (simpan == true) {
+      // `_submit` sendiri yang menutup lembar bila isiannya sah. Yang tidak
+      // sah membiarkannya terbuka dengan pesan galatnya — itu memang yang
+      // diinginkan.
+      _submit();
+    } else if (simpan == false) {
+      Navigator.pop(context);
+    }
+  }
+
+  Map<String, String?> _isianSekarang() => {
+        'truckNo': _truck.text,
+        'volumeM3': _volume.text,
+        'slumpCm': _slump.text,
+        'sounding': _sounding.text,
+        'supplier': _supplier.text,
+        'photo': _photo,
+        'slumpPhoto': _slumpPhoto,
+        'pemasok': _supplierChoice?.toString(),
+      };
+
+  /// Chosen supplier id. `null` = belum dipilih.
+  ///
+  /// ───────────────────────────────────────────────────────────────────────
+  /// TYPING A NAME IS ONLY OFFERED WHEN THERE IS NO LIST AT ALL
+  /// ───────────────────────────────────────────────────────────────────────
+  ///
+  /// Reported by Daniel, 16 Oct 2026: this project has exactly two concrete
+  /// suppliers, and a foreman still managed to enter "Jaya mix". The "other"
+  /// item on the dropdown was the door, and the cost is not a messy list.
+  /// A typed name matches no supplier row, so the casting carries a
+  /// `supplierName` with no `supplierID`: it never reaches that supplier's
+  /// recap, it never matches the delivery tickets, and the office only finds
+  /// out while reconciling an invoice weeks later. That is how "SCG Jayamix"
+  /// was born — a supplier that turned out never to have existed.
+  ///
+  /// So: when the app HAS a list, the list is the only way. If the real
+  /// supplier is missing from it, the fix belongs in the office (mark the
+  /// supplier "Pemasok beton", or issue the PO for this project) and the
+  /// banner says so — otherwise the only way forward a foreman can see is
+  /// to invent a name that nobody can trace.
+  ///
+  /// Free text survives for ONE case: no concrete supplier in the ERP at
+  /// all. Without it, such a project could not log a casting.
+  /// Beton SITE-MIX — diaduk di lokasi, bukan dari batching plant.
+  ///
+  /// Pilihan TETAP, bukan ketikan. Daniel, 16 Okt 2026: "seumur hidup cuma
+  /// ada 1 proyek yang kaya gitu" — jarang, tetapi nyata, dan justru karena
+  /// jarang ia tidak boleh dikembalikan menjadi isian bebas. Satu pilihan
+  /// tetap menghasilkan satu nilai yang sama di seluruh HP; isian bebas
+  /// menghasilkan "lokal", "Lokal", "site mix", "sitemix", dan "cor manual"
+  /// untuk satu hal yang sama.
+  ///
+  /// Yang TERSIMPAN selalu [_namaLokal] — bukan labelnya di layar. Label
+  /// boleh diterjemahkan; nilai yang tersimpan tidak, kalau tidak HP
+  /// berbahasa Inggris akan menulis nama lain untuk beton yang sama.
+  static const _lokal = -2;
+
+  /// Nilai `supplierName` untuk site-mix. TETAP, tidak diterjemahkan.
+  static const _namaLokal = 'Lokal';
 
   /// Where the pile lands if this truck's volume is poured, or null when
   /// nothing can be said (no typed volume, no theoretical volume).
@@ -2606,7 +2766,24 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
 
 
   late int? _supplierChoice = widget.supplierId ??
-      ((widget.supplierName ?? '').isNotEmpty && widget.suppliers.isNotEmpty ? _other : null);
+      ((widget.supplierName ?? '') == _namaLokal ? _lokal : null);
+
+  /// Nama yang DIKETIK pada build lama, dan tidak cocok dengan pemasok mana pun.
+  ///
+  /// Dibiarkan `null` pada pilihannya — bukan dipetakan ke butir dropdown.
+  /// `DropdownButtonFormField` melempar assertion bila `value`-nya bukan
+  /// salah satu butirnya, jadi memetakannya ke butir "Lainnya" yang sudah
+  /// dibuang akan MERUSAK sheet ini tepat pada log yang paling perlu
+  /// dibetulkan — log "Jaya mix" itu sendiri.
+  ///
+  /// Namanya tetap ditampilkan sebagai peringatan: menghilangkannya diam-diam
+  /// berarti menghapus apa yang benar-benar dicatat lapangan.
+  String? get _ketikanWarisan {
+    final n = (widget.supplierName ?? '').trim();
+    if (widget.suppliers.isEmpty || widget.supplierId != null) return null;
+    if (n.isEmpty || n == _namaLokal) return null;
+    return n;
+  }
 
   /// An unusual volume was shown once; the second tap saves it.
   bool _volumeConfirmed = false;
@@ -2617,6 +2794,38 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
       c.dispose();
     }
     super.dispose();
+  }
+
+
+  /// Pilihan pemasok berubah — "Lokal" ditanyakan lebih dulu.
+  ///
+  /// Diminta Daniel, 16 Okt 2026: "takutnya salah klik loh". Butirnya duduk
+  /// tepat di bawah pemasok sungguhan, dan jari yang meleset satu baris
+  /// mengubah beton ready-mix menjadi site-mix — pada dokumen yang dipakai
+  /// menagih, dan yang tidak akan pernah cocok dengan surat jalan mana pun
+  /// sesudahnya.
+  ///
+  /// Hanya "Lokal" yang ditanyakan. Setiap pilihan yang ditanyakan membuat
+  /// pertanyaannya makin tidak dibaca; yang perlu dipastikan di sini satu,
+  /// yaitu yang artinya "tidak ada pemasok sama sekali".
+  ///
+  /// Dibatalkan berarti pilihannya TIDAK berubah — bukan kembali ke kosong.
+  /// Kembali ke kosong, satu ketukan salah akan membuang pemasok yang sudah
+  /// benar dan orangnya harus memilih ulang.
+  Future<void> _pilihPemasok(int? v) async {
+    if (v != _lokal) {
+      setState(() => _supplierChoice = v);
+      return;
+    }
+    final ya = await askConfirm(
+      context,
+      title: t(context).supplierLocalConfirmTitle,
+      body: t(context).supplierLocalConfirmBody,
+      confirmLabel: t(context).supplierLocalConfirmYes,
+      icon: Icons.handyman_outlined,
+    );
+    if (!mounted || !ya) return;
+    setState(() => _supplierChoice = v);
   }
 
   void _submit() {
@@ -2640,11 +2849,25 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
     final sounding = _sounding.text.trim().isEmpty ? null : parseNumber(_sounding.text);
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
     final picked = widget.suppliers.where((s) => toIntOrNull(s['id']) == _supplierChoice).firstOrNull;
+    // With a list on hand, a supplier must be picked from it. Held HERE and
+    // not left to the server: the server would reject the whole sync item
+    // hours later, when this sheet is long closed and nobody can still tell
+    // which casting it belonged to.
+    final lokal = _supplierChoice == _lokal;
+    if (widget.suppliers.isNotEmpty && picked == null && !lokal) {
+      setState(() => _error = t(context).supplierMustBePicked);
+      return;
+    }
     Navigator.pop(context, {
       'truckNo': orNull(_truck),
       // Picked from the list: id + its name. Typed: name only.
+      // Dipilih dari daftar: id + namanya. Site-mix: tanpa id, nama TETAP
+      // `Lokal` (bukan labelnya di layar, yang boleh diterjemahkan).
+      // Ketikan: nama saja, dan itu hanya mungkin bila daftarnya kosong.
       'supplierID': picked == null ? null : toIntOrNull(picked['id']),
-      'supplierName': picked == null ? orNull(_supplier) : '${picked['name']}',
+      'supplierName': picked != null
+          ? '${picked['name']}'
+          : (lokal ? _namaLokal : orNull(_supplier)),
       'volumeM3': decimalText(volume),
       'slumpCm': slump == null ? null : decimalText(slump, decimals: 1),
       'concreteDepthBeforeM': sounding == null ? null : decimalText(sounding),
@@ -2654,7 +2877,21 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => PopScope(
+        // `canPop: false` selalu, lalu kedirtian diperiksa di dalam
+        // penanganannya. Dibuat `canPop: !_adaPerubahan`, nilainya hanya
+        // dihitung ulang saat widget-nya dibangun kembali — dan mengetik di
+        // `TextField` tidak membangun ulang apa pun, sehingga lembar yang
+        // baru saja diisi tetap tertutup tanpa pertanyaan.
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          _tutup();
+        },
+        child: _isi(context),
+      );
+
+  Widget _isi(BuildContext context) {
     const numeric = TextInputType.numberWithOptions(decimal: true);
     return Padding(
       padding: sheetPadding(context),
@@ -2705,18 +2942,26 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
                 items: [
                   for (final s in widget.suppliers)
                     DropdownMenuItem<int?>(value: toIntOrNull(s['id']), child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
-                  DropdownMenuItem<int?>(value: _other, child: Text(t(context).otherTypeName)),
+                  // Paling bawah, sesudah pemasok sungguhan: site-mix
+                  // adalah perkecualian, dan letaknya mengatakan itu.
+                  DropdownMenuItem<int?>(value: _lokal, child: Text(t(context).supplierLocal)),
                 ],
-                onChanged: (v) => setState(() => _supplierChoice = v),
+                onChanged: _pilihPemasok,
               ),
+              if (_ketikanWarisan != null) ...[
+                const SizedBox(height: 8),
+                TerraBanner(
+                  kind: BannerKind.warning,
+                  title: t(context).supplierTypedBefore,
+                  body: _ketikanWarisan!,
+                ),
+              ],
               const SizedBox(height: 12),
             ],
-            if ((widget.suppliers.isEmpty || _supplierChoice == _other)) ...[
+            if (widget.suppliers.isEmpty) ...[
               TextField(
                 controller: _supplier,
-                decoration: InputDecoration(
-                  labelText: widget.suppliers.isEmpty ? t(context).truckSupplier : t(context).otherSupplierName,
-                ),
+                decoration: InputDecoration(labelText: t(context).truckSupplier),
               ),
               const SizedBox(height: 12),
             ],
@@ -2840,10 +3085,133 @@ class _HeaderSheetState extends State<_HeaderSheet> {
   late final _note = TextEditingController(text: widget.note ?? '');
   String? _error;
 
-  /// Chosen supplier id; [_other] = not on the list, typed by hand.
-  static const _other = -1;
+  // ── MENUTUP LEMBAR TIDAK BOLEH MEMBUANG KERJA LAPANGAN ────────────────
+  //
+  // Dilaporkan Daniel, 16 Okt 2026: QS memotret surat jalan, lalu menutup
+  // lembar ini tanpa menekan Simpan. Fotonya sendiri sudah tersimpan dan
+  // ikut naik lewat antrean foto — yang hilang hanya TAUTANNYA ke TM ini.
+  // Akibatnya fotonya menjadi yatim di server dan TM-nya terbaca "tanpa
+  // foto", dan satu kejadian butuh penelusuran SQL untuk menemukannya
+  // kembali.
+  //
+  // Dialognya MENAWARKAN SIMPAN, bukan hanya memperingatkan: yang
+  // diinginkan orangnya memang menyimpan, dan memperingatkan lalu
+  // menyuruhnya mencari tombolnya sendiri hanya memindahkan masalahnya.
+  //
+  // Menutup dialog tanpa memilih TIDAK menutup lembarnya — hanya "Buang"
+  // yang membuang, dan itu harus ditekan sadar.
+  //
+  // Polanya menyalin `attendance_form.dart`, bukan bentuk baru.
+
+  /// Isian saat lembar DIBUKA. Diambil di `initState`, bukan `late` yang
+  /// dibaca belakangan: yang dibaca belakangan akan merekam isian yang
+  /// sudah diubah orangnya, dan pembandingnya selalu mengatakan "tidak ada
+  /// perubahan".
+  final Map<String, String?> _awal = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _awal.addAll(_isianSekarang());
+  }
+
+  bool get _adaPerubahan {
+    final kini = _isianSekarang();
+    return kini.keys.any((k) => kini[k] != _awal[k]);
+  }
+
+  /// Tutup lembar; tanya lebih dahulu bila ada yang belum tersimpan.
+  Future<void> _tutup() async {
+    if (!_adaPerubahan) {
+      Navigator.pop(context);
+      return;
+    }
+    final simpan = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        icon: const Icon(Icons.save_outlined, size: 32),
+        title: Text(t(c).unsavedTitle, textAlign: TextAlign.center),
+        content: Text(t(c).unsavedBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(t(c).discard),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(t(c).save),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (simpan == true) {
+      // `_submit` sendiri yang menutup lembar bila isiannya sah. Yang tidak
+      // sah membiarkannya terbuka dengan pesan galatnya — itu memang yang
+      // diinginkan.
+      _submit();
+    } else if (simpan == false) {
+      Navigator.pop(context);
+    }
+  }
+
+  Map<String, String?> _isianSekarang() => {
+        'grade': _grade.text,
+        'supplier': _supplier.text,
+        'gap': _gap.text,
+        'note': _note.text,
+        'pemasok': _supplierChoice?.toString(),
+      };
+
+  /// Chosen supplier id. `null` = belum dipilih.
+  ///
+  /// ───────────────────────────────────────────────────────────────────────
+  /// TYPING A NAME IS ONLY OFFERED WHEN THERE IS NO LIST AT ALL
+  /// ───────────────────────────────────────────────────────────────────────
+  ///
+  /// Reported by Daniel, 16 Oct 2026: this project has exactly two concrete
+  /// suppliers, and a foreman still managed to enter "Jaya mix". The "other"
+  /// item on the dropdown was the door, and the cost is not a messy list.
+  /// A typed name matches no supplier row, so the casting carries a
+  /// `supplierName` with no `supplierID`: it never reaches that supplier's
+  /// recap, it never matches the delivery tickets, and the office only finds
+  /// out while reconciling an invoice weeks later. That is how "SCG Jayamix"
+  /// was born — a supplier that turned out never to have existed.
+  ///
+  /// So: when the app HAS a list, the list is the only way. If the real
+  /// supplier is missing from it, the fix belongs in the office (mark the
+  /// supplier "Pemasok beton", or issue the PO for this project) and the
+  /// banner says so — otherwise the only way forward a foreman can see is
+  /// to invent a name that nobody can trace.
+  ///
+  /// Free text survives for ONE case: no concrete supplier in the ERP at
+  /// all. Without it, such a project could not log a casting.
+  /// Beton SITE-MIX — diaduk di lokasi, bukan dari batching plant.
+  ///
+  /// Pilihan TETAP, bukan ketikan. Daniel, 16 Okt 2026: "seumur hidup cuma
+  /// ada 1 proyek yang kaya gitu" — jarang, tetapi nyata, dan justru karena
+  /// jarang ia tidak boleh dikembalikan menjadi isian bebas. Satu pilihan
+  /// tetap menghasilkan satu nilai yang sama di seluruh HP; isian bebas
+  /// menghasilkan "lokal", "Lokal", "site mix", "sitemix", dan "cor manual"
+  /// untuk satu hal yang sama.
+  ///
+  /// Yang TERSIMPAN selalu [_namaLokal] — bukan labelnya di layar. Label
+  /// boleh diterjemahkan; nilai yang tersimpan tidak, kalau tidak HP
+  /// berbahasa Inggris akan menulis nama lain untuk beton yang sama.
+  static const _lokal = -2;
+
+  /// Nilai `supplierName` untuk site-mix. TETAP, tidak diterjemahkan.
+  static const _namaLokal = 'Lokal';
   late int? _supplierChoice = widget.supplierId ??
-      (widget.supplier != null && widget.supplier!.isNotEmpty && widget.suppliers.isNotEmpty ? _other : null);
+      ((widget.supplier ?? '') == _namaLokal ? _lokal : null);
+
+  /// Nama yang DIKETIK pada build lama — lihat kembarannya di `_TruckSheet`.
+  String? get _ketikanWarisan {
+    final n = (widget.supplier ?? '').trim();
+    if (widget.suppliers.isEmpty || widget.supplierId != null) return null;
+    if (n.isEmpty || n == _namaLokal) return null;
+    return n;
+  }
 
   @override
   void dispose() {
@@ -2851,6 +3219,38 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       c.dispose();
     }
     super.dispose();
+  }
+
+
+  /// Pilihan pemasok berubah — "Lokal" ditanyakan lebih dulu.
+  ///
+  /// Diminta Daniel, 16 Okt 2026: "takutnya salah klik loh". Butirnya duduk
+  /// tepat di bawah pemasok sungguhan, dan jari yang meleset satu baris
+  /// mengubah beton ready-mix menjadi site-mix — pada dokumen yang dipakai
+  /// menagih, dan yang tidak akan pernah cocok dengan surat jalan mana pun
+  /// sesudahnya.
+  ///
+  /// Hanya "Lokal" yang ditanyakan. Setiap pilihan yang ditanyakan membuat
+  /// pertanyaannya makin tidak dibaca; yang perlu dipastikan di sini satu,
+  /// yaitu yang artinya "tidak ada pemasok sama sekali".
+  ///
+  /// Dibatalkan berarti pilihannya TIDAK berubah — bukan kembali ke kosong.
+  /// Kembali ke kosong, satu ketukan salah akan membuang pemasok yang sudah
+  /// benar dan orangnya harus memilih ulang.
+  Future<void> _pilihPemasok(int? v) async {
+    if (v != _lokal) {
+      setState(() => _supplierChoice = v);
+      return;
+    }
+    final ya = await askConfirm(
+      context,
+      title: t(context).supplierLocalConfirmTitle,
+      body: t(context).supplierLocalConfirmBody,
+      confirmLabel: t(context).supplierLocalConfirmYes,
+      icon: Icons.handyman_outlined,
+    );
+    if (!mounted || !ya) return;
+    setState(() => _supplierChoice = v);
   }
 
   void _submit() {
@@ -2875,11 +3275,25 @@ class _HeaderSheetState extends State<_HeaderSheet> {
     }
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
     final picked = widget.suppliers.where((s) => toIntOrNull(s['id']) == _supplierChoice).firstOrNull;
+    // With a list on hand, a supplier must be picked from it. Held HERE and
+    // not left to the server: the server would reject the whole sync item
+    // hours later, when this sheet is long closed and nobody can still tell
+    // which casting it belonged to.
+    final lokal = _supplierChoice == _lokal;
+    if (widget.suppliers.isNotEmpty && picked == null && !lokal) {
+      setState(() => _error = t(context).supplierMustBePicked);
+      return;
+    }
     Navigator.pop(context, {
       'concreteGrade': grade == null ? null : decimalText(grade, decimals: 1),
       // Picked from the list: id + its name. Typed: name only.
+      // Dipilih dari daftar: id + namanya. Site-mix: tanpa id, nama TETAP
+      // `Lokal` (bukan labelnya di layar, yang boleh diterjemahkan).
+      // Ketikan: nama saja, dan itu hanya mungkin bila daftarnya kosong.
       'supplierID': picked == null ? null : toIntOrNull(picked['id']),
-      'supplierName': picked == null ? orNull(_supplier) : '${picked['name']}',
+      'supplierName': picked != null
+          ? '${picked['name']}'
+          : (lokal ? _namaLokal : orNull(_supplier)),
       'tremieDepthStartM': decimalText(dalam),
       // Celahnya ikut dikirim: server lama tidak mengenal kolom terukurnya,
       // dan hitungannya mundur ke sini.
@@ -2889,7 +3303,21 @@ class _HeaderSheetState extends State<_HeaderSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => PopScope(
+        // `canPop: false` selalu, lalu kedirtian diperiksa di dalam
+        // penanganannya. Dibuat `canPop: !_adaPerubahan`, nilainya hanya
+        // dihitung ulang saat widget-nya dibangun kembali — dan mengetik di
+        // `TextField` tidak membangun ulang apa pun, sehingga lembar yang
+        // baru saja diisi tetap tertutup tanpa pertanyaan.
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          _tutup();
+        },
+        child: _isi(context),
+      );
+
+  Widget _isi(BuildContext context) {
     const numeric = TextInputType.numberWithOptions(decimal: true);
     return Padding(
       padding: sheetPadding(context),
@@ -2922,16 +3350,33 @@ class _HeaderSheetState extends State<_HeaderSheet> {
                 items: [
                   for (final s in widget.suppliers)
                     DropdownMenuItem<int?>(value: toIntOrNull(s['id']), child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
-                  DropdownMenuItem<int?>(value: _other, child: Text(t(context).otherTypeName)),
+                  // Paling bawah, sesudah pemasok sungguhan: site-mix
+                  // adalah perkecualian, dan letaknya mengatakan itu.
+                  DropdownMenuItem<int?>(value: _lokal, child: Text(t(context).supplierLocal)),
                 ],
-                onChanged: (v) => setState(() => _supplierChoice = v),
+                onChanged: _pilihPemasok,
               ),
-              if (_supplierChoice == _other) const SizedBox(height: 12),
+              // What to do when the right supplier is not on the list, said
+              // where the dead end is met.
+              const SizedBox(height: 8),
+              TerraBanner(
+                kind: BannerKind.info,
+                title: t(context).supplierMissingTitle,
+                body: t(context).supplierMissingBody,
+              ),
+              if (_ketikanWarisan != null) ...[
+                const SizedBox(height: 8),
+                TerraBanner(
+                  kind: BannerKind.warning,
+                  title: t(context).supplierTypedBefore,
+                  body: _ketikanWarisan!,
+                ),
+              ],
             ],
-            if (widget.suppliers.isEmpty || _supplierChoice == _other)
+            if (widget.suppliers.isEmpty)
               TextField(
                 controller: _supplier,
-                decoration: InputDecoration(labelText: widget.suppliers.isEmpty ? t(context).concreteSupplier : t(context).otherSupplierName),
+                decoration: InputDecoration(labelText: t(context).concreteSupplier),
               ),
             const SizedBox(height: 12),
             TextField(

@@ -199,6 +199,9 @@
   "estimateSoundFirst": "{text}\n\n该混凝土面为估算值。如有疑问请先测绳探测。",
   "tickAnyway": "仍然勾选",
   "pullUndone": "已取消拔管；该节重新装回。",
+  "pullTickTitle": "记录该节已拔出？",
+  "pullTickBody": "第 {pos} 节（{panjang} 米）将记录为在第 {seq} 车后拔出，埋深剩余 {sisa}。该记录将作为证据写入成桩记录。",
+  "pullTickAfterPour": "第 {seq} 车已浇筑完毕。若导管并未真正拔出，请勿记录。",
   "pullRecorded": "该节记录为在第 {seq} 车后拔出。",
   "truckSaved": "第 {seq} 车已保存。",
   "truckUpdated": "第 {seq} 车已更新。",
@@ -515,6 +518,8 @@
   "discardTitle": "从手机丢弃？",
   "discardBody": "该数据将不再上传，且无法撤销。",
   "discard": "丢弃",
+  "unsavedTitle": "不保存就离开？",
+  "unsavedBody": "本页有尚未保存的内容，包括刚拍摄的照片。丢弃后，照片不会附加到这辆车上。",
   "discarded": "已从手机丢弃。",
   "queuedResend": "已加入队列，正在重新上传。",
   "resend": "重新上传",
@@ -1173,5 +1178,37 @@
   "drillReopenConfirmTitle": "重新打开这份钻孔记录？",
   "drillReopenConfirmBody": "该记录已关闭。重新打开后可以添加和修改深度数据，办公室也会看到这份记录曾被重新打开。确实有数据错误时才这样做。",
   "castReopenConfirmTitle": "重新打开这份浇筑记录？",
-  "castReopenConfirmBody": "该记录已关闭。重新打开后可以添加和修改罐车与方量数据，办公室也会看到这份记录曾被重新打开。确实有数据错误时才这样做。"
+  "castReopenConfirmBody": "该记录已关闭。重新打开后可以添加和修改罐车与方量数据，办公室也会看到这份记录曾被重新打开。确实有数据错误时才这样做。",
+  "supplierLocal": "本地（现场搅拌）",
+  "@supplierLocal": {
+    "description": "supplierLocal"
+  },
+  "supplierMustBePicked": "请从列表中选择供应商。若列表中没有，请让办公室添加——不要自行输入名称。",
+  "@supplierMustBePicked": {
+    "description": "supplierMustBePicked"
+  },
+  "supplierMissingTitle": "列表中没有该供应商？",
+  "@supplierMissingTitle": {
+    "description": "supplierMissingTitle"
+  },
+  "supplierMissingBody": "请勿自行输入。请办公室将该供应商标记为\"混凝土供应商\"并开具本项目的采购单——自行输入的名称永远不会进入供应商汇总，也无法与送货单匹配。",
+  "@supplierMissingBody": {
+    "description": "supplierMissingBody"
+  },
+  "supplierTypedBefore": "此名称由旧版本手动输入——请从列表中选择正确的供应商",
+  "@supplierTypedBefore": {
+    "description": "supplierTypedBefore"
+  },
+  "supplierLocalConfirmTitle": "使用本地（现场搅拌）混凝土？",
+  "@supplierLocalConfirmTitle": {
+    "description": "supplierLocalConfirmTitle"
+  },
+  "supplierLocalConfirmBody": "这表示混凝土在现场搅拌，而非由搅拌站配送——因此该记录将没有供应商，也不会与任何送货单匹配。若混凝土由罐车送达，请从列表中选择供应商。",
+  "@supplierLocalConfirmBody": {
+    "description": "supplierLocalConfirmBody"
+  },
+  "supplierLocalConfirmYes": "是，现场搅拌",
+  "@supplierLocalConfirmYes": {
+    "description": "supplierLocalConfirmYes"
+  }
 }

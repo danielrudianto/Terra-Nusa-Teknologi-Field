@@ -1,0 +1,25 @@
+# TERBIT 16 Okt 2026. Jangan diubah — ini arsip apa yang benar-benar terkirim.
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.4 (19) — Pemasok beton dipilih, bukan diketik
+
+<id>
+Pemasok beton kini dipilih dari daftar pemasok proyek, tidak lagi diketik.
+
+• Nama pemasok tidak bisa ditulis bebas. Satu pemasok tidak lagi tercatat dengan beberapa ejaan, sehingga rekap volume per pemasok dan pencocokan surat jalan tidak pecah.
+• Pilihan "Lokal" untuk beton yang diaduk di lokasi (site-mix). Memilihnya ditanya dulu, supaya tidak terpilih karena salah ketuk.
+• Log lama yang pemasoknya diketik tangan tetap terbaca dan ditandai, bukan dihapus.
+</id>
+<en-US>
+Concrete suppliers are now picked from the project's supplier list instead of typed in.
+
+• Supplier names can no longer be free-typed. One supplier is no longer recorded under several spellings, so per-supplier volume summaries and delivery-note matching stop splitting.
+• A "Lokal" option covers site-mixed concrete. Picking it asks first, so a mistaken tap cannot select it.
+• Older logs with a hand-typed supplier stay readable and are flagged, not erased.
+</en-US>
+<zh-CN>
+混凝土供应商现在从项目供应商名单中选择，不再手动输入。
+
+• 供应商名称不能再自由填写。同一家供应商不会再以多种写法被记录，因此按供应商统计的方量和送货单核对不会再被拆散。
+• 新增"Lokal"选项，用于现场拌制（site-mix）的混凝土。选择时会先确认，避免误触选中。
+• 以往手动输入供应商的记录仍可查看并加注标记，不会被删除。
+</zh-CN>

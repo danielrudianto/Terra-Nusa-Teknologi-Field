@@ -199,6 +199,9 @@
   "estimateSoundFirst": "{text}\n\nThis concrete level is an estimate. Sound it first if in doubt.",
   "tickAnyway": "Tick it anyway",
   "pullUndone": "Pull undone; the section is fitted again.",
+  "pullTickTitle": "Record this section as pulled?",
+  "pullTickBody": "Section #{pos} ({panjang} m) will be recorded as pulled after truck #{seq}, leaving {sisa} embedded. This goes into the Piling Record as evidence.",
+  "pullTickAfterPour": "Truck #{seq} has already finished pouring. If the tremie was not actually pulled, do not record it.",
   "pullRecorded": "Section recorded as pulled after truck #{seq}.",
   "truckSaved": "Truck #{seq} saved.",
   "truckUpdated": "Truck #{seq} updated.",
@@ -515,6 +518,8 @@
   "discardTitle": "Discard from the phone?",
   "discardBody": "This data will never be sent. It cannot be undone.",
   "discard": "Discard",
+  "unsavedTitle": "Leave without saving?",
+  "unsavedBody": "This sheet has entries that are not saved yet, including a photo just taken. A discarded photo will not attach to this truck.",
   "discarded": "Discarded from the phone.",
   "queuedResend": "Queued, resending now.",
   "resend": "Resend",
@@ -1173,5 +1178,37 @@
   "drillReopenConfirmTitle": "Open this drill log again?",
   "drillReopenConfirmBody": "The log is closed now. Opening it again lets depths be added and changed, and the office will see that it was reopened. Only do this if a figure really is wrong.",
   "castReopenConfirmTitle": "Open this casting log again?",
-  "castReopenConfirmBody": "The log is closed now. Opening it again lets trucks and volumes be added and changed, and the office will see that it was reopened. Only do this if a figure really is wrong."
+  "castReopenConfirmBody": "The log is closed now. Opening it again lets trucks and volumes be added and changed, and the office will see that it was reopened. Only do this if a figure really is wrong.",
+  "supplierLocal": "Local (site-mix, batched on site)",
+  "@supplierLocal": {
+    "description": "supplierLocal"
+  },
+  "supplierMustBePicked": "Pick a supplier from the list. If the supplier is not on it, ask the office to add it — do not type a name.",
+  "@supplierMustBePicked": {
+    "description": "supplierMustBePicked"
+  },
+  "supplierMissingTitle": "Supplier not on the list?",
+  "@supplierMissingTitle": {
+    "description": "supplierMissingTitle"
+  },
+  "supplierMissingBody": "Do not type one. Ask the office to mark the supplier \"Pemasok beton\" and issue this project's PO — a typed name never reaches the supplier recap and never matches the delivery notes.",
+  "@supplierMissingBody": {
+    "description": "supplierMissingBody"
+  },
+  "supplierTypedBefore": "This name was typed by hand on an older build — pick the right supplier from the list",
+  "@supplierTypedBefore": {
+    "description": "supplierTypedBefore"
+  },
+  "supplierLocalConfirmTitle": "Use local (site-mix) concrete?",
+  "@supplierLocalConfirmTitle": {
+    "description": "supplierLocalConfirmTitle"
+  },
+  "supplierLocalConfirmBody": "That means the concrete is batched on site, not delivered by a plant — so this log will have no supplier and will not match any delivery note. If the concrete arrives by truck, pick the supplier from the list.",
+  "@supplierLocalConfirmBody": {
+    "description": "supplierLocalConfirmBody"
+  },
+  "supplierLocalConfirmYes": "Yes, site-mix",
+  "@supplierLocalConfirmYes": {
+    "description": "supplierLocalConfirmYes"
+  }
 }

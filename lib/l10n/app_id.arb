@@ -954,6 +954,37 @@
   "@pullUndone": {
     "description": "pullUndone"
   },
+  "pullTickTitle": "Tandai tremie tercabut?",
+  "@pullTickTitle": {
+    "description": "pullTickTitle"
+  },
+  "pullTickBody": "Segmen #{pos} ({panjang} m) akan tercatat dicabut setelah TM #{seq}, dan tertanamnya menjadi {sisa}. Catatan ini masuk Piling Record sebagai bukti.",
+  "@pullTickBody": {
+    "description": "pullTickBody",
+    "placeholders": {
+      "pos": {
+        "type": "int"
+      },
+      "panjang": {
+        "type": "String"
+      },
+      "seq": {
+        "type": "int"
+      },
+      "sisa": {
+        "type": "String"
+      }
+    }
+  },
+  "pullTickAfterPour": "TM #{seq} sudah selesai dituang. Kalau tremienya tidak benar-benar dicabut, jangan ditandai.",
+  "@pullTickAfterPour": {
+    "description": "pullTickAfterPour",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
   "pullRecorded": "Segmen tercatat dicabut setelah TM #{seq}.",
   "@pullRecorded": {
     "description": "pullRecorded",
@@ -2893,6 +2924,14 @@
   "discard": "Buang",
   "@discard": {
     "description": "discard"
+  },
+  "unsavedTitle": "Tinggalkan tanpa menyimpan?",
+  "@unsavedTitle": {
+    "description": "unsavedTitle"
+  },
+  "unsavedBody": "Ada isian di lembar ini yang belum tersimpan, termasuk foto yang baru diambil. Foto yang dibuang tidak akan menempel ke TM ini.",
+  "@unsavedBody": {
+    "description": "unsavedBody"
   },
   "discarded": "Dibuang dari HP.",
   "@discarded": {
@@ -4960,5 +4999,37 @@
   "drillReopenConfirmTitle": "Buka lagi log bor ini?",
   "drillReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, kedalamannya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
   "castReopenConfirmTitle": "Buka lagi log cor ini?",
-  "castReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, TM dan volumenya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah."
+  "castReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, TM dan volumenya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
+  "supplierLocal": "Lokal (site-mix, diaduk di lokasi)",
+  "@supplierLocal": {
+    "description": "supplierLocal"
+  },
+  "supplierMustBePicked": "Pilih pemasok dari daftar. Kalau pemasoknya belum ada di daftar, minta kantor menambahkannya — jangan diketik sendiri.",
+  "@supplierMustBePicked": {
+    "description": "supplierMustBePicked"
+  },
+  "supplierMissingTitle": "Pemasoknya tidak ada di daftar?",
+  "@supplierMissingTitle": {
+    "description": "supplierMissingTitle"
+  },
+  "supplierMissingBody": "Jangan diketik sendiri. Hubungi kantor supaya pemasoknya ditandai \"Pemasok beton\" dan PO proyek ini diterbitkan — nama yang diketik sendiri tidak pernah masuk rekap pemasok dan tidak cocok dengan surat jalan.",
+  "@supplierMissingBody": {
+    "description": "supplierMissingBody"
+  },
+  "supplierTypedBefore": "Nama ini diketik tangan pada versi lama — pilih pemasok yang benar dari daftar",
+  "@supplierTypedBefore": {
+    "description": "supplierTypedBefore"
+  },
+  "supplierLocalConfirmTitle": "Pakai beton Lokal (site-mix)?",
+  "@supplierLocalConfirmTitle": {
+    "description": "supplierLocalConfirmTitle"
+  },
+  "supplierLocalConfirmBody": "Artinya betonnya diaduk di lokasi, bukan dikirim batching plant — jadi log ini tidak akan punya pemasok dan tidak akan cocok dengan surat jalan mana pun. Kalau betonnya datang pakai TM, pilih pemasoknya dari daftar.",
+  "@supplierLocalConfirmBody": {
+    "description": "supplierLocalConfirmBody"
+  },
+  "supplierLocalConfirmYes": "Ya, site-mix",
+  "@supplierLocalConfirmYes": {
+    "description": "supplierLocalConfirmYes"
+  }
 }
