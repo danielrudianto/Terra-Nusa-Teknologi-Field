@@ -445,6 +445,11 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       }
     }
     if (tanya && seq != null) {
+      // Penjaga sesudah `await` di atas: cabang "tertanam terlalu pendek"
+      // sudah membuka dialognya sendiri, jadi layarnya bisa sudah ditutup
+      // orangnya saat eksekusi kembali ke sini. `context` yang dipakai
+      // sesudah itu menunjuk widget yang tidak ada lagi.
+      if (!mounted) return;
       final seg = _castingState.segments.where((x) => x.uuid == segmentUuid).firstOrNull;
       if (seg != null) {
         final snap = _snapshotNow(_castingState);
