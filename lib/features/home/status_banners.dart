@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/providers.dart';
 import '../../core/util/clock_drift.dart';
@@ -14,9 +15,17 @@ import '../../core/i18n.dart';
 /// rejected (something the foreman must fix), then not yet pushed (just
 /// good to know).
 class StatusBanners extends ConsumerWidget {
-  const StatusBanners({super.key, this.showPending = true});
+  const StatusBanners({super.key, this.showPending = true, this.showUpdate = false});
 
   final bool showPending;
+
+  /// Tampilkan ajakan memperbarui aplikasi.
+  ///
+  /// MATI bawaannya, dan dinyalakan HANYA di beranda. Ajakan yang muncul di
+  /// layar pengecoran dan absen akan ditutup refleks tanpa dibaca — dan yang
+  /// ditutup refleks sama saja dengan tidak ada. Beranda tempat orang berdiri
+  /// sebelum mulai bekerja; di situ memperbarui tidak memotong apa pun.
+  final bool showUpdate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,6 +41,21 @@ class StatusBanners extends ConsumerWidget {
     // Waiting more than a day: something is wrong (no signal for days, an
     // app killed by battery saving) and someone has to act on it.
     final stale = oldest != null && DateTime.now().difference(oldest) > const Duration(hours: 24);
+
+    // Ajakan memperbarui: hanya bila layar ini memintanya, ada versi lebih
+    // baru, dan penundaannya untuk VERSI ITU belum habis. Penundaan disimpan
+    // beserta versinya — menunda 1.0.6 tidak boleh ikut menyembunyikan 1.0.7.
+    //
+    // Hasilnya satu variabel BERNILAI atau `null`, bukan bendera `bool`
+    // terpisah: Dart tidak mempromosikan `update` menjadi non-null lewat
+    // bendera, jadi bentuk itu menuntut `!` di setiap pemakaiannya.
+    final tersedia = ref.watch(updateAvailableProvider).value;
+    final snooze = ref.watch(updateSnoozeProvider).value;
+    final update = (showUpdate &&
+            tersedia != null &&
+            !(snooze?.menunda(tersedia.latestVersion, DateTime.now()) ?? false))
+        ? tersedia
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -93,6 +117,44 @@ class StatusBanners extends ConsumerWidget {
                     onPressed: () => ref.read(syncProvider.notifier).run(diminta: true),
                     child: Text(t(context).send),
                   ),
+          ),
+        // PALING BAWAH, dan `info` — bukan peringatan.
+        //
+        // Tidak ada yang rusak dan tidak ada yang perlu dikerjakan sekarang;
+        // mengangkatnya ke `warning` membuat kru belajar bahwa warna oranye
+        // di aplikasi ini kadang tidak berarti apa-apa, lalu peringatan yang
+        // sungguhan ikut tidak dibaca.
+        if (update != null)
+          TerraBanner(
+            kind: BannerKind.info,
+            icon: Icons.system_update,
+            title: t(context).updateAvailableTitle(update.latestVersion),
+            body: t(context).updateAvailableBody,
+            action: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(
+                  onPressed: () => ref
+                      .read(dbProvider)
+                      .writeMeta(
+                        'update_snooze',
+                        UpdateSnooze(
+                          version: update.latestVersion,
+                          until: DateTime.now().add(UpdateSnooze.durasi),
+                        ).encode(),
+                      ),
+                  child: Text(t(context).later),
+                ),
+                if (update.downloadUrl != null)
+                  FilledButton(
+                    onPressed: () => launchUrl(
+                      Uri.parse(update.downloadUrl!),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: Text(t(context).updateNow),
+                  ),
+              ],
+            ),
           ),
       ],
     );

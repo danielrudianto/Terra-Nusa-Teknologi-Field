@@ -59,7 +59,9 @@ class HomePage extends ConsumerWidget {
           children: [
             _Hero(name: user?.name.split(' ').first ?? ''),
             const SizedBox(height: 18),
-            const StatusBanners(),
+            // `showUpdate` HANYA di sini. Lihat keterangannya di
+            // `StatusBanners`: ajakan di layar kerja ditutup refleks.
+            const StatusBanners(showUpdate: true),
             const PowerBanner(),
             const _WatchedCard(),
             // Berdatangan bertingkat, bukan sekaligus.

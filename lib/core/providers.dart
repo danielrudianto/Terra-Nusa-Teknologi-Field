@@ -18,9 +18,11 @@ import 'util/clock_drift.dart';
 import 'util/format.dart';
 import '../features/workers/worker.dart';
 import 'device/device_lock.dart';
+import 'device/update_available.dart';
 
 export '../features/workers/worker.dart';
 export 'util/app_version.dart' show AppOutdated;
+export 'device/update_available.dart' show UpdateAvailable, UpdateSnooze;
 
 /// Filled in `main()` via `overrides`. All other providers derive from it.
 final appContextProvider = Provider<AppContext>((ref) => throw UnimplementedError('konteksProvider belum diisi'));
@@ -243,6 +245,25 @@ final clockDriftProvider = StreamProvider<Duration?>((ref) {
 /// mencatat, yang memang disengaja (lihat masa tenggang di server).
 final deviceLockProvider = StreamProvider<DeviceLock?>((ref) {
   return ref.watch(dbProvider).watchMeta('device_lock').map(DeviceLock.decode);
+});
+
+/// Ada versi yang lebih baru — AJAKAN, tidak menghalangi apa pun.
+///
+/// Berbeda dari `appOutdatedProvider`, yang menggantikan seluruh aplikasi
+/// ketika server MENOLAK versi ini. Yang ini hanya memberi tahu.
+final updateAvailableProvider = StreamProvider<UpdateAvailable?>((ref) {
+  return ref
+      .watch(dbProvider)
+      .watchMeta('update_available')
+      .map(UpdateAvailable.decode);
+});
+
+/// Penundaan ajakan memperbarui — "jangan sekarang", bukan "jangan pernah".
+final updateSnoozeProvider = StreamProvider<UpdateSnooze?>((ref) {
+  return ref
+      .watch(dbProvider)
+      .watchMeta('update_snooze')
+      .map(UpdateSnooze.decode);
 });
 
 /// Boleh memulai pekerjaan BARU di HP ini?

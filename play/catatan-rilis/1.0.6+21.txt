@@ -1,0 +1,24 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.6 (21) — Pemberitahuan versi baru
+
+<id>
+Aplikasi kini memberi tahu sendiri kalau ada versi yang lebih baru.
+
+• Pemberitahuannya muncul di beranda saja, bukan di layar pengecoran atau absen, supaya tidak memotong pekerjaan.
+• Tidak menghalangi apa pun. Aplikasi tetap dipakai seperti biasa, dan memperbarui bisa ditunda dengan "Nanti saja" — ditanya lagi 8 jam kemudian.
+• Menunda satu versi tidak menyembunyikan versi berikutnya.
+</id>
+<en-US>
+The app now tells you when a newer version is out.
+
+• The notice appears on the home screen only, not while logging a pour or attendance, so it never interrupts work.
+• It blocks nothing. The app keeps working as usual, and the update can be put off with "Later" — it asks again 8 hours on.
+• Putting off one version does not hide the next one.
+</en-US>
+<zh-CN>
+应用现在会自动提示有新版本发布。
+
+• 提示仅出现在首页，不会出现在浇筑或考勤页面，不打断工作。
+• 不会阻止任何操作。应用照常使用，可点击"稍后"推迟，8 小时后再次提示。
+• 推迟某一版本不会隐藏后续版本。
+</zh-CN>

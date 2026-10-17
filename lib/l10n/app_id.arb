@@ -3165,6 +3165,23 @@
   "@send": {
     "description": "send"
   },
+  "updateAvailableTitle": "Versi {version} sudah tersedia",
+  "@updateAvailableTitle": {
+    "description": "updateAvailableTitle",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateAvailableBody": "Aplikasi tetap bisa dipakai seperti biasa. Perbarui kalau sempat — lebih enak dilakukan sebelum mulai kerja daripada di tengah pengecoran.",
+  "@updateAvailableBody": {
+    "description": "updateAvailableBody"
+  },
+  "updateNow": "Perbarui",
+  "@updateNow": {
+    "description": "updateNow"
+  },
   "updateTitle": "Perbarui TerraBot Field",
   "@updateTitle": {
     "description": "updateTitle"

@@ -16,6 +16,7 @@ import '../util/app_version.dart';
 import '../util/format.dart';
 import '../device/camera.dart';
 import '../device/device_lock.dart';
+import '../device/update_available.dart';
 
 /// Summary of one sync round — for the banner on Home and the background log.
 class SyncResult {
@@ -340,6 +341,12 @@ class SyncEngine {
         // digantikan — justru lewat sinilah HP itu akhirnya tahu dirinya
         // terkunci dan dapat memperingatkan orangnya.
         await db.writeMeta('device_lock', DeviceLock.fromPull(d['device'])?.encode());
+        // Ajakan memperbarui — AJAKAN, bukan pemblokiran. Ditulis dari blok
+        // yang sama, dan DITIMPA tiap pull: server yang memutuskan, jadi
+        // ajakan yang sudah tidak berlaku hilang sendiri pada pull
+        // berikutnya tanpa HP perlu tahu kenapa.
+        await db.writeMeta(
+            'update_available', UpdateAvailable.fromPull(d['device'])?.encode());
         final serverTime = d['serverTime']?.toString();
         if (serverTime != null) await db.writeMeta('server_time', '$serverTime|${DateTime.now().toIso8601String()}');
         // Every reading and TM time comes from the phone clock: a clock that
