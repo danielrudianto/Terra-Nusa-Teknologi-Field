@@ -6,19 +6,25 @@ Sekarang bisa menonton kemajuan titik yang sedang dikerjakan HP lain.
 
 • Tombol "Pantau sekarang" di titik yang sedang dibor atau dicor. Untuk cor: penampang lubang dengan muka beton naik dan tremie tertanam. Untuk bor: kurva kedalaman yang tumbuh tiap bacaan.
 • Layarnya selalu menyebut jam datanya ("per 09:48 · 3 menit lalu"), jadi kalau diam, jelas itu karena sinyal.
-• Kartu titik juga diperbaiki: dulu menulis "belum pernah tersinkron" padahal datanya sudah masuk.
+• Kartu titik tidak lagi menulis "belum pernah tersinkron" padahal datanya sudah masuk — sekarang ia menyebutkan bahwa lognya sudah dibuka dan catatan pertamanya yang belum ada.
+• Dialog kode oper tidak lagi tumpang tindih dengan papan ketik.
+• Bila log yang ditawarkan ternyata sudah dihapus dari kantor, HP menarik ulang titiknya sendiri dan menyebutkan keadaannya, tidak lagi gagal berulang-ulang.
 </id>
 <en-US>
 You can now watch a point being worked on from another phone.
 
 • A "Watch live" button on points being drilled or poured. For a pour: a cross-section of the hole with the concrete level rising and the tremie embedment. For drilling: a depth curve that grows with each reading.
 • The screen always states the time of its data ("as of 09:48 · 3 min ago"), so when it sits still, it is clearly signal.
-• The point card is fixed too: it used to say "never synced" when the data had in fact arrived.
+• The point card no longer says "never synced" when the data had in fact arrived — it now says the log is open and the first record has not come in.
+• The handover-code dialog no longer overlaps the keyboard.
+• When the log being offered has in fact been deleted from the office, the phone re-pulls the point itself and says so, instead of failing over and over.
 </en-US>
 <zh-CN>
 现在可以查看其他手机正在作业的桩点进度。
 
 • 正在钻进或浇筑的桩点上新增"实时查看"按钮。浇筑显示桩孔剖面，混凝土面上升、导管埋深可见；钻进显示随读数增长的深度曲线。
 • 画面始终标注数据时间（"截至 09:48 · 3 分钟前"），因此画面静止时可明确判断是网络原因。
-• 同时修复桩点卡片：此前数据已到达却仍显示"从未同步"。
+• 桩点卡片不再在数据已到达时显示"从未同步"，而是说明日志已开启、首条记录尚未上传。
+• 交接码对话框不再被键盘遮挡。
+• 若所提示的日志实际已被办公室删除，手机会自行重新同步该桩点并如实说明，不再反复失败。
 </zh-CN>

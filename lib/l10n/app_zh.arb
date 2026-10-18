@@ -806,8 +806,12 @@
   "castProgressLabel": "浇筑进度",
   "drillProgressMain": "{depth} / 计划 {planned}",
   "castProgressMain": "第 {n} 车 · {vol} m³ / 理论 {theoretical} m³",
-  "progressNothingYet": "尚无已上传的记录",
-  "progressNoSync": "从未同步",
+  "progressNothingYet": "尚无记录",
+  "logGoneResynced": "该日志在服务器上已不存在——可能已从办公室删除。该桩点刚刚重新同步，请重新打开。",
+  "@logGoneResynced": {
+    "description": "logGoneResynced"
+  },
+  "progressNoSync": "日志已开启，首条记录尚未上传",
   "progressLastAt": "最近记录 {time} · {age}",
   "progressAsSent": "以持有人手机已上传的数据为准。若其处于无信号状态，实际进度可能更快。",
   "refresh": "刷新",

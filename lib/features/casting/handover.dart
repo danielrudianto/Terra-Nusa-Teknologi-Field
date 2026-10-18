@@ -165,6 +165,11 @@ Future<bool> requestHandoverFlow(
   try {
     await _busy(context, t(context).sendingRequest, () => ref.read(apiProvider).requestHandover(entity, uuid));
   } on ApiError catch (e) {
+    // Sama seperti di _takeOver: 404 di sini berarti salinan titiknya usang.
+    if (e.status == 404) {
+      if (!context.mounted) return false;
+      return _lenyap(context, ref);
+    }
     if (context.mounted) showSnack(context, e.message, icon: Icons.error_outline);
     return false;
   }
@@ -289,9 +294,41 @@ Future<bool> _takeOver(
     }
     return true;
   } on ApiError catch (e) {
+    if (e.status == 404) {
+      if (!context.mounted) return false;
+      return _lenyap(context, ref);
+    }
     if (context.mounted) showSnack(context, e.message, icon: Icons.error_outline);
     return false;
   }
+}
+
+/// Log yang sudah tidak ada di server: tarik titiknya lagi, lalu katakan apa
+/// adanya.
+///
+/// ──────────────────────────────────────────────────────────────────────────
+/// KENAPA INI ADA — SP.B42, 18 Oktober 2026
+/// ──────────────────────────────────────────────────────────────────────────
+///
+/// Log bor SP.B42 dihapus dari kantor pada 15 Okt. Baris titiknya TIDAK ikut
+/// maju (layanan di server saat itu menjalankan kode lama), sehingga tarikan
+/// berbasis kursor tidak pernah mengirimkan versi terbarunya. HP memegang
+/// salinan sebelum penghapusan — lengkap dengan uuid log yang sudah mati —
+/// dan terus menawarkan "Ambil ke HP ini" untuk log yang tidak ada lagi.
+///
+/// Setiap ketukan menjawab 404, dan pesan "Log tidak ditemukan" terbaca
+/// seperti kerusakan aplikasi. Butuh tiga jam dan pembedahan basis data
+/// untuk menemukan bahwa HP-nya memang benar — salinannya saja yang usang.
+///
+/// 404 di jalur ini SELALU berarti salinan titik di HP ini sudah usang, jadi
+/// HP memperbaiki dirinya sendiri: tarik, lalu tombolnya hilang sendiri.
+/// Tanpa ini, keadaan yang sama hanya bisa dipulihkan lewat SQL.
+Future<bool> _lenyap(BuildContext context, WidgetRef ref) async {
+  await ref.read(syncProvider.notifier).run(diminta: true);
+  if (context.mounted) {
+    showSnack(context, t(context).logGoneResynced, icon: Icons.sync_problem);
+  }
+  return false;
 }
 
 /// Run [task] behind a small blocking progress dialog.
@@ -364,6 +401,10 @@ class _CodeDialogState extends State<_CodeDialog> {
   Widget build(BuildContext context) {
     final w = context.colors;
     return AlertDialog(
+      // scrollable: papan ketik angka menutup separuh layar begitu TextField
+      // autofocus. Tanpa ini isinya tidak muat, meluber, dan tombol aksi
+      // tergambar menimpa teks. Dilaporkan Daniel 18 Okt 2026 (SP.B42).
+      scrollable: true,
       icon: Icon(Icons.pin_outlined, size: 32, color: w.brand),
       title: Text(widget.title, textAlign: TextAlign.center),
       content: Column(
@@ -392,15 +433,20 @@ class _CodeDialogState extends State<_CodeDialog> {
             onChanged: (_) => setState(() {}),
             onSubmitted: (_) => _submit(),
           ),
+          // "Minta ke pemegang" turun ke isi, bukan baris aksi: tiga tombol
+          // tidak muat sebaris, dan OverflowBar menumpuknya ke bawah persis
+          // di ruang yang sudah direbut papan ketik.
+          if (widget.canRequest) ...[
+            const SizedBox(height: 6),
+            TextButton.icon(
+              onPressed: () => Navigator.pop(context, _minta),
+              icon: const Icon(Icons.schedule_send, size: 18),
+              label: Text(t(context).askHolder),
+            ),
+          ],
         ],
       ),
       actions: [
-        if (widget.canRequest)
-          TextButton.icon(
-            onPressed: () => Navigator.pop(context, _minta),
-            icon: const Icon(Icons.schedule_send, size: 18),
-            label: Text(t(context).askHolder),
-          ),
         TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
         FilledButton(onPressed: _complete ? _submit : null, child: Text(t(context).takeOver)),
       ],

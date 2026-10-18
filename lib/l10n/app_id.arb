@@ -4618,11 +4618,15 @@
       }
     }
   },
-  "progressNothingYet": "Belum ada catatan yang terkirim",
+  "progressNothingYet": "Belum ada catatan",
   "@progressNothingYet": {
     "description": "Shown when the holder has sent no records yet"
   },
-  "progressNoSync": "Belum pernah tersinkron",
+  "logGoneResynced": "Lognya sudah tidak ada di server — kemungkinan dihapus dari kantor. Titik ini baru saja ditarik ulang; silakan buka lagi.",
+  "@logGoneResynced": {
+    "description": "logGoneResynced"
+  },
+  "progressNoSync": "Lognya sudah dibuka, catatan pertama belum masuk",
   "@progressNoSync": {
     "description": "Shown when there is no timestamp at all"
   },

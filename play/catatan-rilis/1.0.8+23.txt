@@ -1,0 +1,24 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.8 (23) — Perbaikan kartu titik dan oper log
+
+<id>
+Perbaikan lanjutan sesudah 1.0.7.
+
+• Kartu titik tidak lagi menulis "belum pernah tersinkron" padahal datanya sudah masuk. Sekarang ia menyebutkan bahwa lognya sudah dibuka dan catatan pertamanya yang belum ada.
+• Dialog kode oper tidak lagi tertimpa papan ketik; isinya menggulung dan tombolnya tidak menumpuk teks.
+• Bila log yang ditawarkan ternyata sudah dihapus dari kantor, HP menarik ulang titiknya sendiri lalu menyebutkan keadaannya — tidak lagi gagal berulang dengan pesan "Log tidak ditemukan".
+</id>
+<en-US>
+Follow-up fixes after 1.0.7.
+
+• The point card no longer says "never synced" when the data had in fact arrived. It now says the log is open and the first record has not come in.
+• The handover-code dialog is no longer covered by the keyboard; its content scrolls and the buttons no longer sit on top of the text.
+• When the log being offered has in fact been deleted from the office, the phone re-pulls the point itself and says so, instead of failing over and over with "Log not found".
+</en-US>
+<zh-CN>
+1.0.7 之后的后续修复。
+
+• 桩点卡片不再在数据已到达时显示"从未同步"，而是说明日志已开启、首条记录尚未上传。
+• 交接码对话框不再被键盘遮挡，内容可滚动，按钮不再压住文字。
+• 若所提示的日志实际已被办公室删除，手机会自行重新同步该桩点并如实说明，不再反复提示"未找到日志"。
+</zh-CN>

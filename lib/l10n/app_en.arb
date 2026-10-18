@@ -806,8 +806,12 @@
   "castProgressLabel": "Casting progress",
   "drillProgressMain": "{depth} of {planned} planned",
   "castProgressMain": "TM #{n} · {vol} m³ of {theoretical} m³ theoretical",
-  "progressNothingYet": "Nothing sent yet",
-  "progressNoSync": "Never synced",
+  "progressNothingYet": "Nothing recorded yet",
+  "logGoneResynced": "The log no longer exists on the server — it was probably deleted from the office. This point has just been re-pulled; open it again.",
+  "@logGoneResynced": {
+    "description": "logGoneResynced"
+  },
+  "progressNoSync": "The log is open; the first record has not arrived",
   "progressLastAt": "Last record {time} · {age}",
   "progressAsSent": "As far as the holder’s phone has sent. If it is out of signal, the real state may be further along.",
   "refresh": "Refresh",
