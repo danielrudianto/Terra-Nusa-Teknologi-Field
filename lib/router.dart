@@ -14,6 +14,7 @@ import 'features/settings/settings_page.dart';
 import 'features/casting/casting_form.dart';
 import 'features/casting/casting_page.dart';
 import 'features/casting/pile_points_page.dart';
+import 'features/casting/pantau_page.dart';
 import 'features/casting/point_history_page.dart';
 import 'features/drilling/drill_log_page.dart';
 import 'features/reports/report_page.dart';
@@ -109,6 +110,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/drilling/log/:uuid',
         builder: (_, s) => DrillLogPage(uuid: s.pathParameters['uuid']!, pilePointUuid: s.uri.queryParameters['pilePoint']),
+      ),
+      GoRoute(
+        path: '/casting/point/:id/watch',
+        builder: (_, s) => PantauPage(
+          pileId: int.parse(s.pathParameters['id']!),
+          code: s.uri.queryParameters['code'] ?? '',
+        ),
       ),
       GoRoute(
         path: '/casting/point/:id/history',

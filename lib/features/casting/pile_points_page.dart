@@ -552,6 +552,31 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   label: Text(t(context).pointHistoryOpen),
                 ),
               ],
+
+              // PANTAU — hanya selagi pekerjaannya BERJALAN.
+              //
+              // Diminta Daniel, 18 Okt 2026. Dipisah dari "Lihat riwayat":
+              // riwayat menjawab "apa yang sudah terjadi", pantau menjawab
+              // "sampai mana sekarang". Ditawarkan pada titik yang sudah
+              // selesai, ia hanya menggambar keadaan akhir yang tidak akan
+              // berubah lagi — dan tombol yang menjanjikan gerak lalu diam
+              // membuat orang menyimpulkan layarnya rusak.
+              if (pt.serverId != null &&
+                  pt.casting == null &&
+                  pt.stage != 'sudah_cor' &&
+                  (elsewhere || drillingElsewhere)) ...[
+                const SizedBox(height: 10),
+                FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(c);
+                    context.push(
+                      '/casting/point/${pt.serverId}/watch?code=${Uri.encodeComponent(pt.code)}',
+                    );
+                  },
+                  icon: const Icon(Icons.monitor_heart_outlined),
+                  label: Text(t(context).watchOpen),
+                ),
+              ],
             ],
           ),
         ),

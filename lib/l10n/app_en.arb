@@ -1213,5 +1213,28 @@
   "supplierLocalConfirmYes": "Yes, site-mix",
   "@supplierLocalConfirmYes": {
     "description": "supplierLocalConfirmYes"
-  }
+  },
+  "watchOpen": "Watch live",
+  "watchTitle": "Watching {code}",
+  "watchAsOf": "as of {jam} · {menit} min ago",
+  "watchNoTimestamp": "No time-stamped record from the holder's phone yet",
+  "watchOfflineTitle": "Cannot fetch",
+  "watchOfflineBody": "Watching reads straight from the server, so it needs signal. Pull down to try again.",
+  "watchNothingTitle": "Nothing started on this point yet",
+  "watchNothingBody": "As soon as the holder's phone sends a first reading or truck, the progress shows up here.",
+  "watchCastRunning": "Pouring",
+  "watchCastDone": "Pour finished",
+  "watchPouringNow": "Truck {seq} pouring",
+  "watchTrucks": "Trucks in",
+  "watchVolume": "Volume",
+  "watchConcreteLevel": "Concrete level from GS",
+  "watchNotSounded": "not sounded yet",
+  "watchEmbedment": "Tremie embedment",
+  "watchDrillRunning": "Drilling",
+  "watchDrillDone": "Drilling finished",
+  "watchCurveWaitTitle": "The curve needs two readings",
+  "watchCurveWaitBody": "One reading spans no time at all. It appears by itself once the second reading arrives.",
+  "watchDepth": "Depth",
+  "watchRate": "Average rate",
+  "watchReadings": "Readings"
 }

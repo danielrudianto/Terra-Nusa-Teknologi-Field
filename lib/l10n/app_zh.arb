@@ -1213,5 +1213,28 @@
   "supplierLocalConfirmYes": "是，现场搅拌",
   "@supplierLocalConfirmYes": {
     "description": "supplierLocalConfirmYes"
-  }
+  },
+  "watchOpen": "实时查看",
+  "watchTitle": "查看 {code}",
+  "watchAsOf": "截至 {jam} · {menit} 分钟前",
+  "watchNoTimestamp": "持有手机尚未上传带时间的记录",
+  "watchOfflineTitle": "无法获取数据",
+  "watchOfflineBody": "实时查看直接读取服务器，需要网络。下拉可重试。",
+  "watchNothingTitle": "该桩点尚未开始作业",
+  "watchNothingBody": "持有手机上传第一条读数或第一车后，进度会显示在这里。",
+  "watchCastRunning": "浇筑中",
+  "watchCastDone": "浇筑完成",
+  "watchPouringNow": "第 {seq} 车浇筑中",
+  "watchTrucks": "已到车数",
+  "watchVolume": "方量",
+  "watchConcreteLevel": "自地面的混凝土面",
+  "watchNotSounded": "尚未测深",
+  "watchEmbedment": "导管埋深",
+  "watchDrillRunning": "钻进中",
+  "watchDrillDone": "钻进完成",
+  "watchCurveWaitTitle": "曲线需要两条读数",
+  "watchCurveWaitBody": "仅一条读数没有时间跨度。第二条读数到达后会自动显示。",
+  "watchDepth": "深度",
+  "watchRate": "平均速率",
+  "watchReadings": "读数"
 }

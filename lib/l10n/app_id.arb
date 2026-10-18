@@ -5048,5 +5048,60 @@
   "supplierLocalConfirmYes": "Ya, site-mix",
   "@supplierLocalConfirmYes": {
     "description": "supplierLocalConfirmYes"
-  }
+  },
+  "watchOpen": "Pantau sekarang",
+  "@watchOpen": { "description": "watchOpen" },
+  "watchTitle": "Pantau {code}",
+  "@watchTitle": {
+    "description": "watchTitle",
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "watchAsOf": "per {jam} · {menit} menit lalu",
+  "@watchAsOf": {
+    "description": "watchAsOf",
+    "placeholders": { "jam": { "type": "String" }, "menit": { "type": "int" } }
+  },
+  "watchNoTimestamp": "Belum ada catatan berjam dari HP pemegangnya",
+  "@watchNoTimestamp": { "description": "watchNoTimestamp" },
+  "watchOfflineTitle": "Tidak bisa menarik data",
+  "@watchOfflineTitle": { "description": "watchOfflineTitle" },
+  "watchOfflineBody": "Pantau membaca langsung dari server, jadi butuh sinyal. Tarik ke bawah untuk mencoba lagi.",
+  "@watchOfflineBody": { "description": "watchOfflineBody" },
+  "watchNothingTitle": "Belum ada yang dikerjakan di titik ini",
+  "@watchNothingTitle": { "description": "watchNothingTitle" },
+  "watchNothingBody": "Begitu HP pemegangnya mengirim bacaan atau TM pertama, kemajuannya muncul di sini.",
+  "@watchNothingBody": { "description": "watchNothingBody" },
+  "watchCastRunning": "Sedang dicor",
+  "@watchCastRunning": { "description": "watchCastRunning" },
+  "watchCastDone": "Cor selesai",
+  "@watchCastDone": { "description": "watchCastDone" },
+  "watchPouringNow": "TM {seq} sedang dituang",
+  "@watchPouringNow": {
+    "description": "watchPouringNow",
+    "placeholders": { "seq": { "type": "String" } }
+  },
+  "watchTrucks": "TM masuk",
+  "@watchTrucks": { "description": "watchTrucks" },
+  "watchVolume": "Volume",
+  "@watchVolume": { "description": "watchVolume" },
+  "watchConcreteLevel": "Muka beton dari GS",
+  "@watchConcreteLevel": { "description": "watchConcreteLevel" },
+  "watchNotSounded": "belum disounding",
+  "@watchNotSounded": { "description": "watchNotSounded" },
+  "watchEmbedment": "Tremie tertanam",
+  "@watchEmbedment": { "description": "watchEmbedment" },
+  "watchDrillRunning": "Sedang dibor",
+  "@watchDrillRunning": { "description": "watchDrillRunning" },
+  "watchDrillDone": "Bor selesai",
+  "@watchDrillDone": { "description": "watchDrillDone" },
+  "watchCurveWaitTitle": "Kurvanya butuh dua bacaan",
+  "@watchCurveWaitTitle": { "description": "watchCurveWaitTitle" },
+  "watchCurveWaitBody": "Dengan satu bacaan belum ada rentang waktu yang bisa digambar. Muncul sendiri begitu bacaan kedua masuk.",
+  "@watchCurveWaitBody": { "description": "watchCurveWaitBody" },
+  "watchDepth": "Kedalaman",
+  "@watchDepth": { "description": "watchDepth" },
+  "watchRate": "Laju rata-rata",
+  "@watchRate": { "description": "watchRate" },
+  "watchReadings": "Bacaan",
+  "@watchReadings": { "description": "watchReadings" }
 }
