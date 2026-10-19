@@ -6,7 +6,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../app_context.dart';
 import '../i18n.dart';
 import '../util/format.dart';
+import 'drill_snooze.dart';
 import 'notifications.dart';
+import 'reminder_rearm.dart';
 
 /// TOMBOL "SELESAI TM" DARI JAM TANGAN.
 ///
@@ -37,6 +39,10 @@ import 'notifications.dart';
 /// menit kemudian; jam selesai tidak.
 @pragma('vm:entry-point')
 Future<void> tanganiAksiNotifikasiLatar(NotificationResponse r) async {
+  if (r.actionId == Notifications.actionSnoozeDrill) {
+    await _diamkanPengingatBor();
+    return;
+  }
   if (r.actionId != Notifications.actionFinishNow) return;
   final uuid = _uuidDariRute(r.payload);
   if (uuid == null) return;
@@ -117,4 +123,49 @@ String? _uuidDariRute(String? rute) {
   if (rute == null || !rute.startsWith(awalan)) return null;
   final sisa = rute.substring(awalan.length).split('?').first.split('/').first;
   return sisa.isEmpty ? null : sisa;
+}
+
+
+/// "DIAMKAN SAMPAI BESOK" pada pengingat log bor.
+///
+/// DIMINTA DANIEL, 19 Oktober 2026, berbarengan dengan diperketatnya alarm
+/// itu sendiri — dan keduanya memang satu paket. Alarm yang berbunyi tiap
+/// lima belas menit tanpa jalan keluar akan membuat orang mematikan seluruh
+/// notifikasi aplikasi lewat setelan Android: diam-diam, selamanya, dan
+/// tanpa ada yang tahu bahwa ia sudah tidak pernah berbunyi lagi.
+///
+/// YANG DISIMPAN HANYA JAMNYA, bukan "mati".
+///
+/// Penundaannya tersimpan sebagai satu jam bangun (besok pukul 07.00), lalu
+/// `rearmReminders` memasang ulang alarmnya dengan melewati yang jatuh
+/// sebelum jam itu. Jadi pengingatnya menyala sendiri besok pagi tanpa ada
+/// yang perlu mengingatnya — dan tidak ada keadaan "dimatikan" yang dapat
+/// tertinggal menyala selamanya.
+///
+/// Alarm yang sudah terpasang DIBATALKAN di sini, sebelum dipasang ulang:
+/// tanpa itu, bunyi berikutnya tetap datang lima belas menit lagi dan yang
+/// menekannya menyimpulkan tombolnya tidak bekerja.
+Future<void> _diamkanPengingatBor() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+
+  final ctx = await AppContext.open();
+  try {
+    final pengguna = await ctx.session.user();
+    if (pengguna == null) return;
+
+    final sampai = DrillSnooze.sampaiBesok(DateTime.now());
+    await ctx.db.writeMeta(
+      'drill_snooze',
+      DrillSnooze(until: sampai).encode(),
+    );
+
+    // Pasang ulang SELURUH pengingat: penundaannya berlaku untuk semua log
+    // bor yang berjalan, bukan hanya yang notifikasinya kebetulan ditekan.
+    // Orang yang mendiamkan satu alarm sedang menyatakan "saya istirahat",
+    // bukan "titik ini saja".
+    await rearmReminders(db: ctx.db, userId: pengguna.id);
+  } finally {
+    await ctx.close();
+  }
 }

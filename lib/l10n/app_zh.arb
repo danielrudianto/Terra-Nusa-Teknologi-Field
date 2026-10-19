@@ -612,6 +612,10 @@
   "resumePouring": "继续灌注",
   "pauseReminderMin": "{body} · {min} 分钟",
   "idleReminderMin": "{body} · 距上一车 {min} 分钟",
+  "drillSnoozeAction": "静音至明天",
+  "@drillSnoozeAction": {
+    "description": "drillSnoozeAction"
+  },
   "drillIdleTitle": "钻孔记录 {code} 未更新",
   "drillIdleBody": "距上次读数已 {since}（{time}）。请立即记录深度，若已完成请点按\"完成钻孔\"。",
   "hoursText": "{h} 小时",

@@ -1,0 +1,24 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.9 (24) — Pengingat log bor lebih tegas
+
+<id>
+Pengingat log bor yang terlupakan sekarang lebih tegas, berikut cara mendiamkannya saat istirahat.
+
+• Berbunyi sesudah 45 menit tanpa bacaan baru, bukan 1 jam, lalu diulang tiap 15 menit. Mulai bunyi ketiga getarnya lebih panjang.
+• Tombol "Diamkan sampai besok" langsung di notifikasinya — tidak perlu membuka aplikasi. Pengingatnya menyala sendiri besok pukul 07.00.
+• Pengingat TM dan sounding sesudah tuang tidak ikut didiamkan: beton yang sedang mengeras tidak mengenal jam istirahat.
+</id>
+<en-US>
+Reminders for a forgotten drill log are now firmer, with a way to silence them during a break.
+
+• Fires after 45 minutes without a new reading instead of 1 hour, then repeats every 15 minutes. From the third buzz the vibration is longer.
+• A "Silence until tomorrow" button on the notification itself — no need to open the app. Reminders resume on their own at 07:00 tomorrow.
+• Truck and post-pour sounding reminders are not silenced: curing concrete keeps no break hours.
+</en-US>
+<zh-CN>
+对遗漏钻进日志的提醒更为严格，并提供休息时的静音方式。
+
+• 无新读数 45 分钟后提醒（原为 1 小时），其后每 15 分钟重复一次。自第三次起震动更长。
+• 通知上直接提供"静音至明天"按钮，无需打开应用。提醒将于明日 07:00 自行恢复。
+• 罐车与浇筑后测深提醒不受静音影响：混凝土凝固不分休息时间。
+</zh-CN>

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/db/app_database.dart';
+import '../../core/device/drill_snooze.dart';
 import '../../core/device/notifications.dart';
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
@@ -205,7 +206,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   // Save
   // -------------------------------------------------------------------------
 
-  /// Buzz when this log goes an hour without a new reading; nothing once it
+  /// Buzz when this log goes 45 minutes without a new reading; nothing once it
   /// is finished. A reminder must never break a save.
   Future<void> _updateIdleReminder() async {
     try {
@@ -215,7 +216,19 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         return;
       }
       final newest = readings.map((r) => r.at).reduce((a, b) => a.isAfter(b) ? a : b);
-      await Notifications.scheduleDrillIdleReminders(logUuid: widget.uuid, pointCode: _code, lastReadingAt: newest);
+      // Penundaan "sampai besok" tetap berlaku walau bacaan baru disimpan.
+      //
+      // Yang menekannya menyatakan "jangan ganggu saya sampai besok", bukan
+      // "sampai saya menyentuh log ini lagi" — dan mencatat satu bacaan di
+      // sela istirahat tidak membatalkan istirahatnya.
+      final tunda = DrillSnooze.decode(await ref.read(dbProvider).readMeta('drill_snooze'));
+      final kini = DateTime.now();
+      await Notifications.scheduleDrillIdleReminders(
+        logUuid: widget.uuid,
+        pointCode: _code,
+        lastReadingAt: newest,
+        snoozeUntil: (tunda != null && tunda.menunda(kini)) ? tunda.until : null,
+      );
     } catch (_) {}
   }
 

@@ -5,6 +5,7 @@ import '../util/format.dart';
 import '../../features/casting/calc/pauses.dart';
 import '../../features/casting/calc/truck_command.dart';
 import '../../features/drilling/drill_readings.dart';
+import 'drill_snooze.dart';
 import 'notifications.dart';
 import '../i18n.dart';
 
@@ -95,6 +96,15 @@ Future<void> _rearmCasting(AppDatabase db, int userId) async {
 }
 
 Future<void> _rearmDrilling(AppDatabase db, int userId) async {
+  // Penundaan dibaca SEKALI untuk semua log, bukan per log: "saya
+  // istirahat" berlaku untuk orangnya, bukan untuk satu titik.
+  //
+  // Yang sudah lewat diperlakukan sebagai tidak ada — `menunda` menolaknya
+  // sendiri — sehingga penundaan kemarin tidak pernah membungkam hari ini.
+  final kini = DateTime.now();
+  final tunda = DrillSnooze.decode(await db.readMeta('drill_snooze'));
+  final sampai = (tunda != null && tunda.menunda(kini)) ? tunda.until : null;
+
   final docs = await db.watchDocuments('drill_log', userId).first;
   for (final d in docs) {
     if (d.sendStatus == 'rejected') continue;
@@ -107,6 +117,7 @@ Future<void> _rearmDrilling(AppDatabase db, int userId) async {
       logUuid: d.uuid,
       pointCode: await _pointCode(db, body['pilePointUuid']),
       lastReadingAt: newest,
+      snoozeUntil: sampai,
     );
   }
 }

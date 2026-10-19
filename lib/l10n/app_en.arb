@@ -612,6 +612,10 @@
   "resumePouring": "Resume pouring",
   "pauseReminderMin": "{body} · {min} minutes",
   "idleReminderMin": "{body} · {min} minutes since the last truck",
+  "drillSnoozeAction": "Silence until tomorrow",
+  "@drillSnoozeAction": {
+    "description": "drillSnoozeAction"
+  },
   "drillIdleTitle": "Drilling log {code} has no new reading",
   "drillIdleBody": "It has been {since} since the last reading ({time}). Record the depth now, or tap Finish drilling if it is done.",
   "hoursText": "{h} h",

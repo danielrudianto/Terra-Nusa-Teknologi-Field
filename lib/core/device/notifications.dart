@@ -383,9 +383,32 @@ class Notifications {
   /// [drillIdleFirst] old, then every [drillIdleEvery], [drillIdleCount]
   /// times in all. Rescheduled on every save of the log, cancelled when it is
   /// finished. Scheduled up front, so it works with the app closed.
-  static const drillIdleFirst = Duration(hours: 1);
-  static const drillIdleEvery = Duration(minutes: 30);
-  static const drillIdleCount = 5;
+  ///
+  /// DIPERKETAT 19 Okt 2026 atas permintaan Daniel: bacaan yang terlupakan
+  /// adalah kebiasaan, bukan kecelakaan, dan 1 jam + tiap 30 menit × 5
+  /// terlalu sabar untuk kebiasaan. Sekarang 45 menit, lalu tiap 15 menit,
+  /// delapan kali — berbunyi dari menit ke-45 sampai jam ke-2.30.
+  ///
+  /// Yang membuatnya aman untuk diperketat adalah adanya jalan keluar:
+  /// "Diamkan sampai besok" pada notifikasinya sendiri. Tanpa itu, alarm
+  /// seberisik ini akan membuat orang mematikan SELURUH notifikasi aplikasi
+  /// lewat setelan Android — diam-diam, dan selamanya.
+  static const drillIdleFirst = Duration(minutes: 45);
+  static const drillIdleEvery = Duration(minutes: 15);
+  static const drillIdleCount = 8;
+
+  /// Sesudah bunyi ke-sekian, getarnya diperpanjang dan tingkatnya dinaikkan.
+  ///
+  /// Bunyi yang persis sama tiap lima belas menit berubah menjadi latar
+  /// belakang; yang berubah tetap menuntut perhatian. Dinaikkan pada bunyi
+  /// KETIGA (menit ke-75), bukan sejak awal — yang pertama cukup berupa
+  /// ingatan, bukan tuduhan.
+  static const _drillIdleKeras = 3;
+  static final _buzzKeras =
+      Int64List.fromList([0, 1200, 250, 1200, 250, 1200, 250, 1200]);
+
+  /// Tombol "Diamkan sampai besok" pada pengingat log bor.
+  static const actionSnoozeDrill = 'snooze_drill_until_tomorrow';
   static const _drillIdleBase = 7500;
   static const _drillIdleSlots = 20;
 
@@ -399,10 +422,17 @@ class Notifications {
     return _drillIdleBase + (h % _drillIdleSlots) * drillIdleCount + i;
   }
 
+  /// [snoozeUntil] — pengingat yang jatuh SEBELUM jam itu dilewati.
+  ///
+  /// Dilewati, bukan dibatalkan seluruhnya: yang jatuh SESUDAHnya tetap
+  /// dipasang, sehingga pengingatnya menyala sendiri besok pagi tanpa ada
+  /// yang perlu mengingatnya. Penundaan yang mematikan alarm sampai ada
+  /// yang menyalakannya lagi adalah penundaan yang menjadi permanen.
   static Future<void> scheduleDrillIdleReminders({
     required String logUuid,
     required String pointCode,
     required DateTime lastReadingAt,
+    DateTime? snoozeUntil,
   }) async {
     await cancelDrillIdleReminders(logUuid);
     final now = DateTime.now();
@@ -410,6 +440,7 @@ class Notifications {
       final wait = drillIdleFirst + drillIdleEvery * i;
       final at = lastReadingAt.add(wait);
       if (!at.isAfter(now)) continue;
+      if (snoozeUntil != null && at.isBefore(snoozeUntil)) continue;
       await _plugin.zonedSchedule(
         id: _drillIdleId(logUuid, i),
         title: L10n.current?.drillIdleTitle(pointCode) ?? 'Log bor $pointCode belum diisi',
@@ -423,12 +454,23 @@ class Notifications {
           android: AndroidNotificationDetails(
             'drill_reminder',
             'Pengingat log bor',
-            channelDescription: 'Getar bila log bor yang berjalan 1 jam belum ada bacaan baru',
-            importance: Importance.high,
-            priority: Priority.high,
+            channelDescription: 'Getar bila log bor yang berjalan 45 menit belum ada bacaan baru',
+            importance: i >= _drillIdleKeras ? Importance.max : Importance.high,
+            priority: i >= _drillIdleKeras ? Priority.max : Priority.high,
             enableVibration: true,
-            vibrationPattern: _buzz,
+            vibrationPattern: i >= _drillIdleKeras ? _buzzKeras : _buzz,
             category: AndroidNotificationCategory.reminder,
+            actions: [
+              // Satu-satunya jalan keluar yang sah. `showsUserInterface:
+              // false` — dikerjakan di isolate latar tanpa membuka apa pun,
+              // sama seperti "Selesai TM" dari arloji.
+              AndroidNotificationAction(
+                actionSnoozeDrill,
+                L10n.current?.drillSnoozeAction ?? 'Diamkan sampai besok',
+                showsUserInterface: false,
+                cancelNotification: true,
+              ),
+            ],
           ),
         ),
       );

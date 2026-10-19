@@ -3466,6 +3466,10 @@
       }
     }
   },
+  "drillSnoozeAction": "Diamkan sampai besok",
+  "@drillSnoozeAction": {
+    "description": "drillSnoozeAction"
+  },
   "drillIdleTitle": "Log bor {code} belum diisi",
   "@drillIdleTitle": {
     "description": "drillIdleTitle",
