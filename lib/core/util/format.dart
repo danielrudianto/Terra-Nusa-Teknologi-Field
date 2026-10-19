@@ -62,3 +62,13 @@ String formatDuration(Duration d) {
 String formatMeters(double? v, {int decimals = 2}) =>
     // Non-breaking space: "1,00" and "m" never end up on two lines.
     v == null ? '–' : '${v.toStringAsFixed(decimals).replaceAll('.', ',')}\u00A0m';
+
+/// "21,71 m³" — sepasang dengan [formatMeters]; SATUANNYA IKUT.
+///
+/// Ada karena ketiadaannya menimbulkan dua bug sekaligus (19 Okt 2026):
+/// volume dilewatkan [formatMeters] lalu dicetak "21,71 m m³", dan
+/// kedalaman ditambahi ' m' sendiri lalu menjadi "14,00 m m". Keduanya
+/// lolos karena tidak ada satu tempat pun yang menyatakan bahwa satuannya
+/// sudah termasuk.
+String formatVolume(double? v, {int decimals = 2}) =>
+    v == null ? '–' : '${v.toStringAsFixed(decimals).replaceAll('.', ',')}\u00A0m³';

@@ -78,7 +78,19 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     final project = (ref.watch(projectsProvider).value ?? const []).where((p) => '${p['id']}' == '${widget.projectId}').firstOrNull;
 
     return Scaffold(
-      appBar: AppBar(title: Text(project == null ? t(context).pointsTitle : t(context).pointsTitleOf('${project['code']}'))),
+      appBar: AppBar(
+        title: Text(project == null ? t(context).pointsTitle : t(context).pointsTitleOf('${project['code']}')),
+        actions: [
+          // DENAH: gambar berskala keadaan seluruh titik. Di bilah atas,
+          // bukan di bawah daftar — yang membukanya mencari gambar, bukan
+          // menggulir seratus baris untuk menemukannya.
+          IconButton(
+            tooltip: t(context).denahTitle,
+            icon: const Icon(Icons.map_outlined),
+            onPressed: () => context.push('/casting/project/${widget.projectId}/denah'),
+          ),
+        ],
+      ),
       floatingActionButton: _showTop
           ? FloatingActionButton.small(
               tooltip: t(context).toTop,
@@ -223,7 +235,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(pt.code, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
-                Text('D${pt.diameterMm} · efektif ${formatMeters(pt.plannedEffectiveLengthM)} · ${pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³',
+                Text('D${pt.diameterMm} · efektif ${formatMeters(pt.plannedEffectiveLengthM)} · ${formatVolume(pt.plannedTheoreticalVolumeM3)}',
                     style: TextStyle(color: w.muted, fontSize: 13)),
                 if (pt.groundLevel == null && pt.stage != 'sudah_cor')
                   Text(t(context).gsMissingShort, style: TextStyle(color: w.warnFg, fontSize: 13, fontWeight: FontWeight.w600)),

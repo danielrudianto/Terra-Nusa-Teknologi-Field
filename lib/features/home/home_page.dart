@@ -11,6 +11,7 @@ import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/list_card.dart';
+import 'aktivitas_hari_ini.dart';
 import 'status_banners.dart';
 import 'watched_logs.dart';
 import '../settings/power_guide.dart';
@@ -64,6 +65,9 @@ class HomePage extends ConsumerWidget {
             const StatusBanners(showUpdate: true),
             const PowerBanner(),
             const _WatchedCard(),
+            // Sejauh mana pekerjaan HARI INI — hak bacanya SAMA dengan
+            // halaman Laporan, karena datanya memang dari sana.
+            if (canReport) const AktivitasHariIniCard(),
             // Berdatangan bertingkat, bukan sekaligus.
             //
             // Urutannya dihitung dari daftar yang SUDAH disaring, bukan dari

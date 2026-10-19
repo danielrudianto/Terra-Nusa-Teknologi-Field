@@ -16,6 +16,7 @@ import 'features/casting/casting_page.dart';
 import 'features/casting/pile_points_page.dart';
 import 'features/casting/pantau_page.dart';
 import 'features/casting/point_history_page.dart';
+import 'features/casting/titik_denah_page.dart';
 import 'features/drilling/drill_log_page.dart';
 import 'features/reports/report_page.dart';
 import 'core/config/features.dart';
@@ -102,6 +103,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/casting/project/:id',
         builder: (_, s) => PilePointsPage(projectId: int.parse(s.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/casting/project/:id/denah',
+        builder: (_, s) => TitikDenahPage(projectId: int.parse(s.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/casting/log/:uuid',

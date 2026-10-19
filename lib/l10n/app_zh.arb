@@ -76,6 +76,15 @@
   "logoutConfirmBody": "重新登录需要网络连接。",
   "cancel": "取消",
   "appVersion": "应用版本",
+  "serverLabel": "服务器 {host}",
+  "@serverLabel": {
+    "description": "serverLabel",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "deviceIdLabel": "设备 ID {id}",
   "sendLog": "发送日志给管理员",
   "sendLogBody": "应用出现问题时：发送本机错误日志，不含个人数据。",
@@ -616,6 +625,37 @@
   "@drillSnoozeAction": {
     "description": "drillSnoozeAction"
   },
+  "activityTodayTitle": "今日",
+  "@activityTodayTitle": {
+    "description": "activityTodayTitle"
+  },
+  "activityTodayMore": "另有 {n} 项——完整列表请打开报表",
+  "@activityTodayMore": {
+    "description": "activityTodayMore",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "activityTodayDone": "完成于 {jam}",
+  "@activityTodayDone": {
+    "description": "activityTodayDone",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTodayRunning": "进行中 · 最近 {jam}",
+  "@activityTodayRunning": {
+    "description": "activityTodayRunning",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
   "drillIdleTitle": "钻孔记录 {code} 未更新",
   "drillIdleBody": "距上次读数已 {since}（{time}）。请立即记录深度，若已完成请点按\"完成钻孔\"。",
   "hoursText": "{h} 小时",
@@ -802,10 +842,6 @@
   "handoverRequestPrompt": "{name} 正在桩点 {code} 等待答复。同意后该记录立即转到对方手机，本页面将关闭。",
   "approve": "同意",
   "reject": "拒绝",
-  "slumpPhotoAhead": "下一车坍落度照片",
-  "slumpPhotoWaiting": "坍落度照片等待下一车",
-  "slumpPhotoWaitingBody": "拍摄于 {time} — 录入下一车时自动附加。",
-  "slumpPhotoParked": "坍落度照片已保存，待下一车使用。",
   "drillProgressLabel": "钻进进度",
   "castProgressLabel": "浇筑进度",
   "drillProgressMain": "{depth} / 计划 {planned}",
@@ -973,6 +1009,81 @@
         "type": "String"
       }
     }
+  },
+  "drillEffectiveLabel": "实钻时长",
+  "@drillEffectiveLabel": {
+      "description": "Time actually spent drilling — stops excluded"
+  },
+  "drillOfTotal": "共 {total}",
+  "@drillOfTotal": {
+      "description": "Shown small under the effective drilling time",
+      "placeholders": {
+          "total": {
+              "type": "String"
+          }
+      }
+  },
+  "drillEffectiveRateLabel": "钻孔速度",
+  "@drillEffectiveRateLabel": {
+      "description": "Depth divided by the effective drilling time"
+  },
+  "drillRateTotal": "{laju} 米/小时（含停钻）",
+  "@drillRateTotal": {
+      "description": "Shown small under the drilling rate",
+      "placeholders": {
+          "laju": {
+              "type": "String"
+          }
+      }
+  },
+  "drillStops": "停钻 {n} 次 · {lama}",
+  "@drillStops": {
+      "description": "Heading of the list of stops",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          },
+          "lama": {
+              "type": "String"
+          }
+      }
+  },
+  "denahTitle": "桩位平面图",
+  "@denahTitle": {
+      "description": "denahTitle"
+  },
+  "denahLabelToggle": "桩号",
+  "@denahLabelToggle": {
+      "description": "denahLabelToggle"
+  },
+  "denahDeviationToggle": "偏差连线",
+  "@denahDeviationToggle": {
+      "description": "denahDeviationToggle"
+  },
+  "denahDrilled": "已钻孔",
+  "@denahDrilled": {
+      "description": "denahDrilled"
+  },
+  "denahNoCoordTitle": "{n} 个桩位未绘制",
+  "@denahNoCoordTitle": {
+      "description": "denahNoCoordTitle",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          }
+      }
+  },
+  "denahNoCoordBody": "这些桩位没有 X/Y 坐标（设计与实测均无），因此无法绘制。由办公室通过 Excel 导入填写。",
+  "@denahNoCoordBody": {
+      "description": "denahNoCoordBody"
+  },
+  "denahEmptyTitle": "尚无坐标",
+  "@denahEmptyTitle": {
+      "description": "denahEmptyTitle"
+  },
+  "denahEmptyBody": "本项目没有任何桩位填写了 X/Y 坐标，暂时无法绘制平面图。设计坐标由办公室填写。",
+  "@denahEmptyBody": {
+      "description": "denahEmptyBody"
   },
   "curveNeedsTwo": "曲线至少需要两条时间和深度均可读取的记录。",
   "@curveNeedsTwo": {
@@ -1146,18 +1257,6 @@
   "castDoneAt": "浇筑完成",
   "@castDoneAt": {
     "description": "castDoneAt"
-  },
-  "slumpPhotoFirst": "首车坍落度照片",
-  "@slumpPhotoFirst": {
-    "description": "slumpPhotoFirst"
-  },
-  "slumpPhotoWaitingFirst": "坍落度照片待首车登记",
-  "@slumpPhotoWaitingFirst": {
-    "description": "slumpPhotoWaitingFirst"
-  },
-  "slumpPhotoParkedFirst": "坍落度照片已为首车保存。",
-  "@slumpPhotoParkedFirst": {
-    "description": "slumpPhotoParkedFirst"
   },
   "finishTruckAction": "结束罐车",
   "@finishTruckAction": {

@@ -256,6 +256,15 @@
   "@appVersion": {
     "description": "Halaman Pengaturan: appVersion"
   },
+  "serverLabel": "Server {host}",
+  "@serverLabel": {
+    "description": "serverLabel",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "deviceIdLabel": "ID perangkat {id}",
   "@deviceIdLabel": {
     "description": "Halaman Pengaturan: deviceIdLabel",
@@ -3470,6 +3479,37 @@
   "@drillSnoozeAction": {
     "description": "drillSnoozeAction"
   },
+  "activityTodayTitle": "Hari ini",
+  "@activityTodayTitle": {
+    "description": "activityTodayTitle"
+  },
+  "activityTodayMore": "+{n} lagi — buka Laporan untuk daftar lengkapnya",
+  "@activityTodayMore": {
+    "description": "activityTodayMore",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "activityTodayDone": "beres {jam}",
+  "@activityTodayDone": {
+    "description": "activityTodayDone",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTodayRunning": "masih jalan · terakhir {jam}",
+  "@activityTodayRunning": {
+    "description": "activityTodayRunning",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
   "drillIdleTitle": "Log bor {code} belum diisi",
   "@drillIdleTitle": {
     "description": "drillIdleTitle",
@@ -4566,27 +4606,6 @@
   "@reject": {
     "description": "Button that refuses the handover"
   },
-  "slumpPhotoAhead": "Foto slump TM berikutnya",
-  "@slumpPhotoAhead": {
-    "description": "Button that photographs the slump before its TM is entered"
-  },
-  "slumpPhotoWaiting": "Foto slump menunggu TM berikutnya",
-  "@slumpPhotoWaiting": {
-    "description": "Title of the parked slump photo card"
-  },
-  "slumpPhotoWaitingBody": "Diambil {time} — otomatis terpasang saat TM berikutnya dicatat.",
-  "@slumpPhotoWaitingBody": {
-    "description": "When the parked slump photo was taken",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "slumpPhotoParked": "Foto slump disimpan untuk TM berikutnya.",
-  "@slumpPhotoParked": {
-    "description": "Snack after parking a slump photo"
-  },
   "drillProgressLabel": "Kemajuan bor",
   "@drillProgressLabel": {
     "description": "Label of the drilling progress card on a point held elsewhere"
@@ -4809,6 +4828,81 @@
       }
     }
   },
+  "drillEffectiveLabel": "Lama mengebor",
+  "@drillEffectiveLabel": {
+      "description": "Time actually spent drilling — stops excluded"
+  },
+  "drillOfTotal": "dari total {total}",
+  "@drillOfTotal": {
+      "description": "Shown small under the effective drilling time",
+      "placeholders": {
+          "total": {
+              "type": "String"
+          }
+      }
+  },
+  "drillEffectiveRateLabel": "Laju bor",
+  "@drillEffectiveRateLabel": {
+      "description": "Depth divided by the effective drilling time"
+  },
+  "drillRateTotal": "{laju} m/jam termasuk berhenti",
+  "@drillRateTotal": {
+      "description": "Shown small under the drilling rate",
+      "placeholders": {
+          "laju": {
+              "type": "String"
+          }
+      }
+  },
+  "drillStops": "{n} kali berhenti · {lama}",
+  "@drillStops": {
+      "description": "Heading of the list of stops",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          },
+          "lama": {
+              "type": "String"
+          }
+      }
+  },
+  "denahTitle": "Denah titik",
+  "@denahTitle": {
+      "description": "denahTitle"
+  },
+  "denahLabelToggle": "Kode titik",
+  "@denahLabelToggle": {
+      "description": "denahLabelToggle"
+  },
+  "denahDeviationToggle": "Garis simpangan",
+  "@denahDeviationToggle": {
+      "description": "denahDeviationToggle"
+  },
+  "denahDrilled": "Sudah dibor",
+  "@denahDrilled": {
+      "description": "denahDrilled"
+  },
+  "denahNoCoordTitle": "{n} titik tidak tergambar",
+  "@denahNoCoordTitle": {
+      "description": "denahNoCoordTitle",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          }
+      }
+  },
+  "denahNoCoordBody": "Titik ini belum punya koordinat X/Y — rencana maupun aktual — jadi tidak ada tempatnya di denah. Kantor yang mengisinya lewat impor Excel.",
+  "@denahNoCoordBody": {
+      "description": "denahNoCoordBody"
+  },
+  "denahEmptyTitle": "Belum ada koordinat",
+  "@denahEmptyTitle": {
+      "description": "denahEmptyTitle"
+  },
+  "denahEmptyBody": "Tidak ada satu pun titik proyek ini yang koordinat X/Y-nya terisi, jadi denahnya belum dapat digambar. Koordinat rencananya diisi dari kantor.",
+  "@denahEmptyBody": {
+      "description": "denahEmptyBody"
+  },
   "curveNeedsTwo": "Kurvanya perlu sedikitnya dua bacaan yang jam dan kedalamannya terbaca.",
   "@curveNeedsTwo": {
     "description": "Shown instead of the curve when there are fewer than two usable readings"
@@ -4982,18 +5076,6 @@
   "@castDoneAt": {
     "description": "castDoneAt"
   },
-  "slumpPhotoFirst": "Foto slump TM pertama",
-  "@slumpPhotoFirst": {
-    "description": "slumpPhotoFirst"
-  },
-  "slumpPhotoWaitingFirst": "Foto slump menunggu TM pertama",
-  "@slumpPhotoWaitingFirst": {
-    "description": "slumpPhotoWaitingFirst"
-  },
-  "slumpPhotoParkedFirst": "Foto slump disimpan untuk TM pertama.",
-  "@slumpPhotoParkedFirst": {
-    "description": "slumpPhotoParkedFirst"
-  },
   "finishTruckAction": "Selesai TM",
   "@finishTruckAction": {
     "description": "finishTruckAction"
@@ -5058,58 +5140,113 @@
     "description": "supplierLocalConfirmYes"
   },
   "watchOpen": "Pantau sekarang",
-  "@watchOpen": { "description": "watchOpen" },
+  "@watchOpen": {
+    "description": "watchOpen"
+  },
   "watchTitle": "Pantau {code}",
   "@watchTitle": {
     "description": "watchTitle",
-    "placeholders": { "code": { "type": "String" } }
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
   },
   "watchAsOf": "per {jam} · {menit} menit lalu",
   "@watchAsOf": {
     "description": "watchAsOf",
-    "placeholders": { "jam": { "type": "String" }, "menit": { "type": "int" } }
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      },
+      "menit": {
+        "type": "int"
+      }
+    }
   },
   "watchNoTimestamp": "Belum ada catatan berjam dari HP pemegangnya",
-  "@watchNoTimestamp": { "description": "watchNoTimestamp" },
+  "@watchNoTimestamp": {
+    "description": "watchNoTimestamp"
+  },
   "watchOfflineTitle": "Tidak bisa menarik data",
-  "@watchOfflineTitle": { "description": "watchOfflineTitle" },
+  "@watchOfflineTitle": {
+    "description": "watchOfflineTitle"
+  },
   "watchOfflineBody": "Pantau membaca langsung dari server, jadi butuh sinyal. Tarik ke bawah untuk mencoba lagi.",
-  "@watchOfflineBody": { "description": "watchOfflineBody" },
+  "@watchOfflineBody": {
+    "description": "watchOfflineBody"
+  },
   "watchNothingTitle": "Belum ada yang dikerjakan di titik ini",
-  "@watchNothingTitle": { "description": "watchNothingTitle" },
+  "@watchNothingTitle": {
+    "description": "watchNothingTitle"
+  },
   "watchNothingBody": "Begitu HP pemegangnya mengirim bacaan atau TM pertama, kemajuannya muncul di sini.",
-  "@watchNothingBody": { "description": "watchNothingBody" },
+  "@watchNothingBody": {
+    "description": "watchNothingBody"
+  },
   "watchCastRunning": "Sedang dicor",
-  "@watchCastRunning": { "description": "watchCastRunning" },
+  "@watchCastRunning": {
+    "description": "watchCastRunning"
+  },
   "watchCastDone": "Cor selesai",
-  "@watchCastDone": { "description": "watchCastDone" },
+  "@watchCastDone": {
+    "description": "watchCastDone"
+  },
   "watchPouringNow": "TM {seq} sedang dituang",
   "@watchPouringNow": {
     "description": "watchPouringNow",
-    "placeholders": { "seq": { "type": "String" } }
+    "placeholders": {
+      "seq": {
+        "type": "String"
+      }
+    }
   },
   "watchTrucks": "TM masuk",
-  "@watchTrucks": { "description": "watchTrucks" },
+  "@watchTrucks": {
+    "description": "watchTrucks"
+  },
   "watchVolume": "Volume",
-  "@watchVolume": { "description": "watchVolume" },
+  "@watchVolume": {
+    "description": "watchVolume"
+  },
   "watchConcreteLevel": "Muka beton dari GS",
-  "@watchConcreteLevel": { "description": "watchConcreteLevel" },
+  "@watchConcreteLevel": {
+    "description": "watchConcreteLevel"
+  },
   "watchNotSounded": "belum disounding",
-  "@watchNotSounded": { "description": "watchNotSounded" },
+  "@watchNotSounded": {
+    "description": "watchNotSounded"
+  },
   "watchEmbedment": "Tremie tertanam",
-  "@watchEmbedment": { "description": "watchEmbedment" },
+  "@watchEmbedment": {
+    "description": "watchEmbedment"
+  },
   "watchDrillRunning": "Sedang dibor",
-  "@watchDrillRunning": { "description": "watchDrillRunning" },
+  "@watchDrillRunning": {
+    "description": "watchDrillRunning"
+  },
   "watchDrillDone": "Bor selesai",
-  "@watchDrillDone": { "description": "watchDrillDone" },
+  "@watchDrillDone": {
+    "description": "watchDrillDone"
+  },
   "watchCurveWaitTitle": "Kurvanya butuh dua bacaan",
-  "@watchCurveWaitTitle": { "description": "watchCurveWaitTitle" },
+  "@watchCurveWaitTitle": {
+    "description": "watchCurveWaitTitle"
+  },
   "watchCurveWaitBody": "Dengan satu bacaan belum ada rentang waktu yang bisa digambar. Muncul sendiri begitu bacaan kedua masuk.",
-  "@watchCurveWaitBody": { "description": "watchCurveWaitBody" },
+  "@watchCurveWaitBody": {
+    "description": "watchCurveWaitBody"
+  },
   "watchDepth": "Kedalaman",
-  "@watchDepth": { "description": "watchDepth" },
+  "@watchDepth": {
+    "description": "watchDepth"
+  },
   "watchRate": "Laju rata-rata",
-  "@watchRate": { "description": "watchRate" },
+  "@watchRate": {
+    "description": "watchRate"
+  },
   "watchReadings": "Bacaan",
-  "@watchReadings": { "description": "watchReadings" }
+  "@watchReadings": {
+    "description": "watchReadings"
+  }
 }

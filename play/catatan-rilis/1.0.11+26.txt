@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.11 (26) — Ringkasan pekerjaan hari ini
+
+<id>
+• Beranda: kartu pekerjaan hari ini — titik mana dibor sampai berapa meter, cor mana sudah berapa TM, jam berapa beres. Bisa dilipat; diketuk, yang masih jalan membuka Pantau dan yang sudah beres membuka riwayatnya.
+• Uji slump tidak perlu difoto lagi. Angkanya tetap dicatat; foto lama tetap bisa dibuka.
+• Pengingat log bor berbunyi sesudah 45 menit tanpa bacaan baru, bukan 1 jam, lalu tiap 15 menit.
+• Tombol "Diamkan sampai besok" di notifikasinya. Menyala lagi besok pukul 07.00.
+</id>
+<en-US>
+• Home: a card of today's work — which point reached what depth, which pour is at how many trucks, what time it finished. Collapsible; tap a row and a running one opens Watch, a finished one opens its history.
+• The slump test no longer needs a photo. The figure is still recorded; old photos stay viewable.
+• Drill log reminders fire after 45 minutes without a new reading instead of 1 hour, then every 15 minutes.
+• A "Silence until tomorrow" button on the notification. Back at 07:00 tomorrow.
+</en-US>
+<zh-CN>
+• 主页新增卡片，显示今日作业：哪个桩点钻至何深度、哪处浇筑已几车、何时完成。可折叠，数量始终可见。点按行：进行中打开实时查看，已完成打开历史。
+• 坍落度试验不再需要拍照。数值照常记录，已有照片仍可查看。
+• 钻进日志提醒改为无新读数 45 分钟后触发（原为 1 小时），其后每 15 分钟一次。
+• 通知上新增"静音至明天"按钮，次日 07:00 自动恢复。
+</zh-CN>

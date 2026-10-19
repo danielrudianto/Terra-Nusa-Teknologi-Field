@@ -98,7 +98,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   }
 
   Future<void> _load() async {
-    await _muatSlumpMenunggu();
     final db = ref.read(dbProvider);
     final rows = await db.getDocument(widget.uuid);
     Map<String, Object?>? doc;
@@ -527,21 +526,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
         pouredSoFarM3: k.totalVolumeM3,
         takeTicketPhoto: _takeTicketPhoto,
-        takeSlumpPhoto: _takeSlumpPhoto,
-        // Foto slump yang sudah diambil saat TM sebelumnya masih dituang.
-        slumpPhotoUuid: _slumpMenunggu?.uuid,
-        slumpPhotoAt: _slumpMenunggu?.at,
         suppliers: offer.suppliers,
         supplierId: defaultSupplierId,
         supplierName: defaultSupplierName,
       ),
     );
     if (result == null) return;
-    // Titipannya terpakai: kalau tidak dibuang, foto yang sama akan menempel
-    // lagi pada TM berikutnya.
-    if (_slumpMenunggu != null && result['slumpPhotoUuid'] == _slumpMenunggu!.uuid) {
-      await _simpanSlumpMenunggu(null);
-    }
     // The next truck is here: no more waiting reminders.
     await Notifications.cancelIdleReminders();
     final saved = await _update((d) {
@@ -607,7 +597,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // jadi menghitungnya dua kali akan menuduh mandor berlebihan.
         pouredSoFarM3: k.totalVolumeM3 - (toDoubleOrNull(truck['volumeM3']) ?? 0),
         takeTicketPhoto: _takeTicketPhoto,
-        takeSlumpPhoto: _takeSlumpPhoto,
         suppliers: offer.suppliers,
         supplierId: supplierId,
         supplierName: truck['supplierName']?.toString(),
@@ -678,68 +667,22 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     return f?.uuid;
   }
 
-  /// The slump cone, photographed with the tape against it. The typed figure
-  /// stays, but now it has its evidence.
-  Future<String?> _takeSlumpPhoto() async {
-    final p = ref.read(userProvider);
-    if (p == null) return null;
-    final f = await takePhoto(db: ref.read(dbProvider), userId: p.id, kind: 'slump_tm');
-    return f?.uuid;
-  }
-
   // ---------------------------------------------------------------------
-  // Foto slump yang diambil LEBIH DULU
+  // FOTO SLUMP DICABUT — 19 Oktober 2026, permintaan Daniel
   // ---------------------------------------------------------------------
   //
-  // Uji slump TM berikutnya biasa dilakukan saat TM sekarang masih dituang —
-  // artinya pada saat fotonya diambil, isian TM itu belum ada, dan tidak ada
-  // tempat untuk menaruhnya.
+  // Dulu di sini ada `_takeSlumpPhoto` beserta seluruh alur "foto duluan":
+  // uji slump TM berikutnya biasa dilakukan saat TM sekarang masih dituang,
+  // jadi fotonya diparkir di `meta` lokal sampai TM-nya dibuka.
   //
-  // Yang TIDAK dipilih: mengizinkan ambil dari galeri. Nilai foto slump di
-  // berkas mutu justru terletak pada kepastian kapan ia diambil; begitu
-  // galeri terbuka, foto mana pun bisa masuk — slump kemarin, slump titik
-  // sebelah — dan tidak ada yang bisa membedakannya belakangan.
+  // Semuanya dibuang. ANGKA slump (`slumpCm`) tetap dicatat seperti biasa —
+  // yang hilang hanya fotonya.
   //
-  // Jadi fotonya tetap lewat kamera aplikasi, hanya saja diparkir sampai TM
-  // yang bersangkutan dibuka. Penitipannya LOKAL: tidak pernah ikut
-  // dikirim, jadi tidak ada perubahan apa pun di server. Fotonya sendiri
-  // sudah naik lewat antrean foto seperti biasa.
-
-  String get _kunciSlumpMenunggu => 'slump_menunggu:${widget.uuid}';
-
-  /// Foto slump yang menunggu TM berikutnya: uuid foto dan jam pengambilannya.
-  ({String uuid, DateTime at})? _slumpMenunggu;
-
-  Future<void> _muatSlumpMenunggu() async {
-    final teks = await ref.read(dbProvider).readMeta(_kunciSlumpMenunggu);
-    final bagian = (teks ?? '').split('|');
-    final kapan = bagian.length < 2 ? null : DateTime.tryParse(bagian[1]);
-    if (!mounted) return;
-    setState(() => _slumpMenunggu = kapan == null ? null : (uuid: bagian[0], at: kapan));
-  }
-
-  Future<void> _simpanSlumpMenunggu(({String uuid, DateTime at})? nilai) async {
-    await ref.read(dbProvider).writeMeta(
-          _kunciSlumpMenunggu,
-          nilai == null ? null : '${nilai.uuid}|${nilai.at.toIso8601String()}',
-        );
-    if (mounted) setState(() => _slumpMenunggu = nilai);
-  }
-
-  Future<void> _fotoSlumpDuluan() async {
-    final uuid = await _takeSlumpPhoto();
-    if (uuid == null) return;
-    await _simpanSlumpMenunggu((uuid: uuid, at: DateTime.now()));
-    if (mounted) {
-      showSnack(
-        context,
-        // Sama dengan tombolnya: "untuk TM berikutnya" sebelum ada TM
-        // pertama menyatakan sesuatu yang belum ada.
-        _trucks.isEmpty ? t(context).slumpPhotoParkedFirst : t(context).slumpPhotoParked,
-        icon: Icons.science_outlined,
-      );
-    }
-  }
+  // Titipan yang mungkin masih tersimpan di HP dari versi sebelumnya
+  // sengaja TIDAK disapu: kuncinya (`slump_menunggu:<uuid log>`) tidak
+  // pernah dibaca lagi, isinya beberapa puluh karakter, dan menulis kode
+  // pembersih untuk sesuatu yang tidak dibaca siapa pun hanya menambah kode
+  // yang kelak membingungkan.
 
   Future<bool> _updateTruck(String truckUuid, void Function(Map<Object?, Object?> t) f) => _update((d) {
         for (final x in (d['trucks'] as List)) {
@@ -1460,18 +1403,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
           // --- TM ---------------------------------------------------------
           _SectionTitle(t(context).trucksSection, t(context).trucksSectionBody(_trucks.length, _decimal(k.totalVolumeM3))),
-          if (!_readOnly && !_finished)
-            _SlumpMenungguCard(
-              menunggu: _slumpMenunggu,
-              // Belum ada TM sama sekali = fotonya untuk TM PERTAMA, bukan
-              // "TM berikutnya". Uji slump memang dilakukan pada tiap TM,
-              // termasuk yang pertama — yang salah cuma kalimatnya, dan
-              // kalimat yang menyebut "berikutnya" sebelum ada yang pertama
-              // membuat QS mengira ia sedang memotret untuk TM kedua.
-              pertama: _trucks.isEmpty,
-              onAmbil: _fotoSlumpDuluan,
-              onBuang: _slumpMenunggu == null ? null : () => _simpanSlumpMenunggu(null),
-            ),
           for (final truck in _trucks..sort((a, b) => (toIntOrNull(a['seq']) ?? 0).compareTo(toIntOrNull(b['seq']) ?? 0)))
             _TruckCard(
               truck: truck,
@@ -2243,20 +2174,21 @@ class _PhotoField extends ConsumerWidget {
     required this.label,
     required this.emptyLabel,
     required this.icon,
-    required this.onTake,
-    this.note,
+    this.onTake,
   });
 
   final String? uuid;
   final String label;
   final String emptyLabel;
 
-  /// Keterangan pengganti "ketuk untuk memperbesar" — dipakai saat fotonya
-  /// datang dari titipan, supaya tidak ada yang bingung kenapa isian TM baru
-  /// sudah ada fotonya.
-  final String? note;
   final IconData icon;
-  final Future<void> Function() onTake;
+
+  /// `null` = BACA SAJA.
+  ///
+  /// Dipakai foto slump sesudah pengambilannya dicabut (19 Okt 2026): 60 TM
+  /// terlanjur punya fotonya, dan foto yang ada tetapi tidak dapat dibuka
+  /// sama saja dengan hilang.
+  final Future<void> Function()? onTake;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -2301,114 +2233,26 @@ class _PhotoField extends ConsumerWidget {
               children: [
                 Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
                 const SizedBox(height: 2),
-                Text(ada ? (note ?? t(context).tapToEnlarge) : t(context).photoNotOnThisPhone,
+                Text(ada ? t(context).tapToEnlarge : t(context).photoNotOnThisPhone,
                     style: TextStyle(fontSize: 12, color: ada ? w.muted : w.badFg)),
               ],
             ),
           ),
-          TextButton.icon(
-            onPressed: onTake,
-            icon: const Icon(Icons.refresh, size: 18),
-            label: Text(t(context).retakePhoto),
-          ),
+          // Tanpa `onTake` berarti baca saja: tombol "foto ulang" pun tidak
+          // ditampilkan, bukan sekadar dimatikan. Tombol mati yang tidak
+          // pernah bisa ditekan hanya menimbulkan pertanyaan.
+          if (onTake != null)
+            TextButton.icon(
+              onPressed: onTake,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(t(context).retakePhoto),
+            ),
         ],
       ),
     );
   }
 }
 
-/// Foto slump yang sudah diambil tetapi TM-nya belum masuk.
-///
-/// Muncul sebagai ajakan selama belum ada, dan sebagai pratinjau begitu ada —
-/// supaya QS tahu fotonya sudah di tangan aplikasi dan tidak memotret dua
-/// kali, serta bisa membuangnya kalau ternyata keliru.
-class _SlumpMenungguCard extends ConsumerWidget {
-  const _SlumpMenungguCard({
-    required this.menunggu,
-    required this.pertama,
-    required this.onAmbil,
-    required this.onBuang,
-  });
-
-  final ({String uuid, DateTime at})? menunggu;
-
-  /// Belum ada satu pun TM pada log ini.
-  final bool pertama;
-  final VoidCallback onAmbil;
-  final VoidCallback? onBuang;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final w = context.colors;
-    final m = menunggu;
-    if (m == null) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: OutlinedButton.icon(
-          onPressed: onAmbil,
-          icon: const Icon(Icons.science_outlined),
-          label: Text(pertama ? t(context).slumpPhotoFirst : t(context).slumpPhotoAhead),
-        ),
-      );
-    }
-    final photo = ref.watch(_photoProvider(m.uuid)).value;
-    final ada = photo != null && File(photo.path).existsSync();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: w.infoBg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: w.line),
-        ),
-        child: Row(
-          children: [
-            if (ada)
-              GestureDetector(
-                onTap: () => _showPhotoFull(context, photo.path),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.file(File(photo.path), height: 56, width: 56, fit: BoxFit.cover, cacheHeight: 168),
-                ),
-              )
-            else
-              Container(
-                height: 56,
-                width: 56,
-                decoration: BoxDecoration(color: w.surface, borderRadius: BorderRadius.circular(8)),
-                child: Icon(Icons.image_not_supported_outlined, color: w.faint),
-              ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(pertama ? t(context).slumpPhotoWaitingFirst : t(context).slumpPhotoWaiting,
-                      style: TextStyle(fontWeight: FontWeight.w700, color: w.infoFg)),
-                  const SizedBox(height: 2),
-                  Text(t(context).slumpPhotoWaitingBody(formatTime(m.at)),
-                      style: TextStyle(fontSize: 12, color: w.muted)),
-                ],
-              ),
-            ),
-            TextButton(onPressed: onAmbil, child: Text(t(context).retakePhoto)),
-            if (onBuang != null)
-              IconButton(
-                tooltip: t(context).discard,
-                onPressed: onBuang,
-                icon: Icon(Icons.close, size: 20, color: w.muted),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// One photo of a TM — the delivery note or the slump test — with its label,
-/// tappable to full screen.
 class _CastingPhoto extends ConsumerWidget {
   const _CastingPhoto({required this.uuid, required this.label});
 
@@ -2571,9 +2415,6 @@ class _TruckSheet extends ConsumerStatefulWidget {
     required this.theoreticalM3,
     required this.pouredSoFarM3,
     required this.takeTicketPhoto,
-    required this.takeSlumpPhoto,
-    this.slumpPhotoUuid,
-    this.slumpPhotoAt,
     required this.suppliers,
     required this.supplierId,
     required this.supplierName,
@@ -2593,12 +2434,9 @@ class _TruckSheet extends ConsumerStatefulWidget {
   final double pouredSoFarM3;
 
   final Future<String?> Function() takeTicketPhoto;
-  final Future<String?> Function() takeSlumpPhoto;
 
   /// Foto slump yang sudah diambil sebelum TM ini masuk, berikut jamnya.
   /// Isian ini terbuka dengan foto tersebut sudah terpasang.
-  final String? slumpPhotoUuid;
-  final DateTime? slumpPhotoAt;
 
   /// Concrete suppliers to offer, and the previous TM's (or the header's)
   /// choice as the preselected default.
@@ -2633,7 +2471,8 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   late final _sounding = TextEditingController(text: _asTyped(widget.initial?['concreteDepthBeforeM']));
   late final _supplier = TextEditingController(text: widget.supplierName ?? '');
   late String? _photo = widget.initial?['ticketPhotoUuid']?.toString();
-  late String? _slumpPhoto = widget.initial?['slumpPhotoUuid']?.toString() ?? widget.slumpPhotoUuid;
+  /// Foto slump yang SUDAH ada pada TM ini; tidak pernah bertambah lagi.
+  late final String? _slumpPhoto = widget.initial?['slumpPhotoUuid']?.toString();
   String? _error;
 
   // ── MENUTUP LEMBAR TIDAK BOLEH MEMBUANG KERJA LAPANGAN ────────────────
@@ -2922,20 +2761,26 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
                 if (f != null) setState(() => _photo = f);
               },
             ),
-            const SizedBox(height: 8),
-            _PhotoField(
-              uuid: _slumpPhoto,
-              label: t(context).slumpTest,
-              emptyLabel: t(context).photoSlump,
-              note: widget.slumpPhotoAt == null || _slumpPhoto != widget.slumpPhotoUuid
-                  ? null
-                  : t(context).slumpPhotoWaitingBody(formatTime(widget.slumpPhotoAt!)),
-              icon: Icons.science_outlined,
-              onTake: () async {
-                final f = await widget.takeSlumpPhoto();
-                if (f != null) setState(() => _slumpPhoto = f);
-              },
-            ),
+            // FOTO SLUMP TIDAK DIAMBIL LAGI — hanya ditampilkan bila sudah ada.
+            //
+            // Dicabut atas permintaan Daniel, 19 Oktober 2026. Angka slump
+            // (`slumpCm`) tetap dicatat seperti biasa; yang hilang hanya
+            // fotonya.
+            //
+            // Yang SUDAH terlanjur ada tetap dapat dibuka: 60 dari 382 TM
+            // memilikinya, yang terakhir pagi ini. Foto yang masih tersimpan
+            // tetapi tidak ada satu layar pun yang menampilkannya adalah
+            // bentuk kehilangan yang paling sulit disadari — datanya ada,
+            // tetapi praktis lenyap.
+            if (_slumpPhoto != null) ...[
+              const SizedBox(height: 8),
+              _PhotoField(
+                uuid: _slumpPhoto,
+                label: t(context).slumpTest,
+                emptyLabel: t(context).photoSlump,
+                icon: Icons.science_outlined,
+              ),
+            ],
             const SizedBox(height: 12),
             TextField(controller: _truck, decoration: InputDecoration(labelText: t(context).hullNoField)),
             const SizedBox(height: 12),

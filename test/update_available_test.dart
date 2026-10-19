@@ -40,6 +40,27 @@ void main() {
       expect(UpdateAvailable.fromPull(pull(versi: '')), isNull);
     });
 
+    test('TIDAK mengajak ke versi yang tidak lebih baru', () {
+      /*
+       * Kejadian 19 Oktober 2026: HP yang sudah memasang 1.0.12+27 terus
+       * diajak memperbarui ke 1.0.12+27, karena HP mengirim versinya tanpa
+       * nomor build sehingga server membacanya (1,0,12,0).
+       *
+       * Sebabnya sudah dibetulkan di `Env.loadVersion` (nomor build ikut
+       * dikirim), tetapi penjaga ini tetap ada: satu `.env` yang keliru
+       * ketik menghasilkan hal yang sama, dan ajakan yang tidak dapat
+       * dipenuhi mengajari kru mengabaikan seluruh ajakan.
+       *
+       * Di dalam uji, `Env.appVersion` memakai nilai cadangan `0.1.0`.
+       */
+      expect(UpdateAvailable.fromPull(pull(versi: '0.1.0')), isNull,
+          reason: 'sama persis');
+      expect(UpdateAvailable.fromPull(pull(versi: '0.0.9+5')), isNull,
+          reason: 'lebih tua');
+      expect(UpdateAvailable.fromPull(pull(versi: '0.1.0+1')), isNotNull,
+          reason: 'nomor build lebih tinggi = lebih baru');
+    });
+
     test('tautan kosong menjadi null, bukan untai kosong', () {
       // Layar memutuskan menampilkan tombol dari ADA atau TIDAKNYA tautan;
       // untai kosong akan lolos dan menghasilkan tombol yang tidak membuka

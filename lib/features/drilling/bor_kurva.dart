@@ -52,13 +52,33 @@ class RuasBor {
   final double lajuMPerJam;
 }
 
+/// Berapa lama sebuah ruas MANDEK supaya layak disebut "berhenti".
+///
+/// Dipakai hanya untuk MENCATAT dan MENYOROTI berhentinya — bukan untuk
+/// menghitung durasi. Durasi efektif menjumlahkan seluruh ruas yang maju,
+/// berapa pun lamanya; ruas mandek lima menit tetap mengurangi durasi
+/// efektif, hanya saja tidak pantas disebut "berhenti" di layar.
+///
+/// Lima belas menit: menyambung pipa dan memindahkan tanah galian memakan
+/// waktu, dan bacaan yang kebetulan diambil berapit di antaranya bukan
+/// berhenti.
+///
+/// ANGKANYA SAMA DENGAN WEB (`helpers/bor-kurva.helper.ts`, MENIT_BERHENTI).
+/// Dua layar yang menyebut "2 kali berhenti" dan "3 kali berhenti" untuk
+/// titik yang sama merusak kepercayaan pada dua-duanya.
+const menitBerhenti = 15;
+
 class RingkasBor {
   const RingkasBor({
     this.mulai,
     this.selesai,
     this.durasiJam,
+    this.durasiEfektifJam,
+    this.durasiBerhentiJam,
+    this.berhenti = const [],
     this.kedalamanM,
     this.lajuRataMPerJam,
+    this.lajuEfektifMPerJam,
     this.ruasTerlambat,
     required this.jumlahBacaan,
   });
@@ -66,14 +86,37 @@ class RingkasBor {
   final int? mulai;
   final int? selesai;
 
-  /// Jam dari bacaan pertama ke terakhir. `null` bila bacaannya < 2.
+  /// Jam dari bacaan pertama ke terakhir — TERMASUK waktu berhenti.
+  /// `null` bila bacaannya < 2.
   final double? durasiJam;
+
+  /// Jam yang benar-benar dipakai MENGEBOR — ruas berhenti tidak dihitung.
+  ///
+  /// Ruas yang kedalamannya tetap bukan pengeboran, dan ruas yang
+  /// kedalamannya BERKURANG (bor diangkat) juga bukan.
+  ///
+  /// `null` bila bacaannya < 2 — sama seperti durasi total. Nol akan
+  /// terbaca "sudah diukur, hasilnya nol", dan itu pernyataan yang berbeda
+  /// dari "belum ada yang dapat diukur".
+  final double? durasiEfektifJam;
+
+  /// Jam yang hilang karena berhenti. SELALU `durasiJam - durasiEfektifJam`,
+  /// dihitung sebagai selisih dan bukan penjumlahan tersendiri — supaya
+  /// ketiganya selalu saling menjumlah di layar.
+  final double? durasiBerhentiJam;
+
+  /// Ruas berhenti yang LEBIH LAMA dari [menitBerhenti], untuk disebut satu
+  /// per satu. Yang lebih pendek tetap mengurangi durasi efektif.
+  final List<RuasBor> berhenti;
 
   /// Kedalaman TERDALAM yang pernah terbaca, bukan bacaan terakhir.
   final double? kedalamanM;
 
-  /// Rerata keseluruhan: kedalaman akhir dibagi durasi.
+  /// Rerata terhadap durasi TOTAL — termasuk waktu berhenti.
   final double? lajuRataMPerJam;
+
+  /// Rerata terhadap durasi EFEKTIF — laju rig saat benar-benar mengebor.
+  final double? lajuEfektifMPerJam;
 
   /// Ruas paling lambat — di sinilah pengeboran tertahan.
   final RuasBor? ruasTerlambat;
@@ -160,6 +203,60 @@ List<RuasBor> ruasBor(List<TitikKurvaBor> titik) {
   return ruas;
 }
 
+/// Ruas-ruas MANDEK YANG BERURUTAN digabung menjadi SATU berhenti.
+///
+/// KENAPA — Daniel, 19 Oktober 2026:
+///
+///     "waktu berhenti gw suka minta engineer update juga. misalkan jam
+///      11:00-13:00 dia berhenti, jam 12:00 dia update (dia samain
+///      kedalaman bor nya). di app nya dihitung 2 kali berhenti."
+///
+/// Bacaan di tengah berhenti itu BUKAN kejadian baru — ia justru bukti
+/// bahwa berhentinya masih berlangsung. Dihitung apa adanya, satu
+/// berhenti dua jam dengan satu bacaan di tengahnya menjadi "2 kali
+/// berhenti · masing-masing 1 jam", dan orang yang disiplin mengabarkan
+/// keadaan rignya justru tampak paling sering berhenti. Itu kebalikan dari
+/// yang hendak diukur, dan ia MENGAJARI kru berhenti mengabarkan.
+///
+/// Durasi efektif tidak berubah sedikit pun: ia dijumlah dari ruas yang
+/// MAJU, dan penggabungan ini hanya menyentuh yang mandek. Jadi identitas
+/// `total = efektif + berhenti` tetap berdiri.
+///
+/// AMBANG 15 MENIT DITERAPKAN SESUDAH DIGABUNG, bukan sebelum: tiga mandek
+/// sepuluh menit berturut-turut adalah setengah jam rig diam, dan
+/// disaring satu per satu ketiganya lolos tanpa terlihat di mana pun.
+///
+/// ATURAN INI SAMA DI WEB (`bor-kurva.helper.ts`) DAN SERVER.
+List<RuasBor> gabungBerhenti(List<RuasBor> ruas) {
+  final hasil = <RuasBor>[];
+  var i = 0;
+  while (i < ruas.length) {
+    if (ruas[i].deltaM > 0) {
+      i++;
+      continue;
+    }
+    final mulai = i;
+    var jam = 0.0;
+    var delta = 0.0;
+    while (i < ruas.length && ruas[i].deltaM <= 0) {
+      jam += ruas[i].jam;
+      delta += ruas[i].deltaM;
+      i++;
+    }
+    if (jam * 60 < menitBerhenti) continue;
+    hasil.add(RuasBor(
+      dariWaktu: ruas[mulai].dariWaktu,
+      sampaiWaktu: ruas[i - 1].sampaiWaktu,
+      deltaM: delta,
+      jam: jam,
+      // Ruas gabungan selalu berdurasi > 0 (tiap ruas asalnya begitu),
+      // jadi pembagian ini aman.
+      lajuMPerJam: delta / jam,
+    ));
+  }
+  return hasil;
+}
+
 /// Angka ringkasan di atas kurvanya.
 ///
 /// [RingkasBor.kedalamanM] memakai yang TERDALAM, bukan bacaan terakhir.
@@ -180,18 +277,32 @@ RingkasBor ringkasBor(List<Map<String, Object?>> bacaan) {
   // Bor yang diangkat menghasilkan laju negatif, dan negatif selalu lebih
   // kecil daripada ruas paling lambat yang sebenarnya — "paling lambat"
   // akan selalu menunjuk saat bornya diangkat, bukan saat ia tertahan.
-  final maju = ruasBor(titik).where((r) => r.deltaM > 0).toList();
+  final ruas = ruasBor(titik);
+  final maju = ruas.where((r) => r.deltaM > 0).toList();
   final ruasTerlambat = maju.isEmpty
       ? null
       : maju.reduce((a, b) => b.lajuMPerJam < a.lajuMPerJam ? b : a);
+
+  final efektif =
+      durasiJam == null ? null : maju.fold<double>(0, (j, r) => j + r.jam);
+  final berhenti = gabungBerhenti(ruas);
 
   return RingkasBor(
     mulai: mulai,
     selesai: selesai,
     durasiJam: durasiJam,
+    durasiEfektifJam: efektif,
+    // `clamp` TIDAK dipakai: ia dideklarasikan di `num` dan memulangkan
+    // `num`, yang tidak dapat diberikan ke `double?` tanpa pemeran.
+    durasiBerhentiJam: durasiJam == null || efektif == null
+        ? null
+        : (durasiJam - efektif < 0 ? 0.0 : durasiJam - efektif),
+    berhenti: berhenti,
     kedalamanM: kedalamanM,
     lajuRataMPerJam:
         durasiJam != null && durasiJam > 0 ? kedalamanM / durasiJam : null,
+    lajuEfektifMPerJam:
+        efektif != null && efektif > 0 ? kedalamanM / efektif : null,
     ruasTerlambat: ruasTerlambat,
     jumlahBacaan: titik.length,
   );

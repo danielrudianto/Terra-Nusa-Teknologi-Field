@@ -109,7 +109,15 @@ class SettingsPage extends ConsumerWidget {
           _Tile(
             icon: Icons.info_outline,
             title: t(context).appVersion,
-            subtitle: 'v${Env.appVersion} · ${Env.apiUrl.replaceFirst('https://', '')}\n'
+            // VERSI APLIKASI DI BARIS SENDIRI, lengkap dengan nomor build.
+            //
+            // Sebelumnya versi dan alamat server berdempet satu baris —
+            // "v1.0.12 · services.terrabot…" — dan terbaca seperti versi
+            // SERVER, bukan versi aplikasi ini. Nomor build juga tidak ada,
+            // padahal justru itu yang membedakan dua rilis bernama sama
+            // ketika kru ditanya "HP-mu sudah versi berapa?".
+            subtitle: 'v${Env.appVersion}\n'
+                '${t(context).serverLabel(Env.apiUrl.replaceFirst('https://', ''))}\n'
                 '${t(context).deviceIdLabel(appContext.deviceId.substring(0, 8))}',
           ),
           _Tile(

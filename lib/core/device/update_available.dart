@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import '../config/env.dart';
+import '../util/app_version.dart';
+
 /// "Ada versi yang lebih baru" — AJAKAN, bukan pemblokiran.
 ///
 /// Dibedakan tajam dari [AppOutdated], yang menggantikan seluruh aplikasi
@@ -38,6 +41,16 @@ class UpdateAvailable {
     if (u is! Map) return null;
     final versi = u['latestVersion']?.toString() ?? '';
     if (versi.isEmpty) return null;
+    // PENJAGA TERAKHIR: jangan pernah mengajak memperbarui ke versi yang
+    // TIDAK lebih baru daripada yang sedang berjalan.
+    //
+    // Keputusannya memang milik server, dan itu tetap benar — tetapi
+    // 19 Oktober 2026 ajakan "Versi 1.0.12+27 sudah tersedia" muncul di HP
+    // yang SUDAH memasang 1.0.12+27, karena HP mengirim versinya tanpa
+    // nomor build. Satu `.env` yang keliru ketik menghasilkan hal yang
+    // sama. Ajakan yang tidak dapat dipenuhi mengajari kru mengabaikan
+    // seluruh ajakan — termasuk yang kelak sungguh perlu.
+    if (compareVersions(versi, Env.appVersion) <= 0) return null;
     final tautan = u['downloadUrl']?.toString();
     return UpdateAvailable(
       latestVersion: versi,

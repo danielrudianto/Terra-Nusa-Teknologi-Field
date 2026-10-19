@@ -76,6 +76,15 @@
   "logoutConfirmBody": "Signing in again needs signal.",
   "cancel": "Cancel",
   "appVersion": "App version",
+  "serverLabel": "Server {host}",
+  "@serverLabel": {
+    "description": "serverLabel",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "deviceIdLabel": "Device ID {id}",
   "sendLog": "Send log to the admin",
   "sendLogBody": "If the app misbehaves: the error log from this phone, with no personal data.",
@@ -616,6 +625,37 @@
   "@drillSnoozeAction": {
     "description": "drillSnoozeAction"
   },
+  "activityTodayTitle": "Today",
+  "@activityTodayTitle": {
+    "description": "activityTodayTitle"
+  },
+  "activityTodayMore": "+{n} more — open Reports for the full list",
+  "@activityTodayMore": {
+    "description": "activityTodayMore",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "activityTodayDone": "done {jam}",
+  "@activityTodayDone": {
+    "description": "activityTodayDone",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTodayRunning": "still running · last {jam}",
+  "@activityTodayRunning": {
+    "description": "activityTodayRunning",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
   "drillIdleTitle": "Drilling log {code} has no new reading",
   "drillIdleBody": "It has been {since} since the last reading ({time}). Record the depth now, or tap Finish drilling if it is done.",
   "hoursText": "{h} h",
@@ -802,10 +842,6 @@
   "handoverRequestPrompt": "{name} is at point {code} waiting for an answer. Approving moves this log to their phone right away, and closes this screen.",
   "approve": "Approve",
   "reject": "Reject",
-  "slumpPhotoAhead": "Slump photo for the next TM",
-  "slumpPhotoWaiting": "Slump photo waiting for the next TM",
-  "slumpPhotoWaitingBody": "Taken {time} — attached automatically when the next TM is entered.",
-  "slumpPhotoParked": "Slump photo saved for the next TM.",
   "drillProgressLabel": "Drilling progress",
   "castProgressLabel": "Casting progress",
   "drillProgressMain": "{depth} of {planned} planned",
@@ -973,6 +1009,81 @@
         "type": "String"
       }
     }
+  },
+  "drillEffectiveLabel": "Drilling time",
+  "@drillEffectiveLabel": {
+      "description": "Time actually spent drilling — stops excluded"
+  },
+  "drillOfTotal": "of {total} total",
+  "@drillOfTotal": {
+      "description": "Shown small under the effective drilling time",
+      "placeholders": {
+          "total": {
+              "type": "String"
+          }
+      }
+  },
+  "drillEffectiveRateLabel": "Drilling rate",
+  "@drillEffectiveRateLabel": {
+      "description": "Depth divided by the effective drilling time"
+  },
+  "drillRateTotal": "{laju} m/h including stops",
+  "@drillRateTotal": {
+      "description": "Shown small under the drilling rate",
+      "placeholders": {
+          "laju": {
+              "type": "String"
+          }
+      }
+  },
+  "drillStops": "{n} stops · {lama}",
+  "@drillStops": {
+      "description": "Heading of the list of stops",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          },
+          "lama": {
+              "type": "String"
+          }
+      }
+  },
+  "denahTitle": "Point layout",
+  "@denahTitle": {
+      "description": "denahTitle"
+  },
+  "denahLabelToggle": "Point codes",
+  "@denahLabelToggle": {
+      "description": "denahLabelToggle"
+  },
+  "denahDeviationToggle": "Deviation lines",
+  "@denahDeviationToggle": {
+      "description": "denahDeviationToggle"
+  },
+  "denahDrilled": "Drilled",
+  "@denahDrilled": {
+      "description": "denahDrilled"
+  },
+  "denahNoCoordTitle": "{n} points are not drawn",
+  "@denahNoCoordTitle": {
+      "description": "denahNoCoordTitle",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          }
+      }
+  },
+  "denahNoCoordBody": "These points have no X/Y coordinates — neither design nor as-built — so there is nowhere to draw them. The office fills them in through the Excel import.",
+  "@denahNoCoordBody": {
+      "description": "denahNoCoordBody"
+  },
+  "denahEmptyTitle": "No coordinates yet",
+  "@denahEmptyTitle": {
+      "description": "denahEmptyTitle"
+  },
+  "denahEmptyBody": "Not one point in this project has X/Y coordinates, so the layout cannot be drawn yet. The office fills the design coordinates in from the office.",
+  "@denahEmptyBody": {
+      "description": "denahEmptyBody"
   },
   "curveNeedsTwo": "The curve needs at least two readings whose time and depth can be read.",
   "@curveNeedsTwo": {
@@ -1146,18 +1257,6 @@
   "castDoneAt": "Finished at",
   "@castDoneAt": {
     "description": "castDoneAt"
-  },
-  "slumpPhotoFirst": "Slump photo for the first truck",
-  "@slumpPhotoFirst": {
-    "description": "slumpPhotoFirst"
-  },
-  "slumpPhotoWaitingFirst": "Slump photo waiting for the first truck",
-  "@slumpPhotoWaitingFirst": {
-    "description": "slumpPhotoWaitingFirst"
-  },
-  "slumpPhotoParkedFirst": "Slump photo saved for the first truck.",
-  "@slumpPhotoParkedFirst": {
-    "description": "slumpPhotoParkedFirst"
   },
   "finishTruckAction": "Finish truck",
   "@finishTruckAction": {

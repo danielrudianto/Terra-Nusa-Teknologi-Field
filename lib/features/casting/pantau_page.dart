@@ -11,6 +11,7 @@ import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
+import '../drilling/bor_section_view.dart';
 import '../drilling/bor_kurva_view.dart';
 import 'calc/pile_snapshot.dart';
 import 'pile_section_view.dart';
@@ -174,7 +175,7 @@ class _Isi extends StatelessWidget {
         if (cor != null)
           _PantauCor(cor: cor)
         else if (bor != null)
-          _PantauBor(bor: bor)
+          _PantauBor(bor: bor, titik: (data['titik'] as Map?)?.cast<String, Object?>())
         else
           TerraBanner(
             kind: BannerKind.info,
@@ -318,17 +319,17 @@ class _PantauCor extends StatelessWidget {
         _Angka(
           label: t(context).watchVolume,
           nilai: teoritis == null
-              ? '${formatMeters(volume)} m³'
-              : '${formatMeters(volume)} / ${formatMeters(teoritis)} m³',
+              ? formatVolume(volume)
+              : '${formatVolume(volume)} / ${formatVolume(teoritis)}',
         ),
         if (muka != null)
-          _Angka(label: t(context).watchConcreteLevel, nilai: '${formatMeters(muka)} m')
+          _Angka(label: t(context).watchConcreteLevel, nilai: formatMeters(muka))
         else
           _Angka(label: t(context).watchConcreteLevel, nilai: t(context).watchNotSounded),
         if (toDoubleOrNull(k['tremieBottomM']) != null && muka != null)
           _Angka(
             label: t(context).watchEmbedment,
-            nilai: '${formatMeters(toDoubleOrNull(k['tremieBottomM'])! - muka)} m',
+            nilai: formatMeters(toDoubleOrNull(k['tremieBottomM'])! - muka),
           ),
       ],
     );
@@ -337,9 +338,14 @@ class _PantauCor extends StatelessWidget {
 
 /// Pengeboran yang sedang berjalan: kurva kedalaman yang tumbuh tiap bacaan.
 class _PantauBor extends StatelessWidget {
-  const _PantauBor({required this.bor});
+  const _PantauBor({required this.bor, this.titik});
 
   final Map<String, Object?> bor;
+
+  /// Titiknya, untuk panjang bor RENCANA pada penampangnya. Boleh `null`:
+  /// penampangnya lalu digambar tanpa garis sasaran, bukan dengan sasaran
+  /// tebakan.
+  final Map<String, Object?>? titik;
 
   @override
   Widget build(BuildContext context) {
@@ -347,7 +353,10 @@ class _PantauBor extends StatelessWidget {
     final bacaan = [
       for (final e in (bor['entries'] as List?) ?? const []) (e as Map).cast<String, Object?>(),
     ];
-    final titik = titikKurvaBor(bacaan);
+    // Dinamai `bacaanTitik`, bukan `titik`: bidang `titik` pada widget ini
+    // adalah TITIK BORNYA, dan dua hal berbeda bernama sama di satu
+    // metode adalah cara tercepat menukar keduanya tanpa sadar.
+    final bacaanTitik = titikKurvaBor(bacaan);
     final ringkas = ringkasBor(bacaan);
     final selesai = '${bor['status']}' == 'selesai';
     final jam = [
@@ -365,8 +374,32 @@ class _PantauBor extends StatelessWidget {
         const SizedBox(height: 4),
         _Umur(pada: jam.isEmpty ? null : jam.last),
         const SizedBox(height: 14),
-        if (titik.length >= 2)
-          KurvaBor(titik: titik, ringkas: ringkas)
+        // PENAMPANG BERANIMASI di atas kurvanya.
+        //
+        // Kurva menjawab "selama ini bagaimana"; penampang menjawab
+        // "sekarang sampai mana". Yang membuka layar ini dari kantor
+        // menanyakan yang kedua lebih dulu, dan jawabannya tidak boleh
+        // menuntut menakar sumbu grafik.
+        // Tanpa satu pun bacaan tidak ada yang dapat digambar: lubang
+        // sedalam nol terbaca sebagai lubang yang belum disentuh, padahal
+        // yang sebenarnya terjadi adalah belum ada yang dicatat.
+        if (ringkas.jumlahBacaan > 0) ...[
+          BorSectionView(
+            kedalamanM: ringkas.kedalamanM ?? 0,
+            rencanaM: toDoubleOrNull(titik?['panjangBorRencanaM']),
+            berjalan: !selesai,
+            // DIAM = berhenti yang sedang berlangsung: ruas terakhir mandek
+            // dan sudah melewati ambangnya. Animasi yang tetap berputar
+            // ketika rig sebenarnya berhenti adalah layar yang berbohong
+            // dengan cara paling meyakinkan.
+            diam: ringkas.berhenti.isNotEmpty &&
+                bacaanTitik.isNotEmpty &&
+                ringkas.berhenti.last.sampaiWaktu == bacaanTitik.last.waktu,
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (bacaanTitik.length >= 2)
+          KurvaBor(titik: bacaanTitik, ringkas: ringkas)
         else
           TerraBanner(
             kind: BannerKind.info,
@@ -375,11 +408,11 @@ class _PantauBor extends StatelessWidget {
             body: t(context).watchCurveWaitBody,
           ),
         const SizedBox(height: 14),
-        _Angka(label: t(context).watchDepth, nilai: '${formatMeters(ringkas.kedalamanM)} m'),
+        _Angka(label: t(context).watchDepth, nilai: formatMeters(ringkas.kedalamanM)),
         if (ringkas.lajuRataMPerJam != null)
           _Angka(
             label: t(context).watchRate,
-            nilai: '${formatMeters(ringkas.lajuRataMPerJam)} m/jam',
+            nilai: '${formatMeters(ringkas.lajuRataMPerJam)}/jam',
           ),
         _Angka(label: t(context).watchReadings, nilai: '${ringkas.jumlahBacaan}'),
       ],
