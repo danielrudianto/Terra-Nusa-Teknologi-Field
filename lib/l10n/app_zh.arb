@@ -1520,5 +1520,13 @@
   "photoFailed": "无法载入照片。请检查信号后重试。",
   "@photoFailed": {
     "description": "photoFailed"
+  },
+  "truckShare": "分享",
+  "@truckShare": {
+    "description": "truckShare"
+  },
+  "shareNoPhoto": "无法获取送货单照片——仅分享文字。",
+  "@shareNoPhoto": {
+    "description": "shareNoPhoto"
   }
 }

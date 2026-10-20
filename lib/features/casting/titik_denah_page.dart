@@ -59,7 +59,7 @@ class _TitikDenahPageState extends ConsumerState<TitikDenahPage> {
           final denah = susunDenah(semua, lebar: _lebar, tinggi: _tinggi);
           if (denah == null) {
             return Padding(
-              padding: const EdgeInsets.all(Dimens.pagePadding),
+              padding: pagePaddingAman(context),
               child: TerraBanner(
                 kind: BannerKind.info,
                 icon: Icons.location_off,
@@ -69,7 +69,7 @@ class _TitikDenahPageState extends ConsumerState<TitikDenahPage> {
             );
           }
           return ListView(
-            padding: const EdgeInsets.all(Dimens.pagePadding),
+            padding: pagePaddingAman(context),
             children: [
               _Legenda(hitungan: denah.hitungan),
               const SizedBox(height: 6),

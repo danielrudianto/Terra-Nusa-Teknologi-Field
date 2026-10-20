@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
@@ -114,7 +115,7 @@ class _PantauPageState extends ConsumerState<PantauPage> with WidgetsBindingObse
         child: data.when(
           loading: () => const SkeletonCards(leading: false),
           error: (e, _) => ListView(
-            padding: const EdgeInsets.all(Dimens.pagePadding),
+            padding: pagePaddingAman(context),
             children: [
               TerraBanner(
                 kind: BannerKind.danger,
@@ -170,10 +171,10 @@ class _Isi extends StatelessWidget {
     final bor = _bor;
 
     return ListView(
-      padding: const EdgeInsets.all(Dimens.pagePadding),
+      padding: pagePaddingAman(context),
       children: [
         if (cor != null)
-          _PantauCor(cor: cor)
+          _PantauCor(cor: cor, kode: code)
         else if (bor != null)
           _PantauBor(bor: bor, titik: (data['titik'] as Map?)?.cast<String, Object?>())
         else
@@ -223,9 +224,12 @@ class _Umur extends StatelessWidget {
 
 /// Pengecoran yang sedang berjalan: penampang lubang + angka pokoknya.
 class _PantauCor extends StatelessWidget {
-  const _PantauCor({required this.cor});
+  const _PantauCor({required this.cor, required this.kode});
 
   final Map<String, Object?> cor;
+
+  /// Kode titiknya — ikut ke dalam teks yang dibagikan ke WhatsApp.
+  final String kode;
 
   @override
   Widget build(BuildContext context) {
@@ -339,7 +343,11 @@ class _PantauCor extends StatelessWidget {
         // ganjil.
         if (tm.isNotEmpty) ...[
           const SizedBox(height: 16),
-          _TabelTm(tm: tm, sedangTuangSeq: sedangTuang ? toIntOrNull(terakhir['seq']) : null),
+          _TabelTm(
+            tm: tm,
+            kode: kode,
+            sedangTuangSeq: sedangTuang ? toIntOrNull(terakhir['seq']) : null,
+          ),
         ],
       ],
     );
@@ -369,20 +377,88 @@ class _PantauCor extends StatelessWidget {
 /// TERTUTUP secara bawaan — sama dengan tabel bacaan bor. Layar pantau
 /// dibuka untuk melihat penampang dan angka pokoknya; tabel yang terbuka
 /// sendiri mendorong keduanya keluar layar.
-class _TabelTm extends StatefulWidget {
-  const _TabelTm({required this.tm, this.sedangTuangSeq});
+class _TabelTm extends ConsumerStatefulWidget {
+  const _TabelTm({required this.tm, required this.kode, this.sedangTuangSeq});
 
   final List<Map<String, Object?>> tm;
+  final String kode;
 
   /// Nomor TM yang sedang dituang, bila ada — barisnya disorot.
   final int? sedangTuangSeq;
 
   @override
-  State<_TabelTm> createState() => _TabelTmState();
+  ConsumerState<_TabelTm> createState() => _TabelTmState();
 }
 
-class _TabelTmState extends State<_TabelTm> {
+class _TabelTmState extends ConsumerState<_TabelTm> {
   bool _buka = false;
+
+  /// Nomor TM yang sedang disiapkan untuk dibagikan.
+  ///
+  /// Fotonya ditarik dari server lalu diubah ke JPEG; pada jaringan lokasi
+  /// itu beberapa detik, dan tombol yang diam selama itu akan ditekan lagi
+  /// — menghasilkan dua lembar berbagi berturut-turut.
+  int? _membagikan;
+
+  /// BAGIKAN SATU TM — teksnya, dan surat jalannya sekalian.
+  ///
+  /// DIMINTA DANIEL, 20 Oktober 2026: "untuk tiap TM kasih tombol copas
+  /// buat ke WhatsApp sekalian foto surat jalannya boleh?".
+  ///
+  /// Yang dikirim ke grup proyek selama ini disusun tangan dari layar ini:
+  /// nomor TM, jam, volume, lalu fotonya dicari lagi di galeri HP yang
+  /// mencatat. Disusun tangan, angkanya kadang diketik keliru — dan yang
+  /// menerimanya di grup tidak punya cara memeriksanya.
+  ///
+  /// Fotonya TIDAK menghalangi teksnya: bila fotonya gagal ditarik (sinyal,
+  /// atau sudah lewat masa simpan), teksnya tetap dibagikan dan kegagalan
+  /// fotonya disebut. Teks tanpa foto masih berguna; menahan keduanya
+  /// karena satu gagal tidak berguna sama sekali.
+  Future<void> _bagikan(Map<String, Object?> x, double kumulatif) async {
+    final seq = toIntOrNull(x['seq']) ?? 0;
+    if (_membagikan != null) return;
+    setState(() => _membagikan = seq);
+
+    final l = t(context);
+    final teks = StringBuffer()
+      ..writeln('${widget.kode} · ${l.truckColSeq} $seq')
+      ..writeln(
+        '${_jamTuang(context, x)} · '
+        '${formatVolume(toDoubleOrNull(x['volumeM3']) ?? 0)} '
+        '(${l.truckColCumulative.toLowerCase()} ${formatVolume(kumulatif)})',
+      );
+    final ket = _keterangan(context, x);
+    if (ket != null) teks.writeln(ket);
+
+    XFile? foto;
+    String? galatFoto;
+    final uuid = x['ticketPhotoUuid']?.toString();
+    if (uuid != null && uuid.isNotEmpty) {
+      try {
+        foto = await fotoUntukDibagikan(
+          ref,
+          uuid,
+          'surat-jalan-${widget.kode}-TM$seq',
+        );
+      } catch (_) {
+        galatFoto = l.shareNoPhoto;
+      }
+    }
+    if (!mounted) return;
+    setState(() => _membagikan = null);
+
+    if (galatFoto != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(galatFoto)),
+      );
+    }
+    await SharePlus.instance.share(
+      ShareParams(
+        text: teks.toString().trim(),
+        files: foto == null ? null : [foto],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -453,6 +529,8 @@ class _TabelTmState extends State<_TabelTm> {
                       catatan: x['note']?.toString(),
                       tiketUuid: x['ticketPhotoUuid']?.toString(),
                       slumpUuid: x['slumpPhotoUuid']?.toString(),
+                      onBagikan: () => _bagikan(x, kum[i]),
+                      sedangBagikan: _membagikan == toIntOrNull(x['seq']),
                     ),
                   ],
                 ],
@@ -512,6 +590,8 @@ class _BarisTm extends StatelessWidget {
     this.catatan,
     this.tiketUuid,
     this.slumpUuid,
+    this.onBagikan,
+    this.sedangBagikan = false,
   });
 
   final String tm;
@@ -524,6 +604,10 @@ class _BarisTm extends StatelessWidget {
   final String? catatan;
   final String? tiketUuid;
   final String? slumpUuid;
+
+  /// Bagikan baris ini — teks dan surat jalannya sekalian.
+  final VoidCallback? onBagikan;
+  final bool sedangBagikan;
 
   @override
   Widget build(BuildContext context) {
@@ -563,7 +647,7 @@ class _BarisTm extends StatelessWidget {
             ),
           // SURAT JALANNYA, dari server — satu-satunya halaman di seluruh
           // pekerjaan ini yang bertanda tangan pemasok.
-          if (tiketUuid != null || slumpUuid != null)
+          if (tiketUuid != null || slumpUuid != null || onBagikan != null)
             Padding(
               padding: const EdgeInsets.only(top: 5),
               child: Row(
@@ -577,6 +661,28 @@ class _BarisTm extends StatelessWidget {
                       label: t(context).slumpTest,
                       ikon: Icons.science_outlined,
                     ),
+                  // BAGIKAN — paling kanan, terpisah dari keping foto:
+                  // keping membuka foto di layar ini, tombol ini
+                  // mengeluarkannya dari aplikasi. Dua perbuatan yang
+                  // berbeda tidak boleh berdampingan tanpa jarak.
+                  if (onBagikan != null) ...[
+                    const Spacer(),
+                    if (sedangBagikan)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    else
+                      KepingFoto.aksi(
+                        label: t(context).truckShare,
+                        ikon: Icons.ios_share,
+                        onKetuk: onBagikan!,
+                      ),
+                  ],
                 ],
               ),
             ),

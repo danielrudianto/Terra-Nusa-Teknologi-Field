@@ -96,7 +96,7 @@ class _AktivitasPageState extends ConsumerState<AktivitasPage> {
               child: data.when(
                 loading: () => const SkeletonCards(),
                 error: (e, _) => ListView(
-                  padding: const EdgeInsets.all(Dimens.pagePadding),
+                  padding: pagePaddingAman(context),
                   children: [
                     TerraBanner(
                       kind: BannerKind.danger,
@@ -108,7 +108,7 @@ class _AktivitasPageState extends ConsumerState<AktivitasPage> {
                 ),
                 data: (daftar) => daftar.isEmpty
                     ? ListView(
-                        padding: const EdgeInsets.all(Dimens.pagePadding),
+                        padding: pagePaddingAman(context),
                         children: [
                           TerraBanner(
                             kind: BannerKind.info,
@@ -182,7 +182,7 @@ class _Daftar extends ConsumerWidget {
     final tanpaProyek = kelompok.length == 1 && kelompok.keys.first == null;
 
     return ListView(
-      padding: const EdgeInsets.all(Dimens.pagePadding),
+      padding: pagePaddingAman(context),
       children: [
         // JUMLAH SELURUH HARI, hanya ketika ada lebih dari satu proyek:
         // dengan satu proyek, angkanya sama dengan angka kelompoknya dan

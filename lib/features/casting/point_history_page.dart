@@ -46,7 +46,7 @@ class PointHistoryPage extends ConsumerWidget {
         child: data.when(
           loading: () => const SkeletonCards(leading: false),
           error: (e, _) => ListView(
-            padding: const EdgeInsets.all(Dimens.pagePadding),
+            padding: pagePaddingAman(context),
             children: [
               TerraBanner(
                 kind: BannerKind.danger,

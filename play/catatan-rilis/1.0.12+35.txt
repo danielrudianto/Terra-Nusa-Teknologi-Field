@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.12 (35) — Bagikan TM & kartu tak terpotong
+
+<id>
+• Tiap TM di layar Pantau punya tombol Bagikan: teksnya (titik, nomor TM, jam tuang, volume, kumulatif, pemasok, lambung, slump) beserta FOTO SURAT JALANNYA, langsung ke WhatsApp.
+• Fotonya dikirim sebagai JPEG, bukan WebP — WhatsApp memperlakukan WebP sebagai stiker.
+• Kartu paling bawah tidak lagi tertutup bilah navigasi. Diperbaiki di seluruh layar yang menggulir, bukan hanya di Pantau.
+</id>
+<en-US>
+• Every truck on the Watch screen now has a Share button: the text (point, truck number, pour time, volume, running total, supplier, hull number, slump) together with the DELIVERY TICKET PHOTO, straight to WhatsApp.
+• The photo goes as JPEG, not WebP — WhatsApp treats WebP as a sticker.
+• The bottom card is no longer hidden behind the navigation bar. Fixed on every scrolling screen, not just Watch.
+</en-US>
+<zh-CN>
+• 实时查看页面的每一车次新增“分享”按钮：文字（桩点、车次、浇筑时间、体积、累计、供应商、车号、坍落度）连同送货单照片，直接分享到 WhatsApp。
+• 照片以 JPEG 发送而非 WebP——WhatsApp 会把 WebP 当作贴图。
+• 底部卡片不再被导航栏遮挡。所有可滚动页面均已修正，不只是实时查看页。
+</zh-CN>

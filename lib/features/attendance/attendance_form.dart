@@ -315,7 +315,7 @@ class _AttendanceFormState extends ConsumerState<AttendanceForm> {
                 ),
               ),
         body: ListView(
-          padding: const EdgeInsets.all(Dimens.pagePadding),
+          padding: pagePaddingAman(context),
           children: [
             if (_doc?.sendStatus == 'rejected')
               TerraBanner(

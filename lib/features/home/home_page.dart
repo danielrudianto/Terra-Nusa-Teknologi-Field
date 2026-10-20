@@ -56,7 +56,7 @@ class HomePage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
         child: ListView(
-          padding: const EdgeInsets.all(Dimens.pagePadding),
+          padding: pagePaddingAman(context),
           children: [
             _Hero(name: user?.name.split(' ').first ?? ''),
             const SizedBox(height: 18),

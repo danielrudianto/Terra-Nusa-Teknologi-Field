@@ -215,7 +215,7 @@ class _WorkerFormState extends ConsumerState<WorkerForm> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(Dimens.pagePadding),
+              padding: pagePaddingAman(context),
               children: [
                 if (_rejectReason != null) TerraBanner(kind: BannerKind.danger, title: t(context).needsFixing, body: _rejectReason),
                 if (!_loading && !canEdit)

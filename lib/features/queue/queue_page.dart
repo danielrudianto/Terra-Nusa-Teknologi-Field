@@ -49,7 +49,7 @@ class QueuePage extends ConsumerWidget {
           loading: () => const SkeletonCards(leading: false),
           error: (e, _) => ErrorState(title: t(context).queueLoadError, message: '$e'),
           data: (items) => ListView(
-            padding: const EdgeInsets.all(Dimens.pagePadding),
+            padding: pagePaddingAman(context),
             children: [
               const StatusBanners(),
               if (syncState.last?.error != null)

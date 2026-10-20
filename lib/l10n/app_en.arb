@@ -1520,5 +1520,13 @@
   "photoFailed": "The photo could not be loaded. Check your signal, then try again.",
   "@photoFailed": {
     "description": "photoFailed"
+  },
+  "truckShare": "Share",
+  "@truckShare": {
+    "description": "truckShare"
+  },
+  "shareNoPhoto": "The delivery ticket photo could not be fetched — sharing the text only.",
+  "@shareNoPhoto": {
+    "description": "shareNoPhoto"
   }
 }

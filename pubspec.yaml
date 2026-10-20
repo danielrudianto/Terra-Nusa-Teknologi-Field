@@ -1,7 +1,7 @@
 name: terrabot_field
 description: TerraBot Field — AKN field app (crew attendance & pile casting log), offline-first.
 publish_to: "none"
-version: 1.0.12+34
+version: 1.0.12+35
 environment:
   # Flutter stable as of October 2026 = 3.47 (Dart 3.12). The package versions below
   # were checked against the source code of each latest release.

@@ -128,7 +128,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(_reportProvider(range)),
         child: ListView(
-          padding: const EdgeInsets.all(Dimens.pagePadding),
+          padding: pagePaddingAman(context),
           children: [
             Wrap(
               spacing: 8,

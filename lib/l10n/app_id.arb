@@ -5425,5 +5425,13 @@
   "photoFailed": "Foto tidak dapat dimuat. Periksa sinyal, lalu coba lagi.",
   "@photoFailed": {
     "description": "photoFailed"
+  },
+  "truckShare": "Bagikan",
+  "@truckShare": {
+    "description": "truckShare"
+  },
+  "shareNoPhoto": "Foto surat jalan tidak dapat diambil — teksnya saja yang dibagikan.",
+  "@shareNoPhoto": {
+    "description": "shareNoPhoto"
   }
 }

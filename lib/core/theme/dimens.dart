@@ -20,6 +20,29 @@ class Dimens {
   static const double pagePadding = 16;
 }
 
+/// Padding halaman yang MENGGULIR, dengan ruang bawah yang menyisakan
+/// tempat bagi bilah navigasi sistem.
+///
+/// KENAPA ADA — Daniel, 20 Oktober 2026, dengan tangkapan layar Pantau
+/// PP.B50: kartu "Truk mixer" paling bawah tertutup separuh oleh bilah
+/// navigasi tiga tombol, dan barisnya tidak dapat digulir lebih jauh.
+///
+/// Android menggambar aplikasi dari tepi ke tepi; isi yang digulir sampai
+/// habis berhenti PERSIS di tepi layar, yaitu di belakang bilah
+/// navigasinya. Yang melihatnya menyimpulkan datanya memang terpotong —
+/// bukan bahwa layarnya kurang satu ruang.
+///
+/// `paddingOf(context).bottom` bernilai NOL di dalam `SafeArea`: widget itu
+/// memang mengambil insetnya dari `MediaQuery` untuk anak-anaknya. Jadi
+/// pembantu ini aman dipakai di mana saja — di dalam `SafeArea` ia tidak
+/// menambah apa-apa, dan tidak ada ruang yang dihitung dua kali.
+EdgeInsets pagePaddingAman(BuildContext context) => EdgeInsets.fromLTRB(
+      Dimens.pagePadding,
+      Dimens.pagePadding,
+      Dimens.pagePadding,
+      Dimens.pagePadding + MediaQuery.paddingOf(context).bottom,
+    );
+
 /// Bottom padding for a modal bottom sheet, so its last button is never left
 /// under the keyboard or under the system navigation bar.
 ///

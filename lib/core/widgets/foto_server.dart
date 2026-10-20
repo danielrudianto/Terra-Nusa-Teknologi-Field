@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+// `XFile` IKUT DARI SINI (lewat `cross_file`), jadi `share_plus` tidak perlu
+// di-import di berkas ini — analyzer menandainya `unnecessary_import`.
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../i18n.dart';
 import '../network/api_error.dart';
@@ -132,18 +137,31 @@ class KepingFoto extends StatelessWidget {
     required this.uuid,
     required this.label,
     this.ikon = Icons.receipt_long,
-  });
+  }) : onKetuk = null;
+
+  /// Keping berbentuk SAMA, tetapi perbuatannya bukan membuka foto.
+  ///
+  /// Dipakai tombol "Bagikan" di samping keping surat jalan: dua keping
+  /// yang berdampingan harus seukuran dan sewarna, kalau tidak yang
+  /// kedua terbaca sebagai sesuatu yang lain jenisnya.
+  const KepingFoto.aksi({
+    super.key,
+    required this.label,
+    required this.ikon,
+    required VoidCallback this.onKetuk,
+  }) : uuid = '';
 
   final String uuid;
   final String label;
   final IconData ikon;
+  final VoidCallback? onKetuk;
 
   @override
   Widget build(BuildContext context) {
     final w = context.colors;
     return InkWell(
       borderRadius: BorderRadius.circular(999),
-      onTap: () => bukaFotoServer(context, uuid, label),
+      onTap: onKetuk ?? () => bukaFotoServer(context, uuid, label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
@@ -169,4 +187,35 @@ class KepingFoto extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Satu foto surat jalan sebagai berkas JPEG sementara, siap dibagikan.
+///
+/// KENAPA DIUBAH KE JPEG
+///
+/// Foto diunggah dalam WEBP (lihat `core/device/camera.dart`). WhatsApp
+/// memperlakukan `image/webp` sebagai STIKER — surat jalannya masuk sebagai
+/// stiker kecil tanpa keterangan, yang persis bukan yang diinginkan orang
+/// yang mengirim bukti pengiriman beton.
+///
+/// Berkasnya ditaruh di folder sementara sistem dan dibiarkan di sana:
+/// sistem yang membersihkannya, dan menghapusnya sendiri sesudah
+/// `share` kembali akan menghapus berkas yang baru saja diserahkan ke
+/// aplikasi lain — yang sebagian membacanya belakangan.
+Future<XFile?> fotoUntukDibagikan(
+  WidgetRef ref,
+  String uuid,
+  String namaDasar,
+) async {
+  final isi = await ref.read(apiProvider).fieldPhoto(uuid);
+  if (isi.isEmpty) return null;
+  final jpeg = await FlutterImageCompress.compressWithList(
+    Uint8List.fromList(isi),
+    format: CompressFormat.jpeg,
+    quality: 88,
+  );
+  final dir = await getTemporaryDirectory();
+  final berkas = File('${dir.path}/$namaDasar.jpg');
+  await berkas.writeAsBytes(jpeg);
+  return XFile(berkas.path, mimeType: 'image/jpeg');
 }

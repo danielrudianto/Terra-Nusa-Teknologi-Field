@@ -35,7 +35,7 @@ class CastingPage extends ConsumerWidget {
               ...all.where((p) => '${p['id']}' != '$mine'),
             ];
             return ListView(
-            padding: const EdgeInsets.all(Dimens.pagePadding),
+            padding: pagePaddingAman(context),
             children: [
               const StatusBanners(showPending: false),
               PageHeader(title: t(context).pickProject, description: t(context).pickProjectBody),
