@@ -1012,78 +1012,78 @@
   },
   "drillEffectiveLabel": "Drilling time",
   "@drillEffectiveLabel": {
-      "description": "Time actually spent drilling — stops excluded"
+    "description": "Time actually spent drilling — stops excluded"
   },
   "drillOfTotal": "of {total} total",
   "@drillOfTotal": {
-      "description": "Shown small under the effective drilling time",
-      "placeholders": {
-          "total": {
-              "type": "String"
-          }
+    "description": "Shown small under the effective drilling time",
+    "placeholders": {
+      "total": {
+        "type": "String"
       }
+    }
   },
   "drillEffectiveRateLabel": "Drilling rate",
   "@drillEffectiveRateLabel": {
-      "description": "Depth divided by the effective drilling time"
+    "description": "Depth divided by the effective drilling time"
   },
   "drillRateTotal": "{laju} m/h including stops",
   "@drillRateTotal": {
-      "description": "Shown small under the drilling rate",
-      "placeholders": {
-          "laju": {
-              "type": "String"
-          }
+    "description": "Shown small under the drilling rate",
+    "placeholders": {
+      "laju": {
+        "type": "String"
       }
+    }
   },
   "drillStops": "{n} stops · {lama}",
   "@drillStops": {
-      "description": "Heading of the list of stops",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          },
-          "lama": {
-              "type": "String"
-          }
+    "description": "Heading of the list of stops",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "lama": {
+        "type": "String"
       }
+    }
   },
   "denahTitle": "Point layout",
   "@denahTitle": {
-      "description": "denahTitle"
+    "description": "denahTitle"
   },
   "denahLabelToggle": "Point codes",
   "@denahLabelToggle": {
-      "description": "denahLabelToggle"
+    "description": "denahLabelToggle"
   },
   "denahDeviationToggle": "Deviation lines",
   "@denahDeviationToggle": {
-      "description": "denahDeviationToggle"
+    "description": "denahDeviationToggle"
   },
   "denahDrilled": "Drilled",
   "@denahDrilled": {
-      "description": "denahDrilled"
+    "description": "denahDrilled"
   },
   "denahNoCoordTitle": "{n} points are not drawn",
   "@denahNoCoordTitle": {
-      "description": "denahNoCoordTitle",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          }
+    "description": "denahNoCoordTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
       }
+    }
   },
   "denahNoCoordBody": "These points have no X/Y coordinates — neither design nor as-built — so there is nowhere to draw them. The office fills them in through the Excel import.",
   "@denahNoCoordBody": {
-      "description": "denahNoCoordBody"
+    "description": "denahNoCoordBody"
   },
   "denahEmptyTitle": "No coordinates yet",
   "@denahEmptyTitle": {
-      "description": "denahEmptyTitle"
+    "description": "denahEmptyTitle"
   },
   "denahEmptyBody": "Not one point in this project has X/Y coordinates, so the layout cannot be drawn yet. The office fills the design coordinates in from the office.",
   "@denahEmptyBody": {
-      "description": "denahEmptyBody"
+    "description": "denahEmptyBody"
   },
   "drillPlanRef": "{v} planned",
   "@drillPlanRef": {
@@ -1096,32 +1096,32 @@
   },
   "deviationStopTitle": "Deviation {v} is beyond tolerance",
   "@deviationStopTitle": {
-      "description": "deviationStopTitle",
-      "placeholders": {
-          "v": {
-              "type": "String"
-          }
+    "description": "deviationStopTitle",
+    "placeholders": {
+      "v": {
+        "type": "String"
       }
+    }
   },
   "deviationStopBody": "The project tolerance is {batas}; this point is {lewat} beyond it. Check the measurement and the design coordinates before the hole is poured — once it is, the only remaining option is strengthening, and that is not a decision made from the phone.",
   "@deviationStopBody": {
-      "description": "deviationStopBody",
-      "placeholders": {
-          "batas": {
-              "type": "String"
-          },
-          "lewat": {
-              "type": "String"
-          }
+    "description": "deviationStopBody",
+    "placeholders": {
+      "batas": {
+        "type": "String"
+      },
+      "lewat": {
+        "type": "String"
       }
+    }
   },
   "deviationStopSave": "Save as is",
   "@deviationStopSave": {
-      "description": "deviationStopSave"
+    "description": "deviationStopSave"
   },
   "deviationStopRecheck": "Check again",
   "@deviationStopRecheck": {
-      "description": "deviationStopRecheck"
+    "description": "deviationStopRecheck"
   },
   "filterDrilling": "Being drilled",
   "@filterDrilling": {
@@ -1145,32 +1145,80 @@
   },
   "readingTableTitle": "Readings ({n})",
   "@readingTableTitle": {
-      "description": "readingTableTitle",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          }
+    "description": "readingTableTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
       }
+    }
   },
   "readingColTime": "Time",
   "@readingColTime": {
-      "description": "readingColTime"
+    "description": "readingColTime"
   },
   "readingColDepth": "Depth",
   "@readingColDepth": {
-      "description": "readingColDepth"
+    "description": "readingColDepth"
   },
   "readingColAdded": "Added",
   "@readingColAdded": {
-      "description": "readingColAdded"
+    "description": "readingColAdded"
   },
   "readingColRate": "Rate",
   "@readingColRate": {
-      "description": "readingColRate"
+    "description": "readingColRate"
   },
   "readingNotPlotted": "Not on the curve — its time or depth cannot be read.",
   "@readingNotPlotted": {
-      "description": "readingNotPlotted"
+    "description": "readingNotPlotted"
+  },
+  "activityTitle": "Field activity",
+  "@activityTitle": {
+    "description": "activityTitle"
+  },
+  "activityToday": "Today · tap to pick a date",
+  "@activityToday": {
+    "description": "activityToday"
+  },
+  "activityPick": "Tap to pick a date",
+  "@activityPick": {
+    "description": "activityPick"
+  },
+  "activityPrevDay": "Previous day",
+  "@activityPrevDay": {
+    "description": "activityPrevDay"
+  },
+  "activityNextDay": "Next day",
+  "@activityNextDay": {
+    "description": "activityNextDay"
+  },
+  "activityEmptyTitle": "Nothing was recorded on this day",
+  "@activityEmptyTitle": {
+    "description": "activityEmptyTitle"
+  },
+  "activityEmptyBody": "No drilling or pouring was logged. Pick another day with the arrows above.",
+  "@activityEmptyBody": {
+    "description": "activityEmptyBody"
+  },
+  "activityDrilled": "points drilled",
+  "@activityDrilled": {
+    "description": "activityDrilled"
+  },
+  "activityPoured": "points poured",
+  "@activityPoured": {
+    "description": "activityPoured"
+  },
+  "activityAllProjects": "All projects",
+  "@activityAllProjects": {
+    "description": "activityAllProjects"
+  },
+  "activityNoProject": "No project",
+  "@activityNoProject": {
+    "description": "activityNoProject"
+  },
+  "activitySeeAll": "See all",
+  "@activitySeeAll": {
+    "description": "activitySeeAll"
   },
   "curveNeedsTwo": "The curve needs at least two readings whose time and depth can be read.",
   "@curveNeedsTwo": {
@@ -1430,5 +1478,47 @@
   "watchCurveWaitBody": "One reading spans no time at all. It appears by itself once the second reading arrives.",
   "watchDepth": "Depth",
   "watchRate": "Average rate",
-  "watchReadings": "Readings"
+  "watchReadings": "Readings",
+  "truckTableTitle": "Mixer trucks ({n})",
+  "@truckTableTitle": {
+    "description": "truckTableTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "truckColSeq": "TM",
+  "@truckColSeq": {
+    "description": "truckColSeq"
+  },
+  "truckColPour": "Pour",
+  "@truckColPour": {
+    "description": "truckColPour"
+  },
+  "truckColVolume": "Volume",
+  "@truckColVolume": {
+    "description": "truckColVolume"
+  },
+  "truckColCumulative": "Cumulative",
+  "@truckColCumulative": {
+    "description": "truckColCumulative"
+  },
+  "truckArrivedAt": "arrived {jam}",
+  "@truckArrivedAt": {
+    "description": "truckArrivedAt",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "photoExpired": "This photo is past its retention period on the server.",
+  "@photoExpired": {
+    "description": "photoExpired"
+  },
+  "photoFailed": "The photo could not be loaded. Check your signal, then try again.",
+  "@photoFailed": {
+    "description": "photoFailed"
+  }
 }

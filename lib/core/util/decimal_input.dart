@@ -78,13 +78,12 @@ class KoordinatInputFormatter extends TextInputFormatter {
       }
     }
 
-    var teks = angka.toString();
-    var bulat = adaKoma ? teks.split(',').first : teks;
-    var pecahan = adaKoma ? teks.split(',').last : '';
+    final teks = angka.toString();
+    final bulat = adaKoma ? teks.split(',').first : teks;
     if (bulat.length > maxIntDigits) return oldValue;
-    if (pecahan.length > decimals) {
-      pecahan = pecahan.substring(0, decimals);
-    }
+    final diketik = adaKoma ? teks.split(',').last : '';
+    final pecahan =
+        diketik.length > decimals ? diketik.substring(0, decimals) : diketik;
 
     final dikelompokkan = _kelompok(bulat);
     final hasil = (minus ? '-' : '') +

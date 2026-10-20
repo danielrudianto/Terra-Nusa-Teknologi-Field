@@ -4830,78 +4830,78 @@
   },
   "drillEffectiveLabel": "Lama mengebor",
   "@drillEffectiveLabel": {
-      "description": "Time actually spent drilling — stops excluded"
+    "description": "Time actually spent drilling — stops excluded"
   },
   "drillOfTotal": "dari total {total}",
   "@drillOfTotal": {
-      "description": "Shown small under the effective drilling time",
-      "placeholders": {
-          "total": {
-              "type": "String"
-          }
+    "description": "Shown small under the effective drilling time",
+    "placeholders": {
+      "total": {
+        "type": "String"
       }
+    }
   },
   "drillEffectiveRateLabel": "Laju bor",
   "@drillEffectiveRateLabel": {
-      "description": "Depth divided by the effective drilling time"
+    "description": "Depth divided by the effective drilling time"
   },
   "drillRateTotal": "{laju} m/jam termasuk berhenti",
   "@drillRateTotal": {
-      "description": "Shown small under the drilling rate",
-      "placeholders": {
-          "laju": {
-              "type": "String"
-          }
+    "description": "Shown small under the drilling rate",
+    "placeholders": {
+      "laju": {
+        "type": "String"
       }
+    }
   },
   "drillStops": "{n} kali berhenti · {lama}",
   "@drillStops": {
-      "description": "Heading of the list of stops",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          },
-          "lama": {
-              "type": "String"
-          }
+    "description": "Heading of the list of stops",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "lama": {
+        "type": "String"
       }
+    }
   },
   "denahTitle": "Denah titik",
   "@denahTitle": {
-      "description": "denahTitle"
+    "description": "denahTitle"
   },
   "denahLabelToggle": "Kode titik",
   "@denahLabelToggle": {
-      "description": "denahLabelToggle"
+    "description": "denahLabelToggle"
   },
   "denahDeviationToggle": "Garis simpangan",
   "@denahDeviationToggle": {
-      "description": "denahDeviationToggle"
+    "description": "denahDeviationToggle"
   },
   "denahDrilled": "Sudah dibor",
   "@denahDrilled": {
-      "description": "denahDrilled"
+    "description": "denahDrilled"
   },
   "denahNoCoordTitle": "{n} titik tidak tergambar",
   "@denahNoCoordTitle": {
-      "description": "denahNoCoordTitle",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          }
+    "description": "denahNoCoordTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
       }
+    }
   },
   "denahNoCoordBody": "Titik ini belum punya koordinat X/Y — rencana maupun aktual — jadi tidak ada tempatnya di denah. Kantor yang mengisinya lewat impor Excel.",
   "@denahNoCoordBody": {
-      "description": "denahNoCoordBody"
+    "description": "denahNoCoordBody"
   },
   "denahEmptyTitle": "Belum ada koordinat",
   "@denahEmptyTitle": {
-      "description": "denahEmptyTitle"
+    "description": "denahEmptyTitle"
   },
   "denahEmptyBody": "Tidak ada satu pun titik proyek ini yang koordinat X/Y-nya terisi, jadi denahnya belum dapat digambar. Koordinat rencananya diisi dari kantor.",
   "@denahEmptyBody": {
-      "description": "denahEmptyBody"
+    "description": "denahEmptyBody"
   },
   "drillPlanRef": "{v} rencana",
   "@drillPlanRef": {
@@ -4914,32 +4914,32 @@
   },
   "deviationStopTitle": "Simpangan {v} melewati toleransi",
   "@deviationStopTitle": {
-      "description": "deviationStopTitle",
-      "placeholders": {
-          "v": {
-              "type": "String"
-          }
+    "description": "deviationStopTitle",
+    "placeholders": {
+      "v": {
+        "type": "String"
       }
+    }
   },
   "deviationStopBody": "Toleransi proyek {batas}; titik ini lewat {lewat}. Periksa dulu hasil ukur dan koordinat rencananya sebelum lubang ini dicor — sesudah dicor, satu-satunya pilihan yang tersisa adalah perkuatan, dan itu bukan keputusan dari HP.",
   "@deviationStopBody": {
-      "description": "deviationStopBody",
-      "placeholders": {
-          "batas": {
-              "type": "String"
-          },
-          "lewat": {
-              "type": "String"
-          }
+    "description": "deviationStopBody",
+    "placeholders": {
+      "batas": {
+        "type": "String"
+      },
+      "lewat": {
+        "type": "String"
       }
+    }
   },
   "deviationStopSave": "Simpan apa adanya",
   "@deviationStopSave": {
-      "description": "deviationStopSave"
+    "description": "deviationStopSave"
   },
   "deviationStopRecheck": "Periksa lagi",
   "@deviationStopRecheck": {
-      "description": "deviationStopRecheck"
+    "description": "deviationStopRecheck"
   },
   "filterDrilling": "Sedang dibor",
   "@filterDrilling": {
@@ -4963,32 +4963,80 @@
   },
   "readingTableTitle": "Bacaan ({n})",
   "@readingTableTitle": {
-      "description": "readingTableTitle",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          }
+    "description": "readingTableTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
       }
+    }
   },
   "readingColTime": "Jam",
   "@readingColTime": {
-      "description": "readingColTime"
+    "description": "readingColTime"
   },
   "readingColDepth": "Kedalaman",
   "@readingColDepth": {
-      "description": "readingColDepth"
+    "description": "readingColDepth"
   },
   "readingColAdded": "Tambah",
   "@readingColAdded": {
-      "description": "readingColAdded"
+    "description": "readingColAdded"
   },
   "readingColRate": "Laju",
   "@readingColRate": {
-      "description": "readingColRate"
+    "description": "readingColRate"
   },
   "readingNotPlotted": "Tidak tergambar di kurva — jam atau kedalamannya tidak terbaca.",
   "@readingNotPlotted": {
-      "description": "readingNotPlotted"
+    "description": "readingNotPlotted"
+  },
+  "activityTitle": "Aktivitas lapangan",
+  "@activityTitle": {
+    "description": "activityTitle"
+  },
+  "activityToday": "Hari ini · ketuk untuk pilih tanggal",
+  "@activityToday": {
+    "description": "activityToday"
+  },
+  "activityPick": "Ketuk untuk pilih tanggal",
+  "@activityPick": {
+    "description": "activityPick"
+  },
+  "activityPrevDay": "Hari sebelumnya",
+  "@activityPrevDay": {
+    "description": "activityPrevDay"
+  },
+  "activityNextDay": "Hari berikutnya",
+  "@activityNextDay": {
+    "description": "activityNextDay"
+  },
+  "activityEmptyTitle": "Tidak ada catatan pada hari ini",
+  "@activityEmptyTitle": {
+    "description": "activityEmptyTitle"
+  },
+  "activityEmptyBody": "Tidak ada pengeboran maupun pengecoran yang tercatat. Pilih hari lain dengan panah di atas.",
+  "@activityEmptyBody": {
+    "description": "activityEmptyBody"
+  },
+  "activityDrilled": "titik dibor",
+  "@activityDrilled": {
+    "description": "activityDrilled"
+  },
+  "activityPoured": "titik dicor",
+  "@activityPoured": {
+    "description": "activityPoured"
+  },
+  "activityAllProjects": "Semua proyek",
+  "@activityAllProjects": {
+    "description": "activityAllProjects"
+  },
+  "activityNoProject": "Tanpa proyek",
+  "@activityNoProject": {
+    "description": "activityNoProject"
+  },
+  "activitySeeAll": "Lihat semua",
+  "@activitySeeAll": {
+    "description": "activitySeeAll"
   },
   "curveNeedsTwo": "Kurvanya perlu sedikitnya dua bacaan yang jam dan kedalamannya terbaca.",
   "@curveNeedsTwo": {
@@ -5335,5 +5383,47 @@
   "watchReadings": "Bacaan",
   "@watchReadings": {
     "description": "watchReadings"
+  },
+  "truckTableTitle": "Truk mixer ({n})",
+  "@truckTableTitle": {
+    "description": "truckTableTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "truckColSeq": "TM",
+  "@truckColSeq": {
+    "description": "truckColSeq"
+  },
+  "truckColPour": "Tuang",
+  "@truckColPour": {
+    "description": "truckColPour"
+  },
+  "truckColVolume": "Volume",
+  "@truckColVolume": {
+    "description": "truckColVolume"
+  },
+  "truckColCumulative": "Kumulatif",
+  "@truckColCumulative": {
+    "description": "truckColCumulative"
+  },
+  "truckArrivedAt": "datang {jam}",
+  "@truckArrivedAt": {
+    "description": "truckArrivedAt",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "photoExpired": "Foto ini sudah lewat masa simpannya di server.",
+  "@photoExpired": {
+    "description": "photoExpired"
+  },
+  "photoFailed": "Foto tidak dapat dimuat. Periksa sinyal, lalu coba lagi.",
+  "@photoFailed": {
+    "description": "photoFailed"
   }
 }

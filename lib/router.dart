@@ -16,6 +16,7 @@ import 'features/casting/casting_page.dart';
 import 'features/casting/pile_points_page.dart';
 import 'features/casting/pantau_page.dart';
 import 'features/casting/point_history_page.dart';
+import 'features/home/aktivitas_page.dart';
 import 'features/casting/titik_denah_page.dart';
 import 'features/drilling/drill_log_page.dart';
 import 'features/reports/report_page.dart';
@@ -130,6 +131,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           code: s.uri.queryParameters['code'] ?? '',
         ),
       ),
+      GoRoute(path: '/activity', builder: (_, _) => const AktivitasPage()),
       GoRoute(path: '/reports', builder: (_, _) => const ReportPage()),
     ],
   );

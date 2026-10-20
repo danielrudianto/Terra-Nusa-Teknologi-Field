@@ -16,6 +16,7 @@ class Kegiatan {
     required this.bor,
     required this.kode,
     required this.pilePointID,
+    required this.projectID,
     required this.kapan,
     required this.selesai,
     required this.utama,
@@ -30,6 +31,17 @@ class Kegiatan {
   /// tidak dapat diketuk. Lebih baik daripada ketukan yang tidak membuka
   /// apa pun.
   final int? pilePointID;
+
+  /// Proyek pemilik titik ini — dipakai HALAMAN AKTIVITAS untuk
+  /// mengelompokkan barisnya (diminta Daniel, 20 Okt 2026: "kayanya gw
+  /// minta dibagi per proyek deh, siapa tau suatu hari jalan beberapa
+  /// proyek sekaligus").
+  ///
+  /// Hanya ID-nya, bukan namanya: nama proyek sudah ada di telepon lewat
+  /// `projectsProvider`, dan menyalinnya ke setiap baris berarti satu nama
+  /// yang sama ditulis tiga puluh kali lalu menua sendiri saat kantor
+  /// mengganti namanya.
+  final int? projectID;
 
   /// Jam yang dipakai mengurutkan DAN yang ditampilkan.
   final DateTime kapan;
@@ -79,6 +91,7 @@ List<Kegiatan> susunKegiatan(Map<String, Object?> jawaban, DateTime sekarang) {
       bor: true,
       kode: '${m['pilePointCode']}',
       pilePointID: toIntOrNull(m['pilePointID']),
+      projectID: toIntOrNull(m['projectID']),
       kapan: kapan,
       selesai: '${m['status']}' != 'berjalan',
       // `formatMeters` SUDAH menempelkan satuannya, berikut spasi tak
@@ -99,6 +112,7 @@ List<Kegiatan> susunKegiatan(Map<String, Object?> jawaban, DateTime sekarang) {
       bor: false,
       kode: '${m['pilePointCode']}',
       pilePointID: toIntOrNull(m['pilePointID']),
+      projectID: toIntOrNull(m['projectID']),
       kapan: kapan,
       selesai: '${m['status']}' != 'berjalan',
       utama: '$tm TM · ${formatVolume(vol)}',
@@ -303,7 +317,7 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
             if (_terbuka) ...[
               const SizedBox(height: 10),
               for (final k in tampil) ...[
-                _Baris(k: k, onKetuk: () => _buka(k)),
+                BarisKegiatan(k: k, onKetuk: () => _buka(k)),
                 if (k != tampil.last) const Divider(height: 14),
               ],
               if (sisa > 0) ...[
@@ -313,6 +327,19 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
                   style: TextStyle(fontSize: 12, color: w.faint),
                 ),
               ],
+              // PINTU KE HALAMAN AKTIVITAS. Kartu ini sengaja dipotong enam
+              // baris — ia ringkasan, bukan laporan — jadi harus ada jalan
+              // yang jelas menuju daftar utuhnya, berikut hari-hari
+              // sebelumnya.
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => context.push('/activity'),
+                  icon: const Icon(Icons.calendar_month, size: 18),
+                  label: Text(t(context).activitySeeAll),
+                ),
+              ),
             ],
           ],
         ),
@@ -321,8 +348,13 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
   }
 }
 
-class _Baris extends StatelessWidget {
-  const _Baris({required this.k, required this.onKetuk});
+/// Satu baris kegiatan — dipakai kartu beranda DAN halaman Aktivitas.
+///
+/// PUBLIK dengan sengaja: dua layar yang menampilkan kegiatan yang sama
+/// dengan dua baris yang disusun terpisah akan menua sendiri-sendiri, lalu
+/// menampilkan jam atau satuan yang berbeda untuk kejadian yang sama.
+class BarisKegiatan extends StatelessWidget {
+  const BarisKegiatan({super.key, required this.k, required this.onKetuk});
 
   final Kegiatan k;
   final VoidCallback onKetuk;

@@ -206,6 +206,30 @@ class ApiClient {
     }
   }
 
+  /// One field photo's bytes, from the server.
+  ///
+  /// The phone that TOOK the photo keeps its own copy on disk and never
+  /// needs this. Every OTHER phone does: a delivery ticket photographed at
+  /// the mixer truck is the one page a watcher actually wants to read, and
+  /// until now it only existed on the recorder's phone.
+  ///
+  /// 410 from the server = the photo existed but is past its retention; the
+  /// caller shows that as a sentence, not as a failure to load.
+  Future<List<int>> fieldPhoto(String uuid) async {
+    try {
+      final r = await dio.get<List<int>>(
+        '/field/photos/$uuid',
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      return r.data ?? const [];
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Oper (handover) — move a running log to a colleague with a 6-digit code
   // -------------------------------------------------------------------------

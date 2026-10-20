@@ -8,6 +8,7 @@ import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
+import '../../core/widgets/foto_server.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
@@ -330,7 +331,257 @@ class _PantauCor extends StatelessWidget {
             label: t(context).watchEmbedment,
             nilai: formatMeters(toDoubleOrNull(k['tremieBottomM'])! - muka),
           ),
+
+        // TABEL TM — angka di atas menjawab "sampai mana", tabel ini
+        // menjawab "dari mana angka itu". Ditaruh DI BAWAH angkanya, bukan
+        // di atas: yang membuka layar pantau bertanya keadaan sekarang
+        // lebih dulu, dan rinciannya baru dicari sesudah angkanya terbaca
+        // ganjil.
+        if (tm.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _TabelTm(tm: tm, sedangTuangSeq: sedangTuang ? toIntOrNull(terakhir['seq']) : null),
+        ],
       ],
+    );
+  }
+}
+
+/// TRUK MIXER satu pengecoran — tabel yang dapat dilipat.
+///
+/// ──────────────────────────────────────────────────────────────────────────
+/// KENAPA ADA — Daniel, 20 Oktober 2026
+/// ──────────────────────────────────────────────────────────────────────────
+///
+///     "sama ini juga untuk waktu pantau cor, pengen ada tabelnya gitu dong
+///      bang. jadi bisa monitor juga. sekalian bisa lihat surat jalannya
+///      disana"
+///
+/// Padanan tabel bacaan di layar pantau bor. Yang menonton pengecoran
+/// sebelumnya hanya diberi JUMLAHNYA — "6 TM · 21,71 m³" — padahal yang
+/// ditanyakan orang kantor selalu lebih rinci: TM keberapa yang sedang
+/// dituang, berapa lama TM sebelumnya, dan apakah volumenya mulai lari dari
+/// teoritis sejak TM tertentu.
+///
+/// KOLOM KUMULATIFNYA yang membuat tabel ini berguna, bukan daftar TM-nya:
+/// penumpukan volume itulah yang dibandingkan dengan teoritis, dan selama
+/// ini hanya dapat disusun orang dengan menjumlahkan sendiri di kertas.
+///
+/// TERTUTUP secara bawaan — sama dengan tabel bacaan bor. Layar pantau
+/// dibuka untuk melihat penampang dan angka pokoknya; tabel yang terbuka
+/// sendiri mendorong keduanya keluar layar.
+class _TabelTm extends StatefulWidget {
+  const _TabelTm({required this.tm, this.sedangTuangSeq});
+
+  final List<Map<String, Object?>> tm;
+
+  /// Nomor TM yang sedang dituang, bila ada — barisnya disorot.
+  final int? sedangTuangSeq;
+
+  @override
+  State<_TabelTm> createState() => _TabelTmState();
+}
+
+class _TabelTmState extends State<_TabelTm> {
+  bool _buka = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+
+    // Kumulatif dihitung di sini, sekali, menurut urutan `seq` — bukan di
+    // dalam barisnya: baris yang menjumlahkan tetangganya sendiri akan
+    // salah begitu satu TM dihapus di tengah.
+    var jumlah = 0.0;
+    final kum = <double>[];
+    for (final x in widget.tm) {
+      jumlah += toDoubleOrNull(x['volumeM3']) ?? 0;
+      kum.add(jumlah);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: w.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: w.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => setState(() => _buka = !_buka),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+              child: Row(
+                children: [
+                  Icon(Icons.local_shipping_outlined, size: 18, color: w.muted),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      t(context).truckTableTitle('${widget.tm.length}'),
+                      style: TextStyle(fontWeight: FontWeight.w700, color: w.ink, fontSize: 14),
+                    ),
+                  ),
+                  Icon(_buka ? Icons.expand_less : Icons.expand_more, color: w.muted),
+                ],
+              ),
+            ),
+          ),
+          if (_buka) ...[
+            Divider(height: 1, color: w.line),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+              child: Column(
+                children: [
+                  _BarisTm(
+                    kepala: true,
+                    tm: t(context).truckColSeq,
+                    jam: t(context).truckColPour,
+                    volume: t(context).truckColVolume,
+                    kumulatif: t(context).truckColCumulative,
+                  ),
+                  for (final (i, x) in widget.tm.indexed) ...[
+                    Divider(height: 11, color: w.line),
+                    _BarisTm(
+                      tm: '${x['seq']}',
+                      jam: _jamTuang(context, x),
+                      volume: formatVolume(toDoubleOrNull(x['volumeM3']) ?? 0),
+                      kumulatif: formatVolume(kum[i]),
+                      disorot: widget.sedangTuangSeq != null &&
+                          toIntOrNull(x['seq']) == widget.sedangTuangSeq,
+                      ket: _keterangan(context, x),
+                      catatan: x['note']?.toString(),
+                      tiketUuid: x['ticketPhotoUuid']?.toString(),
+                      slumpUuid: x['slumpPhotoUuid']?.toString(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// "09:12–09:31", "09:12–…" selagi dituang, "datang 09:05" sebelum mulai.
+  ///
+  /// TM yang sudah datang tetapi belum dituang bukan baris kosong: justru
+  /// itulah yang ditanyakan ("mixernya sudah di lokasi belum"), dan jam
+  /// datangnya satu-satunya jam yang dimilikinya.
+  static String _jamTuang(BuildContext context, Map<String, Object?> x) {
+    final mulai = DateTime.tryParse('${x['startAt']}');
+    final selesai = DateTime.tryParse('${x['endAt']}');
+    final datang = DateTime.tryParse('${x['arrivedAt']}');
+    if (mulai == null) {
+      return datang == null ? '—' : t(context).truckArrivedAt(formatTime(datang));
+    }
+    return selesai == null
+        ? '${formatTime(mulai)}–…'
+        : '${formatTime(mulai)}–${formatTime(selesai)}';
+  }
+
+  /// Baris kecil di bawahnya: pemasok, nomor lambung, nomor tiket, slump.
+  ///
+  /// Yang KOSONG dilewati, tidak diisi strip: empat strip berderet terbaca
+  /// seperti data yang hilang, padahal nomor lambung memang sering tidak
+  /// dicatat.
+  static String? _keterangan(BuildContext context, Map<String, Object?> x) {
+    final bagian = <String>[
+      if ('${x['supplierName'] ?? ''}'.trim().isNotEmpty) '${x['supplierName']}',
+      if ('${x['truckNo'] ?? ''}'.trim().isNotEmpty) t(context).hullNo('${x['truckNo']}'),
+      if ('${x['ticketNo'] ?? ''}'.trim().isNotEmpty) '${x['ticketNo']}',
+      if (toDoubleOrNull(x['slumpCm']) != null)
+        t(context).slumpOf(
+          toDoubleOrNull(x['slumpCm'])!.toStringAsFixed(1).replaceAll('.', ','),
+        ),
+    ];
+    return bagian.isEmpty ? null : bagian.join(' · ');
+  }
+}
+
+class _BarisTm extends StatelessWidget {
+  const _BarisTm({
+    required this.tm,
+    required this.jam,
+    required this.volume,
+    required this.kumulatif,
+    this.kepala = false,
+    this.disorot = false,
+    this.ket,
+    this.catatan,
+    this.tiketUuid,
+    this.slumpUuid,
+  });
+
+  final String tm;
+  final String jam;
+  final String volume;
+  final String kumulatif;
+  final bool kepala;
+  final bool disorot;
+  final String? ket;
+  final String? catatan;
+  final String? tiketUuid;
+  final String? slumpUuid;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final gaya = TextStyle(
+      fontSize: kepala ? 11.5 : 13,
+      fontWeight: kepala ? FontWeight.w700 : FontWeight.w500,
+      color: kepala ? w.faint : w.ink,
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: disorot ? w.brandSoft : null,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              SizedBox(width: 30, child: Text(tm, style: gaya)),
+              Expanded(child: Text(jam, style: gaya)),
+              SizedBox(width: 74, child: Text(volume, style: gaya, textAlign: TextAlign.right)),
+              SizedBox(width: 74, child: Text(kumulatif, style: gaya, textAlign: TextAlign.right)),
+            ],
+          ),
+          if (ket != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(ket!, style: TextStyle(fontSize: 12, color: w.muted)),
+            ),
+          if (catatan != null && catatan!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(catatan!, style: TextStyle(fontSize: 12, color: w.muted)),
+            ),
+          // SURAT JALANNYA, dari server — satu-satunya halaman di seluruh
+          // pekerjaan ini yang bertanda tangan pemasok.
+          if (tiketUuid != null || slumpUuid != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Row(
+                children: [
+                  if (tiketUuid != null)
+                    KepingFoto(uuid: tiketUuid!, label: t(context).deliveryNote),
+                  if (tiketUuid != null && slumpUuid != null) const SizedBox(width: 6),
+                  if (slumpUuid != null)
+                    KepingFoto(
+                      uuid: slumpUuid!,
+                      label: t(context).slumpTest,
+                      ikon: Icons.science_outlined,
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

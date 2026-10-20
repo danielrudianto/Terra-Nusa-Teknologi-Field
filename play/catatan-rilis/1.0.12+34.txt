@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.12 (34) — Tabel TM & aktivitas per proyek
+
+<id>
+• Pantau cor: tabel truk mixer yang bisa dilipat — TM, jam tuang, volume, dan volume kumulatifnya. TM yang sedang dituang disorot; yang sudah datang tapi belum mulai disebut jam datangnya.
+• Surat jalan dan uji slump tiap TM bisa dibuka langsung dari tabel itu, diambil dari server — tidak perlu lagi minta fotonya ke HP yang mencatat.
+• Halaman Aktivitas dibagi per proyek, lengkap dengan jumlah titik dibor dan dicor per proyeknya.
+</id>
+<en-US>
+• Watch a pour: a collapsible mixer-truck table — truck, pour time, volume, and running total. The truck being poured is highlighted; one that has arrived but not started shows its arrival time.
+• Each truck's delivery ticket and slump photo open straight from that table, fetched from the server — no more asking the recording phone to send them over.
+• The Activity page is now grouped by project, each with its own drilled and poured counts.
+</en-US>
+<zh-CN>
+• 浇筑实时查看：新增可折叠的搅拌车表格——车次、浇筑时间、体积及累计体积。正在浇筑的一车会高亮；已到场但未开始的显示到场时间。
+• 每车的送货单与坍落度照片可直接在表格中打开，由服务器读取，无需再向记录用手机索取。
+• 活动页面按项目分组，各项目分别显示已钻孔与已浇筑的桩点数。
+</zh-CN>

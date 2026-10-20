@@ -1012,78 +1012,78 @@
   },
   "drillEffectiveLabel": "实钻时长",
   "@drillEffectiveLabel": {
-      "description": "Time actually spent drilling — stops excluded"
+    "description": "Time actually spent drilling — stops excluded"
   },
   "drillOfTotal": "共 {total}",
   "@drillOfTotal": {
-      "description": "Shown small under the effective drilling time",
-      "placeholders": {
-          "total": {
-              "type": "String"
-          }
+    "description": "Shown small under the effective drilling time",
+    "placeholders": {
+      "total": {
+        "type": "String"
       }
+    }
   },
   "drillEffectiveRateLabel": "钻孔速度",
   "@drillEffectiveRateLabel": {
-      "description": "Depth divided by the effective drilling time"
+    "description": "Depth divided by the effective drilling time"
   },
   "drillRateTotal": "{laju} 米/小时（含停钻）",
   "@drillRateTotal": {
-      "description": "Shown small under the drilling rate",
-      "placeholders": {
-          "laju": {
-              "type": "String"
-          }
+    "description": "Shown small under the drilling rate",
+    "placeholders": {
+      "laju": {
+        "type": "String"
       }
+    }
   },
   "drillStops": "停钻 {n} 次 · {lama}",
   "@drillStops": {
-      "description": "Heading of the list of stops",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          },
-          "lama": {
-              "type": "String"
-          }
+    "description": "Heading of the list of stops",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "lama": {
+        "type": "String"
       }
+    }
   },
   "denahTitle": "桩位平面图",
   "@denahTitle": {
-      "description": "denahTitle"
+    "description": "denahTitle"
   },
   "denahLabelToggle": "桩号",
   "@denahLabelToggle": {
-      "description": "denahLabelToggle"
+    "description": "denahLabelToggle"
   },
   "denahDeviationToggle": "偏差连线",
   "@denahDeviationToggle": {
-      "description": "denahDeviationToggle"
+    "description": "denahDeviationToggle"
   },
   "denahDrilled": "已钻孔",
   "@denahDrilled": {
-      "description": "denahDrilled"
+    "description": "denahDrilled"
   },
   "denahNoCoordTitle": "{n} 个桩位未绘制",
   "@denahNoCoordTitle": {
-      "description": "denahNoCoordTitle",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          }
+    "description": "denahNoCoordTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
       }
+    }
   },
   "denahNoCoordBody": "这些桩位没有 X/Y 坐标（设计与实测均无），因此无法绘制。由办公室通过 Excel 导入填写。",
   "@denahNoCoordBody": {
-      "description": "denahNoCoordBody"
+    "description": "denahNoCoordBody"
   },
   "denahEmptyTitle": "尚无坐标",
   "@denahEmptyTitle": {
-      "description": "denahEmptyTitle"
+    "description": "denahEmptyTitle"
   },
   "denahEmptyBody": "本项目没有任何桩位填写了 X/Y 坐标，暂时无法绘制平面图。设计坐标由办公室填写。",
   "@denahEmptyBody": {
-      "description": "denahEmptyBody"
+    "description": "denahEmptyBody"
   },
   "drillPlanRef": "{v} 设计深度",
   "@drillPlanRef": {
@@ -1096,32 +1096,32 @@
   },
   "deviationStopTitle": "偏差 {v} 超出容许值",
   "@deviationStopTitle": {
-      "description": "deviationStopTitle",
-      "placeholders": {
-          "v": {
-              "type": "String"
-          }
+    "description": "deviationStopTitle",
+    "placeholders": {
+      "v": {
+        "type": "String"
       }
+    }
   },
   "deviationStopBody": "项目容许值为 {batas}，本桩超出 {lewat}。请在浇筑前复核实测与设计坐标——一旦浇筑，就只剩加固一条路，而那不是用手机做的决定。",
   "@deviationStopBody": {
-      "description": "deviationStopBody",
-      "placeholders": {
-          "batas": {
-              "type": "String"
-          },
-          "lewat": {
-              "type": "String"
-          }
+    "description": "deviationStopBody",
+    "placeholders": {
+      "batas": {
+        "type": "String"
+      },
+      "lewat": {
+        "type": "String"
       }
+    }
   },
   "deviationStopSave": "按原样保存",
   "@deviationStopSave": {
-      "description": "deviationStopSave"
+    "description": "deviationStopSave"
   },
   "deviationStopRecheck": "重新检查",
   "@deviationStopRecheck": {
-      "description": "deviationStopRecheck"
+    "description": "deviationStopRecheck"
   },
   "filterDrilling": "正在钻孔",
   "@filterDrilling": {
@@ -1145,32 +1145,80 @@
   },
   "readingTableTitle": "读数（{n}）",
   "@readingTableTitle": {
-      "description": "readingTableTitle",
-      "placeholders": {
-          "n": {
-              "type": "String"
-          }
+    "description": "readingTableTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
       }
+    }
   },
   "readingColTime": "时间",
   "@readingColTime": {
-      "description": "readingColTime"
+    "description": "readingColTime"
   },
   "readingColDepth": "深度",
   "@readingColDepth": {
-      "description": "readingColDepth"
+    "description": "readingColDepth"
   },
   "readingColAdded": "增加",
   "@readingColAdded": {
-      "description": "readingColAdded"
+    "description": "readingColAdded"
   },
   "readingColRate": "速度",
   "@readingColRate": {
-      "description": "readingColRate"
+    "description": "readingColRate"
   },
   "readingNotPlotted": "未绘入曲线——时间或深度无法读取。",
   "@readingNotPlotted": {
-      "description": "readingNotPlotted"
+    "description": "readingNotPlotted"
+  },
+  "activityTitle": "现场作业",
+  "@activityTitle": {
+    "description": "activityTitle"
+  },
+  "activityToday": "今天 · 点击选择日期",
+  "@activityToday": {
+    "description": "activityToday"
+  },
+  "activityPick": "点击选择日期",
+  "@activityPick": {
+    "description": "activityPick"
+  },
+  "activityPrevDay": "前一天",
+  "@activityPrevDay": {
+    "description": "activityPrevDay"
+  },
+  "activityNextDay": "后一天",
+  "@activityNextDay": {
+    "description": "activityNextDay"
+  },
+  "activityEmptyTitle": "这一天没有记录",
+  "@activityEmptyTitle": {
+    "description": "activityEmptyTitle"
+  },
+  "activityEmptyBody": "没有钻孔或浇筑记录。可用上方箭头选择其他日期。",
+  "@activityEmptyBody": {
+    "description": "activityEmptyBody"
+  },
+  "activityDrilled": "个桩已钻孔",
+  "@activityDrilled": {
+    "description": "activityDrilled"
+  },
+  "activityPoured": "个桩已浇筑",
+  "@activityPoured": {
+    "description": "activityPoured"
+  },
+  "activityAllProjects": "所有项目",
+  "@activityAllProjects": {
+    "description": "activityAllProjects"
+  },
+  "activityNoProject": "无项目",
+  "@activityNoProject": {
+    "description": "activityNoProject"
+  },
+  "activitySeeAll": "查看全部",
+  "@activitySeeAll": {
+    "description": "activitySeeAll"
   },
   "curveNeedsTwo": "曲线至少需要两条时间和深度均可读取的记录。",
   "@curveNeedsTwo": {
@@ -1430,5 +1478,47 @@
   "watchCurveWaitBody": "仅一条读数没有时间跨度。第二条读数到达后会自动显示。",
   "watchDepth": "深度",
   "watchRate": "平均速率",
-  "watchReadings": "读数"
+  "watchReadings": "读数",
+  "truckTableTitle": "搅拌车（{n}）",
+  "@truckTableTitle": {
+    "description": "truckTableTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "truckColSeq": "车次",
+  "@truckColSeq": {
+    "description": "truckColSeq"
+  },
+  "truckColPour": "浇筑",
+  "@truckColPour": {
+    "description": "truckColPour"
+  },
+  "truckColVolume": "体积",
+  "@truckColVolume": {
+    "description": "truckColVolume"
+  },
+  "truckColCumulative": "累计",
+  "@truckColCumulative": {
+    "description": "truckColCumulative"
+  },
+  "truckArrivedAt": "{jam} 到场",
+  "@truckArrivedAt": {
+    "description": "truckArrivedAt",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "photoExpired": "该照片已超过服务器的保存期限。",
+  "@photoExpired": {
+    "description": "photoExpired"
+  },
+  "photoFailed": "无法载入照片。请检查信号后重试。",
+  "@photoFailed": {
+    "description": "photoFailed"
+  }
 }

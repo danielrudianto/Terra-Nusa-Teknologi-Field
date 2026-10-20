@@ -855,7 +855,13 @@ class _DrillDialogState extends State<_DrillDialog> {
     )) {
       return;
     }
-    if (!context.mounted) return;
+    // `mounted` MILIK STATE, bukan `context.mounted`.
+    //
+    // Keduanya tampak setara, tetapi penganalisis menolak yang kedua di
+    // dalam `State`: yang menentukan boleh-tidaknya memakai `context`
+    // sesudah `await` adalah hidup-matinya State-nya, dan `context.mounted`
+    // menjawab pertanyaan yang berbeda.
+    if (!mounted) return;
     Navigator.pop(context, (
       depth: depth,
       groundLevel: gs,
