@@ -1085,6 +1085,93 @@
   "@denahEmptyBody": {
       "description": "denahEmptyBody"
   },
+  "drillPlanRef": "{v} 设计深度",
+  "@drillPlanRef": {
+    "description": "drillPlanRef",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationStopTitle": "偏差 {v} 超出容许值",
+  "@deviationStopTitle": {
+      "description": "deviationStopTitle",
+      "placeholders": {
+          "v": {
+              "type": "String"
+          }
+      }
+  },
+  "deviationStopBody": "项目容许值为 {batas}，本桩超出 {lewat}。请在浇筑前复核实测与设计坐标——一旦浇筑，就只剩加固一条路，而那不是用手机做的决定。",
+  "@deviationStopBody": {
+      "description": "deviationStopBody",
+      "placeholders": {
+          "batas": {
+              "type": "String"
+          },
+          "lewat": {
+              "type": "String"
+          }
+      }
+  },
+  "deviationStopSave": "按原样保存",
+  "@deviationStopSave": {
+      "description": "deviationStopSave"
+  },
+  "deviationStopRecheck": "重新检查",
+  "@deviationStopRecheck": {
+      "description": "deviationStopRecheck"
+  },
+  "filterDrilling": "正在钻孔",
+  "@filterDrilling": {
+    "description": "filterDrilling"
+  },
+  "filterCasting": "正在浇筑",
+  "@filterCasting": {
+    "description": "filterCasting"
+  },
+  "progressIdle": "自 {jam} 起停工 · {lama} 无新读数",
+  "@progressIdle": {
+    "description": "progressIdle",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      },
+      "lama": {
+        "type": "String"
+      }
+    }
+  },
+  "readingTableTitle": "读数（{n}）",
+  "@readingTableTitle": {
+      "description": "readingTableTitle",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          }
+      }
+  },
+  "readingColTime": "时间",
+  "@readingColTime": {
+      "description": "readingColTime"
+  },
+  "readingColDepth": "深度",
+  "@readingColDepth": {
+      "description": "readingColDepth"
+  },
+  "readingColAdded": "增加",
+  "@readingColAdded": {
+      "description": "readingColAdded"
+  },
+  "readingColRate": "速度",
+  "@readingColRate": {
+      "description": "readingColRate"
+  },
+  "readingNotPlotted": "未绘入曲线——时间或深度无法读取。",
+  "@readingNotPlotted": {
+      "description": "readingNotPlotted"
+  },
   "curveNeedsTwo": "曲线至少需要两条时间和深度均可读取的记录。",
   "@curveNeedsTwo": {
     "description": "Shown instead of the curve when there are fewer than two usable readings"

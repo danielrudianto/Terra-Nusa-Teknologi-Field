@@ -64,10 +64,23 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     if (_scroll.hasClients) _scroll.jumpTo(0);
   }
 
+  /// Keping saringan.
+  ///
+  /// `drilling` dan `casting` SENGAJA bertumpang dengan tiga keping lama —
+  /// titik yang sedang dibor juga "belum dibor", dan yang sedang dicor juga
+  /// "sudah dibor". Keduanya menjawab pertanyaan yang berbeda: tiga keping
+  /// lama menanyakan SUDAH SAMPAI MANA lubangnya, dua keping baru
+  /// menanyakan ADA YANG SEDANG MENGERJAKANNYA SEKARANG. Dipaksa saling
+  /// meniadakan, "belum dibor" akan kehilangan titik yang rignya justru
+  /// sedang berdiri di sana.
+  ///
+  /// Diminta Daniel, 20 Oktober 2026.
   static bool _inFilter(FieldPilePoint pt, String filter) => switch (filter) {
         'undrilled' => pt.stage == 'belum_bor' || pt.stage == 'sedang_bor',
         'drilled' => pt.stage == 'sudah_bor' || pt.stage == 'berjalan',
         'cast' => pt.stage == 'selesai' || pt.stage == 'sudah_cor',
+        'drilling' => pt.stage == 'sedang_bor',
+        'casting' => pt.stage == 'berjalan',
         _ => true,
       };
 
@@ -162,7 +175,14 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                             for (final (k, l) in [
                               ('all', t(context).filterAll),
                               ('undrilled', t(context).filterUndrilled),
+                              // Yang SEDANG dikerjakan ditaruh tepat di
+                              // sebelah keadaan lubangnya, bukan di ujung:
+                              // yang mencari "siapa yang lagi kerja
+                              // sekarang" tidak menggulir sampai habis
+                              // untuk menemukannya.
+                              ('drilling', t(context).filterDrilling),
                               ('drilled', t(context).filterDrilled),
+                              ('casting', t(context).filterCasting),
                               ('cast', t(context).filterCast),
                             ]) ...[
                               ChoiceChip(
@@ -386,6 +406,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       ? null
                       : ((pt.castingVolumeM3 ?? 0) / pt.plannedTheoreticalVolumeM3).clamp(0.0, 1.0),
                   kapan: pt.castingLastAt,
+                  berjalan: pt.stage == 'berjalan',
                 ),
                 if (pt.castingHeldElsewhere && allows && pt.serverCastingUuid != null) ...[
                   const SizedBox(height: 10),
@@ -419,6 +440,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       ? null
                       : ((pt.drillLogDeepestM ?? 0) / g.plannedDrillLengthM).clamp(0.0, 1.0),
                   kapan: pt.drillLogLastAt,
+                  berjalan: pt.stage == 'sedang_bor',
                 ),
                 if (allows && pt.serverDrillLogUuid != null) ...[
                   const SizedBox(height: 10),
@@ -460,14 +482,25 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                         ? null
                         : ((pt.castingVolumeM3 ?? 0) / pt.plannedTheoreticalVolumeM3).clamp(0.0, 1.0),
                     kapan: pt.castingLastAt,
+                    berjalan: pt.stage == 'berjalan',
                   ),
-              if (!drilled && allows && !elsewhere)
+              // JARAK SEBELUM BANNER INI, bukan sesudah tombol di atasnya.
+              //
+              // Dilaporkan Daniel, 20 Okt 2026: tombol "Lanjutkan di HP ini
+              // (kode oper)" menempel pada banner "Catat bor dulu".
+              // Jaraknya ditaruh di sini supaya ia ikut muncul dan hilang
+              // bersama bannernya — dipasang sesudah tombolnya, ia akan
+              // menyisakan ruang kosong menggantung pada titik yang tidak
+              // punya banner ini.
+              if (!drilled && allows && !elsewhere) ...[
+                const SizedBox(height: 10),
                 TerraBanner(
                   kind: BannerKind.info,
                   icon: Icons.straighten,
                   title: drillLogOpen ? t(context).stageDrilling : t(context).drillFirstTitle,
                   body: drillLogOpen ? t(context).castAfterDrillLog : t(context).castAfterDrilled,
                 ),
+              ],
               if (!allows)
                 TerraBanner(kind: BannerKind.info, title: t(context).viewOnlyTitle, body: t(context).viewOnlyCastBody)
               else ...[
@@ -645,8 +678,11 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
   }
 
   /// Koordinat tersimpan sebagai teks isian; kosong bila belum ada.
-  static String _koordText(double? v) =>
-      v == null ? '' : v.toStringAsFixed(3).replaceAll('.', ',');
+  /// Nilai AWAL isian koordinat — ikut berkelompok ribuan, sama dengan
+  /// yang dihasilkan `KoordinatInputFormatter` saat diketik. Dibiarkan
+  /// polos, angka yang sudah tersimpan tampil berbeda dari angka yang baru
+  /// diketik di isian yang sama.
+  static String _koordText(double? v) => v == null ? '' : formatKoordinat(v);
 
   /// Mark drilled, with the ground level (GS) measured at the hole.
   ///
@@ -764,7 +800,7 @@ class _DrillDialogState extends State<_DrillDialog> {
   }
 
 
-  void _submit() {
+  Future<void> _submit() async {
     final depth = parseNumber(_depthInput.text);
     final gsText = _gsInput.text.trim();
     final gs = gsText.isEmpty ? null : parseNumber(gsText);
@@ -804,11 +840,27 @@ class _DrillDialogState extends State<_DrillDialog> {
       setState(() => _problem = salahKoord);
       return;
     }
+    // PERINGATAN KERAS simpangan — sesudah seluruh pemeriksaan lain lulus.
+    //
+    // Ditanya lebih awal, yang kedalamannya masih salah ketik sudah
+    // terlanjur menjawab pertanyaan berat soal simpangan, lalu harus
+    // menjawabnya lagi sesudah membetulkan hal lain.
+    if (!await lanjutkanMeskiSimpang(
+      context,
+      designX: widget.designX,
+      designY: widget.designY,
+      xText: _xInput.text,
+      yText: _yInput.text,
+      toleranceMm: widget.toleranceMm,
+    )) {
+      return;
+    }
+    if (!context.mounted) return;
     Navigator.pop(context, (
       depth: depth,
       groundLevel: gs,
-      actualX: parseNumber(_xInput.text),
-      actualY: parseNumber(_yInput.text),
+      actualX: parseKoordinat(_xInput.text),
+      actualY: parseKoordinat(_yInput.text),
     ));
   }
 
@@ -983,14 +1035,35 @@ class _SelesaiCorCard extends StatelessWidget {
 }
 
 class _KemajuanCard extends StatelessWidget {
-  const _KemajuanCard({required this.label, required this.utama, required this.rasio, required this.kapan});
+  const _KemajuanCard({
+    required this.label,
+    required this.utama,
+    required this.rasio,
+    required this.kapan,
+    this.berjalan = false,
+  });
 
   final String label;
   final String? utama;
   final double? rasio;
   final DateTime? kapan;
 
+  /// Lognya MASIH TERBUKA. Hanya dengan begitu "berhenti" berarti apa-apa:
+  /// pada log yang sudah ditutup, catatan terakhir memang sudah lama dan
+  /// itu bukan berhenti melainkan selesai.
+  final bool berjalan;
+
   static const _basi = Duration(hours: 1);
+
+  /// Tidak ada kemajuan selama ini = sedang BERHENTI.
+  ///
+  /// Diminta Daniel, 20 Oktober 2026: "kalau lagi berhenti atau istirahat
+  /// tolong dikasih keterangan pada saat di view dari bottom sheet".
+  ///
+  /// Lima belas menit — ambang yang SAMA dengan `menitBerhenti` pada
+  /// ringkasan kurva, supaya lembar ini dan layar Pantau tidak pernah
+  /// menyatakan hal yang berbeda tentang titik yang sama.
+  static const _berhenti = Duration(minutes: 15);
 
   @override
   Widget build(BuildContext context) {
@@ -1050,6 +1123,34 @@ class _KemajuanCard extends StatelessWidget {
               ),
             ],
           ),
+          // KETERANGAN BERHENTI, di bawah jam catatan terakhirnya.
+          //
+          // "terakhir 16:09 · 1 jam lalu" pada log yang masih terbuka dapat
+          // dibaca dua cara: rig sedang berhenti, atau HP-nya yang
+          // tertinggal mengirim. Keduanya menuntut tindakan yang berbeda,
+          // jadi layar ini menyebutkan yang mana.
+          if (berjalan && umur != null && umur > _berhenti) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(Icons.pause_circle_outline, size: 14, color: w.warnFg),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    t(context).progressIdle(
+                      formatTime(k!),
+                      formatDuration(umur),
+                    ),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: w.warnFg,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 2),
           Text(t(context).progressAsSent, style: TextStyle(fontSize: 11.5, color: w.faint, height: 1.35)),
         ],

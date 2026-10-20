@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../core/util/format.dart';
 
 /// KEDALAMAN vs WAKTU untuk satu log bor.
@@ -255,6 +257,31 @@ List<RuasBor> gabungBerhenti(List<RuasBor> ruas) {
     ));
   }
   return hasil;
+}
+
+/// Kedalaman di DASAR sumbu kurva.
+///
+/// DIMINTA DANIEL, 19 Oktober 2026: "chart yang + 5 meter mau kasih".
+///
+/// Sumbu yang berhenti di bacaan terdalam hanya menjawab "bagaimana bentuk
+/// pengeborannya". Sumbu yang turun sampai rencana menjawab pertanyaan yang
+/// sebenarnya dibawa ke lapangan: SUDAH SAMPAI MANA DARI YANG
+/// DIRENCANAKAN — dan jaraknya ke garis rencana terbaca langsung tanpa
+/// menghitung.
+///
+/// LIMA METER DI BAWAH RENCANA, bukan pas di rencana: titik yang dibor
+/// sedikit lewat rencana — hal yang biasa — akan menyentuh tepi bawah dan
+/// terbaca sebagai TERPOTONG, bukan sebagai lewat.
+///
+/// Tanpa rencana (titik yang elevasinya belum diisi), sumbunya menyesuaikan
+/// bacaan terdalam: lebih baik sumbu yang menyesuaikan diri daripada sumbu
+/// dengan angka karangan.
+double skalaKedalaman({required double? rencanaM, required double kedalamanM}) {
+  const lega = 5.0;
+  if (rencanaM != null && rencanaM > 0) {
+    return math.max(rencanaM + lega, kedalamanM + 1);
+  }
+  return math.max(kedalamanM * 1.12, 1.0);
 }
 
 /// Angka ringkasan di atas kurvanya.

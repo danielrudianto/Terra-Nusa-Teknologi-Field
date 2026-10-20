@@ -1085,6 +1085,93 @@
   "@denahEmptyBody": {
       "description": "denahEmptyBody"
   },
+  "drillPlanRef": "{v} planned",
+  "@drillPlanRef": {
+    "description": "drillPlanRef",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationStopTitle": "Deviation {v} is beyond tolerance",
+  "@deviationStopTitle": {
+      "description": "deviationStopTitle",
+      "placeholders": {
+          "v": {
+              "type": "String"
+          }
+      }
+  },
+  "deviationStopBody": "The project tolerance is {batas}; this point is {lewat} beyond it. Check the measurement and the design coordinates before the hole is poured — once it is, the only remaining option is strengthening, and that is not a decision made from the phone.",
+  "@deviationStopBody": {
+      "description": "deviationStopBody",
+      "placeholders": {
+          "batas": {
+              "type": "String"
+          },
+          "lewat": {
+              "type": "String"
+          }
+      }
+  },
+  "deviationStopSave": "Save as is",
+  "@deviationStopSave": {
+      "description": "deviationStopSave"
+  },
+  "deviationStopRecheck": "Check again",
+  "@deviationStopRecheck": {
+      "description": "deviationStopRecheck"
+  },
+  "filterDrilling": "Being drilled",
+  "@filterDrilling": {
+    "description": "filterDrilling"
+  },
+  "filterCasting": "Being poured",
+  "@filterCasting": {
+    "description": "filterCasting"
+  },
+  "progressIdle": "Stopped since {jam} · {lama} with no new reading",
+  "@progressIdle": {
+    "description": "progressIdle",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      },
+      "lama": {
+        "type": "String"
+      }
+    }
+  },
+  "readingTableTitle": "Readings ({n})",
+  "@readingTableTitle": {
+      "description": "readingTableTitle",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          }
+      }
+  },
+  "readingColTime": "Time",
+  "@readingColTime": {
+      "description": "readingColTime"
+  },
+  "readingColDepth": "Depth",
+  "@readingColDepth": {
+      "description": "readingColDepth"
+  },
+  "readingColAdded": "Added",
+  "@readingColAdded": {
+      "description": "readingColAdded"
+  },
+  "readingColRate": "Rate",
+  "@readingColRate": {
+      "description": "readingColRate"
+  },
+  "readingNotPlotted": "Not on the curve — its time or depth cannot be read.",
+  "@readingNotPlotted": {
+      "description": "readingNotPlotted"
+  },
   "curveNeedsTwo": "The curve needs at least two readings whose time and depth can be read.",
   "@curveNeedsTwo": {
     "description": "Shown instead of the curve when there are fewer than two usable readings"

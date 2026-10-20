@@ -11,7 +11,6 @@ import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
-import '../drilling/bor_section_view.dart';
 import '../drilling/bor_kurva_view.dart';
 import 'calc/pile_snapshot.dart';
 import 'pile_section_view.dart';
@@ -337,7 +336,7 @@ class _PantauCor extends StatelessWidget {
 }
 
 /// Pengeboran yang sedang berjalan: kurva kedalaman yang tumbuh tiap bacaan.
-class _PantauBor extends StatelessWidget {
+class _PantauBor extends StatefulWidget {
   const _PantauBor({required this.bor, this.titik});
 
   final Map<String, Object?> bor;
@@ -348,8 +347,26 @@ class _PantauBor extends StatelessWidget {
   final Map<String, Object?>? titik;
 
   @override
+  State<_PantauBor> createState() => _PantauBorState();
+}
+
+class _PantauBorState extends State<_PantauBor> {
+  /// `waktu` bacaan yang sedang disorot — satu nilai untuk DUA tampilan.
+  ///
+  /// DIMINTA DANIEL, 20 Oktober 2026: "kalau diklik titiknya, di tabelnya
+  /// di-highlight".
+  ///
+  /// Disimpan di INDUK, bukan di kurva atau di tabel: begitu masing-masing
+  /// menyimpan pilihannya sendiri, keduanya dapat menyorot bacaan yang
+  /// berbeda pada saat yang sama — dan layar yang menyorot dua hal sekaligus
+  /// tidak menjawab apa pun.
+  int? _pilih;
+
+  @override
   Widget build(BuildContext context) {
     final w = context.colors;
+    final bor = widget.bor;
+    final titik = widget.titik;
     final bacaan = [
       for (final e in (bor['entries'] as List?) ?? const []) (e as Map).cast<String, Object?>(),
     ];
@@ -374,32 +391,30 @@ class _PantauBor extends StatelessWidget {
         const SizedBox(height: 4),
         _Umur(pada: jam.isEmpty ? null : jam.last),
         const SizedBox(height: 14),
-        // PENAMPANG BERANIMASI di atas kurvanya.
+        // KURVA SAJA — penampang beranimasinya DIBATALKAN.
         //
-        // Kurva menjawab "selama ini bagaimana"; penampang menjawab
-        // "sekarang sampai mana". Yang membuka layar ini dari kantor
-        // menanyakan yang kedua lebih dulu, dan jawabannya tidak boleh
-        // menuntut menakar sumbu grafik.
-        // Tanpa satu pun bacaan tidak ada yang dapat digambar: lubang
-        // sedalam nol terbaca sebagai lubang yang belum disentuh, padahal
-        // yang sebenarnya terjadi adalah belum ada yang dicatat.
-        if (ringkas.jumlahBacaan > 0) ...[
-          BorSectionView(
-            kedalamanM: ringkas.kedalamanM ?? 0,
-            rencanaM: toDoubleOrNull(titik?['panjangBorRencanaM']),
-            berjalan: !selesai,
-            // DIAM = berhenti yang sedang berlangsung: ruas terakhir mandek
-            // dan sudah melewati ambangnya. Animasi yang tetap berputar
-            // ketika rig sebenarnya berhenti adalah layar yang berbohong
-            // dengan cara paling meyakinkan.
-            diam: ringkas.berhenti.isNotEmpty &&
-                bacaanTitik.isNotEmpty &&
-                ringkas.berhenti.last.sampaiWaktu == bacaanTitik.last.waktu,
-          ),
-          const SizedBox(height: 14),
-        ],
+        // Dicoba 19 Oktober 2026, lalu dicabut hari itu juga atas
+        // permintaan Daniel: "setelah dicobain mah gajadi deh bang, jelek
+        // banget pakai icon animasi animasi gitu, ga cocok". Dicatat di
+        // sini supaya tidak ada yang mengusulkannya lagi sebagai ide baru.
+        //
+        // YANG DIPERTAHANKAN dari percobaan itu dua, dan keduanya soal
+        // angka, bukan hiasan: sumbu kedalaman turun sampai RENCANA + 5 m,
+        // dan garis acuan tip rencana di kurvanya.
         if (bacaanTitik.length >= 2)
-          KurvaBor(titik: bacaanTitik, ringkas: ringkas)
+          KurvaBor(
+            titik: bacaanTitik,
+            ringkas: ringkas,
+            rencanaM: toDoubleOrNull(titik?['panjangBorRencanaM']),
+            skalaDalamM: skalaKedalaman(
+              rencanaM: toDoubleOrNull(titik?['panjangBorRencanaM']),
+              kedalamanM: ringkas.kedalamanM ?? 0,
+            ),
+            waktuDipilih: _pilih,
+            // Ketukan KEDUA pada bacaan yang sama melepas sorotannya.
+            onKetuk: (waktu) =>
+                setState(() => _pilih = _pilih == waktu ? null : waktu),
+          )
         else
           TerraBanner(
             kind: BannerKind.info,
@@ -415,6 +430,15 @@ class _PantauBor extends StatelessWidget {
             nilai: '${formatMeters(ringkas.lajuRataMPerJam)}/jam',
           ),
         _Angka(label: t(context).watchReadings, nilai: '${ringkas.jumlahBacaan}'),
+        if (bacaan.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          _TabelBacaan(
+            bacaan: bacaan,
+            dipilih: _pilih,
+            onPilih: (waktu) =>
+                setState(() => _pilih = _pilih == waktu ? null : waktu),
+          ),
+        ],
       ],
     );
   }
@@ -437,6 +461,240 @@ class _Angka extends StatelessWidget {
           Expanded(child: Text(label, style: TextStyle(color: w.muted))),
           Text(nilai, style: TextStyle(fontWeight: FontWeight.w800, color: w.ink, fontSize: 16)),
         ],
+      ),
+    );
+  }
+}
+
+/// DAFTAR BACAAN yang dapat dibuka-tutup.
+///
+/// DIMINTA DANIEL, 20 Oktober 2026: "waktu pantau pengeboran dikasih table
+/// deh inputnya apa saja, expandable".
+///
+/// Kurva menjawab "bagaimana bentuknya", tabel menjawab "apa persisnya yang
+/// diketik orang di sana" — dan pertanyaan kedua itulah yang muncul begitu
+/// ada angka yang terlihat ganjil pada kurvanya.
+///
+/// TERTUTUP secara bawaan: layar ini dibuka untuk melihat keadaan sekarang,
+/// bukan untuk membaca tujuh baris angka. Yang memerlukannya membukanya
+/// sekali.
+///
+/// BACAAN YANG TIDAK TERGAMBAR IKUT DIDAFTAR, ditandai. Lihat
+/// [barisBacaan]: bacaan yang jam atau kedalamannya tidak terbaca dibuang
+/// dari kurvanya — benar untuk kurvanya — tetapi dibuang juga dari sini, ia
+/// tidak muncul di layar mana pun dan tidak akan pernah dibetulkan siapa
+/// pun, sementara kedalaman akhir titik itu diam-diam tetap salah.
+class _TabelBacaan extends StatefulWidget {
+  const _TabelBacaan({
+    required this.bacaan,
+    this.dipilih,
+    this.onPilih,
+  });
+
+  final List<Map<String, Object?>> bacaan;
+
+  /// `waktu` bacaan yang sedang disorot — nilainya milik induk, dipakai
+  /// bersama kurvanya.
+  final int? dipilih;
+
+  final void Function(int waktu)? onPilih;
+
+  @override
+  State<_TabelBacaan> createState() => _TabelBacaanState();
+}
+
+class _TabelBacaanState extends State<_TabelBacaan> {
+  bool _buka = false;
+
+  /// MEMBUKA SENDIRI saat ada bacaan yang disorot dari kurvanya.
+  ///
+  /// Menyorot baris di dalam tabel yang tertutup sama saja dengan tidak
+  /// menyorot apa pun: yang mengetuk kurva tidak diberi tahu bahwa
+  /// jawabannya ada di balik tajuk yang masih terlipat.
+  @override
+  void didUpdateWidget(_TabelBacaan old) {
+    super.didUpdateWidget(old);
+    if (widget.dipilih != null && widget.dipilih != old.dipilih && !_buka) {
+      setState(() => _buka = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final baris = barisBacaan(widget.bacaan);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: w.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: w.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => setState(() => _buka = !_buka),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+              child: Row(
+                children: [
+                  Icon(Icons.list_alt, size: 18, color: w.muted),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      t(context).readingTableTitle('${baris.length}'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: w.ink,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Icon(_buka ? Icons.expand_less : Icons.expand_more,
+                      color: w.muted),
+                ],
+              ),
+            ),
+          ),
+          if (_buka) ...[
+            Divider(height: 1, color: w.line),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+              child: Column(
+                children: [
+                  _BarisTabel(
+                    jam: t(context).readingColTime,
+                    dalam: t(context).readingColDepth,
+                    tambah: t(context).readingColAdded,
+                    laju: t(context).readingColRate,
+                    kepala: true,
+                  ),
+                  for (final b in baris) ...[
+                    Divider(height: 11, color: w.line),
+                    _BarisTabel(
+                      disorot: b.waktu != null && b.waktu == widget.dipilih,
+                      onKetuk: b.waktu == null || widget.onPilih == null
+                          ? null
+                          : () => widget.onPilih!(b.waktu!),
+                      jam: b.waktu == null
+                          ? '—'
+                          : formatTime(
+                              DateTime.fromMillisecondsSinceEpoch(b.waktu!)),
+                      dalam: formatMeters(b.dalam),
+                      tambah: b.deltaM == null
+                          ? '—'
+                          : '${b.deltaM! >= 0 ? '+' : ''}${formatMeters(b.deltaM)}',
+                      laju: b.lajuMPerJam == null
+                          ? '—'
+                          : t(context).metresPerHour(b.lajuMPerJam!
+                              .toStringAsFixed(1)
+                              .replaceAll('.', ',')),
+                      // Ruas MUNDUR disorot: bor yang diangkat lalu dibaca
+                      // lagi sah, tetapi salah ketik juga menghasilkan
+                      // bentuk yang sama — dan hanya yang ada di lokasi
+                      // dapat membedakannya.
+                      sorot: (b.deltaM ?? 0) < 0,
+                      catatan: b.bacaan['note']?.toString(),
+                      takTergambar: !b.tergambar,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BarisTabel extends StatelessWidget {
+  const _BarisTabel({
+    required this.jam,
+    required this.dalam,
+    required this.tambah,
+    required this.laju,
+    this.kepala = false,
+    this.sorot = false,
+    this.catatan,
+    this.takTergambar = false,
+    this.disorot = false,
+    this.onKetuk,
+  });
+
+  final String jam;
+  final String dalam;
+  final String tambah;
+  final String laju;
+  final bool kepala;
+  final bool sorot;
+  final String? catatan;
+  final bool takTergambar;
+
+  /// Bacaan ini yang sedang dipilih di kurvanya.
+  final bool disorot;
+
+  final VoidCallback? onKetuk;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final gaya = TextStyle(
+      fontSize: kepala ? 11.5 : 13,
+      fontWeight: kepala ? FontWeight.w700 : FontWeight.w500,
+      color: kepala
+          ? w.faint
+          : sorot
+              ? w.warnFg
+              : w.ink,
+    );
+    final isi = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            SizedBox(width: 54, child: Text(jam, style: gaya)),
+            Expanded(child: Text(dalam, style: gaya, textAlign: TextAlign.right)),
+            SizedBox(
+              width: 78,
+              child: Text(tambah, style: gaya, textAlign: TextAlign.right),
+            ),
+            SizedBox(
+              width: 86,
+              child: Text(laju, style: gaya, textAlign: TextAlign.right),
+            ),
+          ],
+        ),
+        if (catatan != null && catatan!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(catatan!,
+                style: TextStyle(fontSize: 12, color: w.muted)),
+          ),
+        if (takTergambar)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(t(context).readingNotPlotted,
+                style: TextStyle(fontSize: 12, color: w.badFg)),
+          ),
+      ],
+    );
+
+    // Barisnya DAPAT DIKETUK juga — menyorot dua arah. Yang membaca tabel
+    // lalu bertanya "yang ini di sebelah mana kurvanya" mendapat jawabannya
+    // dengan gerakan yang sama.
+    return InkWell(
+      onTap: onKetuk,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: disorot ? w.brandSoft : null,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: isi,
       ),
     );
   }

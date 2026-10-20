@@ -350,8 +350,11 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     return toDoubleOrNull(p?['pileToleranceMm']);
   }
 
-  static String _koordText(double? v) =>
-      v == null ? '' : v.toStringAsFixed(3).replaceAll('.', ',');
+  /// Nilai AWAL isian koordinat — ikut berkelompok ribuan, sama dengan
+  /// yang dihasilkan `KoordinatInputFormatter` saat diketik. Dibiarkan
+  /// polos, angka yang sudah tersimpan tampil berbeda dari angka yang baru
+  /// diketik di isian yang sama.
+  static String _koordText(double? v) => v == null ? '' : formatKoordinat(v);
 
   Future<void> _finish() async {
     if (_operatorUuid == null && !await _chooseOperator()) return;
@@ -1237,7 +1240,7 @@ class _FinishDialogState extends State<_FinishDialog> {
     return gs == null || widget.tipLevel == null ? null : gs - widget.tipLevel!;
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     double? gs;
     if (widget.gsRequired) {
       gs = parseNumber(_gs.text);
@@ -1256,10 +1259,26 @@ class _FinishDialogState extends State<_FinishDialog> {
       setState(() => _problem = salahKoord);
       return;
     }
+    // PERINGATAN KERAS simpangan — sesudah seluruh pemeriksaan lain lulus.
+    //
+    // Ditanya lebih awal, yang GS-nya masih salah ketik sudah terlanjur
+    // menjawab pertanyaan berat soal simpangan, lalu harus menjawabnya
+    // lagi sesudah membetulkan hal lain.
+    if (!await lanjutkanMeskiSimpang(
+      context,
+      designX: widget.designX,
+      designY: widget.designY,
+      xText: _xInput.text,
+      yText: _yInput.text,
+      toleranceMm: widget.toleranceMm,
+    )) {
+      return;
+    }
+    if (!context.mounted) return;
     Navigator.pop(context, (
       groundLevel: gs,
-      actualX: parseNumber(_xInput.text),
-      actualY: parseNumber(_yInput.text),
+      actualX: parseKoordinat(_xInput.text),
+      actualY: parseKoordinat(_yInput.text),
     ));
   }
 

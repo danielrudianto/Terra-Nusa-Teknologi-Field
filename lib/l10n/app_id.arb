@@ -4903,6 +4903,93 @@
   "@denahEmptyBody": {
       "description": "denahEmptyBody"
   },
+  "drillPlanRef": "{v} rencana",
+  "@drillPlanRef": {
+    "description": "drillPlanRef",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "deviationStopTitle": "Simpangan {v} melewati toleransi",
+  "@deviationStopTitle": {
+      "description": "deviationStopTitle",
+      "placeholders": {
+          "v": {
+              "type": "String"
+          }
+      }
+  },
+  "deviationStopBody": "Toleransi proyek {batas}; titik ini lewat {lewat}. Periksa dulu hasil ukur dan koordinat rencananya sebelum lubang ini dicor — sesudah dicor, satu-satunya pilihan yang tersisa adalah perkuatan, dan itu bukan keputusan dari HP.",
+  "@deviationStopBody": {
+      "description": "deviationStopBody",
+      "placeholders": {
+          "batas": {
+              "type": "String"
+          },
+          "lewat": {
+              "type": "String"
+          }
+      }
+  },
+  "deviationStopSave": "Simpan apa adanya",
+  "@deviationStopSave": {
+      "description": "deviationStopSave"
+  },
+  "deviationStopRecheck": "Periksa lagi",
+  "@deviationStopRecheck": {
+      "description": "deviationStopRecheck"
+  },
+  "filterDrilling": "Sedang dibor",
+  "@filterDrilling": {
+    "description": "filterDrilling"
+  },
+  "filterCasting": "Sedang dicor",
+  "@filterCasting": {
+    "description": "filterCasting"
+  },
+  "progressIdle": "Berhenti sejak {jam} · {lama} tanpa bacaan baru",
+  "@progressIdle": {
+    "description": "progressIdle",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      },
+      "lama": {
+        "type": "String"
+      }
+    }
+  },
+  "readingTableTitle": "Bacaan ({n})",
+  "@readingTableTitle": {
+      "description": "readingTableTitle",
+      "placeholders": {
+          "n": {
+              "type": "String"
+          }
+      }
+  },
+  "readingColTime": "Jam",
+  "@readingColTime": {
+      "description": "readingColTime"
+  },
+  "readingColDepth": "Kedalaman",
+  "@readingColDepth": {
+      "description": "readingColDepth"
+  },
+  "readingColAdded": "Tambah",
+  "@readingColAdded": {
+      "description": "readingColAdded"
+  },
+  "readingColRate": "Laju",
+  "@readingColRate": {
+      "description": "readingColRate"
+  },
+  "readingNotPlotted": "Tidak tergambar di kurva — jam atau kedalamannya tidak terbaca.",
+  "@readingNotPlotted": {
+      "description": "readingNotPlotted"
+  },
   "curveNeedsTwo": "Kurvanya perlu sedikitnya dua bacaan yang jam dan kedalamannya terbaca.",
   "@curveNeedsTwo": {
     "description": "Shown instead of the curve when there are fewer than two usable readings"

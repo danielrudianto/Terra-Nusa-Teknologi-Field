@@ -45,6 +45,42 @@ int? toIntOrNull(Object? v) {
 /// Number typed by the user: both comma AND period are accepted as the decimal separator.
 double? parseNumber(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
 
+/// Koordinat yang diketik DENGAN pemisah ribuan.
+///
+/// `"792.345,120"` -> `792345.12`. Titik dibuang sebagai pemisah ribuan,
+/// koma menjadi titik desimal.
+///
+/// TIDAK dapat memakai [parseNumber]: di sana titik adalah pemisah DESIMAL,
+/// jadi "792.345" akan terbaca 792,345 — titik yang melenceng tujuh ratus
+/// sembilan puluh satu kilometer, dan tidak ada apa pun di layar yang akan
+/// menunjukkannya.
+double? parseKoordinat(String text) {
+  final bersih = text.trim().replaceAll('.', '').replaceAll(',', '.');
+  return bersih.isEmpty ? null : double.tryParse(bersih);
+}
+
+/// "792.345,120" — koordinat untuk DIBACA.
+///
+/// Pemisah ribuan bukan hiasan: satu digit kelebihan pada koordinat
+/// menggeser titiknya sejauh satu kilometer, dan deretan tujuh angka tanpa
+/// kelompok tidak dapat diperiksa dengan mata.
+String formatKoordinat(double? v, {int decimals = 3}) {
+  if (v == null) return '–';
+  final negatif = v < 0;
+  final teks = v.abs().toStringAsFixed(decimals);
+  final bagian = teks.split('.');
+  final bulat = bagian.first;
+  final buf = StringBuffer();
+  final sisa = bulat.length % 3;
+  if (sisa > 0) buf.write(bulat.substring(0, sisa));
+  for (var i = sisa; i < bulat.length; i += 3) {
+    if (buf.isNotEmpty) buf.write('.');
+    buf.write(bulat.substring(i, i + 3));
+  }
+  final pecahan = bagian.length > 1 ? ',${bagian[1]}' : '';
+  return '${negatif ? '-' : ''}$buf$pecahan';
+}
+
 final _timeFormat = DateFormat('HH:mm');
 final _dateFormat = DateFormat('EEE, d MMM yyyy', 'id');
 
