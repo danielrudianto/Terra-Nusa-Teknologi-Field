@@ -813,7 +813,7 @@
   "sheetConcrete": "Concrete grade",
   "sheetConcreteBody": "Only points already cast, with their compressive strength.",
   "sheetOperators": "Operator recap",
-  "sheetOperatorsBody": "Metres drilled per operator.",
+  "sheetOperatorsBody": "Actual vs design metres per operator, plus one sheet per operator.",
   "pickAtLeastOneSheet": "Pick at least one sheet.",
   "download": "Download",
   "retakePhoto": "Retake",
@@ -1528,5 +1528,13 @@
   "shareNoPhoto": "The delivery ticket photo could not be fetched — sharing the text only.",
   "@shareNoPhoto": {
     "description": "shareNoPhoto"
+  },
+  "sheetSupplier": "Concrete by supplier",
+  "@sheetSupplier": {
+    "description": "sheetSupplier"
+  },
+  "sheetSupplierBody": "One sheet per supplier: trucks, delivery tickets, volume, and totals.",
+  "@sheetSupplierBody": {
+    "description": "sheetSupplierBody"
   }
 }

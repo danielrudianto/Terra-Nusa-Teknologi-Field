@@ -17,6 +17,50 @@ class Notifications {
   Notifications._();
 
   static final _plugin = FlutterLocalNotificationsPlugin();
+
+  // ===========================================================================
+  // KANAL PENGINGAT — BERBUNYI, bukan bergetar saja
+  // ===========================================================================
+  //
+  // DIMINTA DANIEL, 21 Oktober 2026: "reminder kita kayanya masih kurang
+  // galak. kalau misalkan nih, kita jangan pakai getar doang deh, pakai
+  // ringtone default boleh ga?".
+  //
+  // KENAPA ID KANALNYA BERUBAH, DAN KENAPA ITU SATU-SATUNYA CARA
+  //
+  // Android MEMBEKUKAN setelan sebuah kanal pada saat kanal itu pertama
+  // dibuat. Suara, getar, dan tingkat kepentingannya tidak dapat diubah
+  // lagi oleh aplikasi — selamanya, pada HP yang sudah memasangnya.
+  // Menambahkan `sound:` pada kanal lama tidak menghasilkan apa pun: tidak
+  // ada galat, tidak ada tanda, dan HP kru tetap hanya bergetar. Yang
+  // berubah hanya HP yang memasang aplikasi untuk PERTAMA kali.
+  //
+  // Karena itu kanalnya DIGANTI, bukan diubah; dan yang lama dihapus
+  // (lihat `init`) supaya tidak tertinggal di setelan Android sebagai
+  // kanal yang dapat diatur orang tetapi tidak pernah berbunyi lagi.
+  //
+  // MENAIKKAN VERSINYA LAGI: kalau kelak suaranya diubah, naikkan angkanya
+  // dan tambahkan id lama ke `_kanalUsang`. Menyunting setelan kanal yang
+  // sudah beredar tidak akan terjadi apa-apa.
+  static const _kanalBor = 'drill_reminder_v2';
+  static const _kanalCor = 'casting_reminder_v2';
+
+  /// Kanal versi lama yang setelannya sudah tidak dapat diperbaiki.
+  static const _kanalUsang = ['drill_reminder', 'casting_reminder'];
+
+  /// NADA DERING BAWAAN HP, bukan nada notifikasi.
+  ///
+  /// Nada notifikasi panjangnya sepersekian detik dan di saku celana, di
+  /// samping rig yang menyala, tidak terdengar sama sekali — itulah yang
+  /// membuat pengingatnya "kurang galak". Nada dering berbunyi panjang
+  /// sampai diambil orang.
+  ///
+  /// `content://settings/system/ringtone` adalah nada dering yang DIPILIH
+  /// pemilik HP, bukan berkas yang dibundel: yang memegangnya mengenali
+  /// bunyinya sendiri, dan tidak ada berkas audio yang perlu ikut di APK.
+  static const _nadaDering = UriAndroidNotificationSound(
+    'content://settings/system/ringtone',
+  );
   static const _stopwatchId = 7001;
   static const _reminderId = 7002;
   static const _handoverId = 7003;
@@ -68,6 +112,22 @@ class Notifications {
       // yaitu persis yang hendak dihindari.
       onDidReceiveBackgroundNotificationResponse: diLatar,
     );
+
+    // Kanal lama dibuang SEKALI, di sini. Dibiarkan, ia tetap tampil di
+    // setelan notifikasi Android — dan yang mencoba mengeraskannya di sana
+    // sedang mengatur kanal yang tidak dipakai lagi oleh apa pun.
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    for (final id in _kanalUsang) {
+      try {
+        // Parameter BERNAMA, seperti seluruh panggilan plugin ini
+        // (`show(id:)`, `cancel(id:)`): versi 22 memakai nama untuk semuanya.
+        await android?.deleteNotificationChannel(channelId: id);
+      } catch (_) {
+        // HP lama, atau kanalnya memang tidak pernah ada. Bukan alasan
+        // menggagalkan penyiapan notifikasi seluruhnya.
+      }
+    }
   }
 
   /// Android 13+: the notification permission is requested the first time it is needed.
@@ -186,12 +246,16 @@ class Notifications {
       payload: route,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
-          'casting_reminder',
+          _kanalCor,
           'Pengingat cor',
-          channelDescription: 'Getar saat satu TM sudah 20 menit belum selesai dicor',
-          importance: Importance.high,
-          priority: Priority.high,
+          channelDescription:
+              'Berbunyi dan bergetar saat satu TM sudah 20 menit belum selesai dicor',
+          importance: Importance.max,
+          priority: Priority.max,
+          enableVibration: true,
           vibrationPattern: _buzz,
+          playSound: true,
+          sound: _nadaDering,
           category: AndroidNotificationCategory.reminder,
           color: _brand,
           styleInformation: BigTextStyleInformation(body, contentTitle: title),
@@ -302,13 +366,16 @@ class Notifications {
 
   static NotificationDetails get _buzzDetails => NotificationDetails(
         android: AndroidNotificationDetails(
-          'casting_reminder',
+          _kanalCor,
           'Pengingat cor',
-          channelDescription: 'Getar saat satu TM sudah 20 menit belum selesai dicor',
-          importance: Importance.high,
-          priority: Priority.high,
+          channelDescription:
+              'Berbunyi dan bergetar saat satu TM sudah 20 menit belum selesai dicor',
+          importance: Importance.max,
+          priority: Priority.max,
           enableVibration: true,
           vibrationPattern: _buzz,
+          playSound: true,
+          sound: _nadaDering,
           category: AndroidNotificationCategory.reminder,
         ),
       );
@@ -452,13 +519,22 @@ class Notifications {
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
-            'drill_reminder',
+            _kanalBor,
             'Pengingat log bor',
-            channelDescription: 'Getar bila log bor yang berjalan 45 menit belum ada bacaan baru',
-            importance: i >= _drillIdleKeras ? Importance.max : Importance.high,
+            channelDescription:
+                'Berbunyi dan bergetar bila log bor yang berjalan 45 menit belum ada bacaan baru',
+            // `max` SELALU, bukan naik-turun menurut pengingat ke berapa.
+            // Tingkat kepentingan kanal ditentukan notifikasi PERTAMA yang
+            // memakainya lalu dibekukan Android; yang pertama menyala
+            // hampir selalu pengingat awal, sehingga kanalnya akan terkunci
+            // di `high` — dan pengingat keras yang seharusnya lebih galak
+            // tidak pernah lebih galak.
+            importance: Importance.max,
             priority: i >= _drillIdleKeras ? Priority.max : Priority.high,
             enableVibration: true,
             vibrationPattern: i >= _drillIdleKeras ? _buzzKeras : _buzz,
+            playSound: true,
+            sound: _nadaDering,
             category: AndroidNotificationCategory.reminder,
             actions: [
               // Satu-satunya jalan keluar yang sah. `showsUserInterface:

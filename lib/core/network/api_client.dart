@@ -180,9 +180,10 @@ class ApiClient {
 
   /// "Rekapitulasi Data Tiang" as .xlsx bytes. No [from] = since the start.
   ///
-  /// [sheets] names which of the three the server builds (tiang / beton /
-  /// operator). Empty means all three — which is also what an older server
-  /// does with the parameter it does not know, so neither side breaks.
+  /// [sheets] names which sheets the server builds (tiang / beton /
+  /// operator / pemasok). Empty means ALL of them — which is also what an
+  /// older server does with the parameter it does not know, so neither side
+  /// breaks, and a sheet added later reaches old phones that send nothing.
   Future<List<int>> reportExcel({
     DateTime? from,
     required DateTime to,

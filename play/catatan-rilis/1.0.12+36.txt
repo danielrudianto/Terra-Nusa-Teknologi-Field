@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.12 (36) — Pengingat berbunyi & lembar pemasok
+
+<id>
+• Pengingat log bor dan pengingat cor kini BERBUNYI dengan nada dering HP, bukan bergetar saja. Di saku celana, di samping rig, getar saja tidak terasa.
+• Unduhan rekap dari HP kini punya pilihan lembar yang sama dengan web, termasuk "Beton per pemasok" — tiap pemasok satu lembar beserta surat jalan dan totalnya.
+• Rekap operator kini memuat meter aktual dan meter desain berdampingan, plus satu lembar untuk tiap operator berisi tiap titik yang dikerjakannya.
+</id>
+<en-US>
+• Drill-log and pour reminders now RING using the phone's ringtone instead of only vibrating. In a trouser pocket beside a running rig, a buzz is not felt.
+• Downloading the recap from the phone now offers the same sheets as the web, including "Concrete by supplier" — one sheet per supplier with delivery tickets and totals.
+• The operator recap now carries actual and design metres side by side, plus one sheet per operator listing every point they drilled.
+</en-US>
+<zh-CN>
+• 钻进日志与浇筑提醒现在会使用手机铃声发出声响，而不仅是振动。在裤袋里、钻机旁，振动根本感觉不到。
+• 手机端下载汇总现与网页端提供相同的工作表选项，包括"按供应商分的混凝土"——每个供应商一张表，含送货单与合计。
+• 操作员汇总新增实际米数与设计米数并列显示，并为每位操作员附上其所钻全部桩点的明细表。
+</zh-CN>

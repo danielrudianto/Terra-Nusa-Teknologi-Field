@@ -445,7 +445,16 @@ class _ExcelOptionsSheet extends StatefulWidget {
 
 class _ExcelOptionsSheetState extends State<_ExcelOptionsSheet> {
   bool _whole = false;
-  final _sheets = {'tiang': true, 'beton': true, 'operator': true};
+  // Daftar lembar yang SAMA dengan layar web (`LEMBAR_REKAP`). Berbeda,
+  // unduhan dari HP diam-diam kekurangan lembar yang sudah lama ada di
+  // berkas yang sama — dan yang mengunduhnya dari lapangan tidak punya
+  // cara mengetahuinya.
+  final _sheets = {
+    'tiang': true,
+    'beton': true,
+    'operator': true,
+    'pemasok': true,
+  };
 
   bool get _none => !_sheets.values.any((v) => v);
 
@@ -502,6 +511,7 @@ class _ExcelOptionsSheetState extends State<_ExcelOptionsSheet> {
               sheet('tiang', t(context).sheetPiles, t(context).sheetPilesBody),
               sheet('beton', t(context).sheetConcrete, t(context).sheetConcreteBody),
               sheet('operator', t(context).sheetOperators, t(context).sheetOperatorsBody),
+              sheet('pemasok', t(context).sheetSupplier, t(context).sheetSupplierBody),
               if (_none)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),

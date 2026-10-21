@@ -1,0 +1,12 @@
+# Kode versi TERAKHIR yang sudah diunggah ke Play Console.
+#
+# Satu angka, dan hanya itu. Dibaca `scripts/versicek.py`, yang menolak
+# build dengan kode yang tidak lebih besar daripada angka ini — yaitu
+# penolakan yang selama ini baru datang dari Play Console SESUDAH
+# `flutter build appbundle` selesai.
+#
+# DIPERBARUI SAAT MENGUNGGAH, bukan saat menulis catatan rilis. Catatan
+# rilis ditulis ketika build disiapkan, jadi keberadaannya tidak
+# menyatakan apa pun tentang Play Console; hanya orang yang menekan
+# unggah yang tahu, dan angka inilah tempat ia menuliskannya.
+35

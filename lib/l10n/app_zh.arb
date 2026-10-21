@@ -813,7 +813,7 @@
   "sheetConcrete": "混凝土强度",
   "sheetConcreteBody": "仅已灌注的桩位及其抗压强度。",
   "sheetOperators": "操作员汇总",
-  "sheetOperatorsBody": "各操作员钻孔米数。",
+  "sheetOperatorsBody": "各操作员的实际与设计米数，另附每位操作员一张明细表。",
   "pickAtLeastOneSheet": "请至少选择一个工作表。",
   "download": "下载",
   "retakePhoto": "重拍",
@@ -1528,5 +1528,13 @@
   "shareNoPhoto": "无法获取送货单照片——仅分享文字。",
   "@shareNoPhoto": {
     "description": "shareNoPhoto"
+  },
+  "sheetSupplier": "按供应商分的混凝土",
+  "@sheetSupplier": {
+    "description": "sheetSupplier"
+  },
+  "sheetSupplierBody": "每个供应商一张表：车次、送货单、体积及合计。",
+  "@sheetSupplierBody": {
+    "description": "sheetSupplierBody"
   }
 }
