@@ -34,11 +34,35 @@ DUA HAL YANG DIPERIKSA
    kode yang LEBIH BESAR daripada versi repo — itu tanda nomornya lupa
    dinaikkan sesudah catatannya ditulis.
 
+3. ADA BUILD YANG BELUM TERCATAT TERUNGGAH.
+
+   Nomor 2 hanya sebaik catatan tangannya, dan 21-22 Okt 2026 catatan itu
+   meleset dua kali: build +37 dibuat dan diunggah, berkasnya tetap
+   tertulis 36, dan keesokan harinya pemeriksa ini berkata "0 masalah"
+   untuk kode yang sudah terpakai. Play Console yang menolaknya — lagi,
+   sesudah build selesai, yaitu persis kegagalan yang pemeriksa ini ada
+   untuk mencegahnya.
+
+   Jadi hasil build SETEMPAT ikut dibaca: kode versi tertinggi yang pernah
+   dibangun di folder `build/`. Bila kode itu lebih besar daripada yang
+   tercatat terunggah, ada build yang nasibnya tidak diketahui — mungkin
+   sudah naik ke Play dan lupa dicatat, mungkin dibatalkan. Keduanya perlu
+   dijawab orang, dan pemeriksa ini TIDAK dapat menebaknya.
+
+   Karena itu ia PENGINGAT, bukan masalah: "sudah pernah dibangun tetapi
+   belum diunggah" adalah keadaan yang sah (build gagal, build diulang),
+   dan menggagalkan pemeriksaan karenanya akan mengajari orang
+   mengabaikannya.
+
 CARA PAKAI
 
-    python3 scripts/versicek.py
+    python3 scripts/versicek.py                  # sebelum `flutter build`
+    python3 scripts/versicek.py --sudah-unggah   # SESUDAH unggah ke Play
 
-Dijalankan SEBELUM `flutter build`, bukan sesudah.
+`--sudah-unggah` menuliskan kode versi repo ke
+`play/terakhir-diunggah.txt`. Itu ada supaya tidak ada lagi angka yang
+perlu diketik tangan ke dalam berkas: langkah yang harus diingat manusia
+adalah langkah yang suatu hari terlewat — dan dua kali sudah.
 """
 
 from __future__ import annotations
@@ -91,6 +115,106 @@ def _kode_terbit() -> list[tuple[int, str]]:
     return sorted(hasil)
 
 
+def _kode_terbangun() -> tuple[int, str] | None:
+    """
+    (kode versi tertinggi yang pernah dibangun setempat, tanggalnya).
+
+    Dibaca dari `output-metadata.json` yang ditulis Gradle di bawah
+    `build/`. Jalurnya persisnya berubah antar versi AGP, jadi yang dicari
+    berkas BERNAMA itu di mana pun ia berada, bukan satu jalur tetap —
+    pemeriksa yang mati diam-diam karena jalurnya bergeser lebih buruk
+    daripada pemeriksa yang tidak ada.
+
+    None bila tidak ada hasil build sama sekali (klon baru, `flutter
+    clean`). Itu bukan masalah: tidak tahu berbeda dari tahu-tidak-ada.
+    """
+    import json
+    from datetime import datetime
+
+    akar_build = AKAR / "build"
+    if not akar_build.is_dir():
+        return None
+    tertinggi: int | None = None
+    waktu: float | None = None
+    for berkas in akar_build.rglob("output-metadata.json"):
+        try:
+            isi = json.loads(berkas.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        for unsur in isi.get("elements") or []:
+            kode = unsur.get("versionCode")
+            if isinstance(kode, int) and (tertinggi is None or kode > tertinggi):
+                tertinggi = kode
+                try:
+                    waktu = berkas.stat().st_mtime
+                except OSError:
+                    waktu = None
+    if tertinggi is None:
+        return None
+    kapan = (
+        datetime.fromtimestamp(waktu).strftime("%d %b %Y %H:%M")
+        if waktu
+        else "waktu tidak terbaca"
+    )
+    return (tertinggi, kapan)
+
+
+def pengingat() -> list[str]:
+    """
+    Hal yang perlu DIJAWAB ORANG, bukan kegagalan.
+
+    Dipisahkan dari `periksa()` dengan sengaja: yang di sini tidak
+    menggagalkan apa pun, sebab keadaannya sah. Yang tidak sah adalah
+    membiarkannya tidak terjawab.
+    """
+    pesan: list[str] = []
+    pub = _versi_pubspec()
+    terbangun = _kode_terbangun()
+    diunggah = _terakhir_diunggah()
+    if pub is None or terbangun is None or diunggah is None:
+        return pesan
+    kode_bangun, kapan = terbangun
+    if kode_bangun > diunggah:
+        pesan.append(
+            f"kode {kode_bangun} pernah DIBANGUN di sini ({kapan}) tetapi "
+            f"tercatat belum diunggah (terakhir +{diunggah}).\n"
+            f"    Kalau sudah naik ke Play: python scripts/versicek.py --sudah-unggah\n"
+            f"    Kalau batal: abaikan pesan ini."
+        )
+    return pesan
+
+
+def tandai_sudah_unggah() -> int:
+    """Tuliskan kode versi repo ke `play/terakhir-diunggah.txt`."""
+    pub = _versi_pubspec()
+    if pub is None:
+        print("versi: pubspec.yaml tidak terbaca")
+        return 2
+    kode = pub[1]
+    lama = _terakhir_diunggah()
+    if lama is not None and kode < lama:
+        print(
+            f"versi: kode repo ({kode}) LEBIH KECIL daripada yang tercatat "
+            f"terunggah (+{lama}). Tidak ditulis — periksa dulu yang benar."
+        )
+        return 2
+    berkas = AKAR / "play" / "terakhir-diunggah.txt"
+    baris = berkas.read_text(encoding="utf-8").splitlines() if berkas.exists() else []
+    # Keterangan di atasnya DIPERTAHANKAN; yang diganti hanya angkanya.
+    keluar, tertulis = [], False
+    for b in baris:
+        if not tertulis and b.strip() and not b.strip().startswith("#"):
+            keluar.append(str(kode))
+            tertulis = True
+        else:
+            keluar.append(b)
+    if not tertulis:
+        keluar.append(str(kode))
+    berkas.write_text("\n".join(keluar).rstrip() + "\n", encoding="utf-8")
+    print(f"versi: tercatat +{kode} sudah diunggah" + (f" (sebelumnya +{lama})" if lama is not None else ""))
+    return 0
+
+
 def periksa() -> list[str]:
     masalah: list[str] = []
 
@@ -139,6 +263,9 @@ def periksa() -> list[str]:
 
 
 if __name__ == "__main__":
+    if "--sudah-unggah" in sys.argv:
+        sys.exit(tandai_sudah_unggah())
+
     try:
         hasil = periksa()
     except Exception as e:  # noqa: BLE001
@@ -155,4 +282,15 @@ if __name__ == "__main__":
         print()
         for x in hasil:
             print(f"  {x}")
+
+    # PENGINGAT dicetak walau tidak ada masalah — justru di situlah ia
+    # berguna: 22 Okt 2026 pemeriksa ini berkata "0 masalah" untuk kode
+    # yang sudah terpakai di Play.
+    try:
+        for x in pengingat():
+            print()
+            print(f"  [?] {x}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  (pengingat build tidak terbaca: {e})")
+
     sys.exit(1 if hasil else 0)
