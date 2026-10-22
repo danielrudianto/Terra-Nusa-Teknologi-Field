@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.12 (38) — Isian X/Y aktual dibetulkan
+
+<id>
+• Isian X dan Y aktual tidak lagi memasang pemisah ribuan sambil diketik. Titik maupun koma kini sama-sama diterima sebagai desimal, jadi "770874.052" tersimpan sebagai 770874,052 — bukan 770.874.052, seribu kali lipat, yang membuat isiannya penuh dan tidak dapat diketik lagi.
+• Isian X dan Y aktual kini bertumpuk satu per baris, tidak lagi berdampingan, supaya koordinat lengkap terbaca utuh tanpa terpotong di kedua ujungnya.
+</id>
+<en-US>
+• The actual X and Y fields no longer insert thousands separators while you type. A dot and a comma are now both accepted as the decimal mark, so "770874.052" is stored as 770874.052 — not 770,874,052, a thousand times too large, which filled the field so nothing more could be typed.
+• The actual X and Y fields now sit one per line instead of side by side, so a full coordinate reads end to end without being clipped.
+</en-US>
+<zh-CN>
+• 实际 X 与 Y 输入框在键入时不再插入千位分隔符。点号与逗号现在都被视为小数点，因此"770874.052"会存为 770874.052——而非放大一千倍的 770,874,052，那会把字段占满，导致无法继续输入。
+• 实际 X 与 Y 输入框改为上下排列而非并排，完整坐标可以从头到尾看清，不再两端被截断。
+</zh-CN>

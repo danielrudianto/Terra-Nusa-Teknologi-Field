@@ -1,0 +1,12 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.12 (39) — Hitung mundur saat masuk terkunci
+
+<id>
+• Saat masuk terkunci sementara karena terlalu banyak percobaan, layarnya kini menghitung mundur dan tombol Masuk mati sampai waktunya habis. Sebelumnya tertulis "coba lagi dalam 15 menit" dan angkanya tidak bergerak, sehingga yang sudah menunggu tetap membaca lima belas dan mengira aplikasinya rusak.
+</id>
+<en-US>
+• When sign-in is temporarily locked after too many attempts, the screen now counts down and the Sign in button stays off until the time is up. It used to read "try again in 15 minutes" with the number frozen, so anyone who had already waited still read fifteen and assumed the app was broken.
+</en-US>
+<zh-CN>
+• 因尝试次数过多而暂时锁定登录时，界面现在会倒计时，"登录"按钮在时间结束前保持禁用。此前只显示"请在 15 分钟后重试"且数字不会变化，已经等待过的人仍然看到十五分钟，会以为应用出了故障。
+</zh-CN>

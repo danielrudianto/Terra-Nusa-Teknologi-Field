@@ -32,31 +32,37 @@ class DecimalInputFormatter extends TextInputFormatter {
 List<TextInputFormatter> decimalInput({required int maxIntDigits, int decimals = 2, bool signed = false}) =>
     [DecimalInputFormatter(maxIntDigits: maxIntDigits, decimals: decimals, signed: signed)];
 
-/// KOORDINAT dengan pemisah ribuan, DIKELOMPOKKAN SAMBIL DIKETIK.
+/// KOORDINAT — angka polos sambil diketik, TANPA pemisah ribuan.
 ///
-/// DIMINTA DANIEL, 20 Oktober 2026: "koordinat kadang angkanya besar
-/// banget, minta tolong ada thousand separator pas input ataupun pas di
-/// view".
+/// DIMINTA DANIEL, 22 Oktober 2026: "mending untuk yang input kalau emang
+/// lu gabisa, mending gausah pakai thousand separator deh bang".
 ///
-/// Koordinat grid lokal berbentuk seperti `792345.120`. Tanpa pengelompokan,
-/// yang mengetik tidak punya cara memeriksa apakah ia sudah mengetik enam
-/// digit atau tujuh — dan satu digit kelebihan pada koordinat menggeser
-/// titiknya sejauh satu kilometer, tanpa satu pun tanda di layar.
+/// Versi sebelumnya mengelompokkan ribuan sambil diketik, dan itulah yang
+/// melahirkan kekeliruannya: dengan titik dipakai sebagai pemisah ribuan,
+/// titik yang DIKETIK orang tidak dapat lagi dibedakan dari titik yang
+/// dipasang formatter ini sendiri — isian ini membaca ulang keluarannya
+/// sendiri pada tiap ketukan. Royan mengetik `770874.052`, titiknya dibuang
+/// sebagai pemisah ribuan, dan yang tersimpan `770874052`: seribu kali
+/// lipat, sembilan digit penuh, isian mati.
 ///
-/// TITIK untuk ribuan, KOMA untuk desimal — sama dengan seluruh angka lain
-/// di aplikasi ini (`formatMeters`). Jangan dibalik hanya di satu isian:
-/// yang mengetik membaca layar yang sama sepanjang hari.
+/// Tanpa pengelompokan, keduanya tidak dapat lagi tertukar: titik mana pun
+/// yang muncul di isian ini pasti diketik orang, jadi ia pemisah desimal.
+/// Koma diterima sama persis — papan tombol angka Android menaruh keduanya
+/// berdampingan, dan yang memegang HP di lapangan tidak boleh perlu tahu
+/// yang mana yang "benar".
 ///
-/// KURSORNYA DIJAGA menurut JUMLAH DIGIT di sebelah kirinya, bukan menurut
-/// posisi hurufnya. Setiap titik ribuan yang muncul atau hilang menggeser
-/// seluruh teks, dan kursor yang dipasang pada posisi lama akan melompat
-/// satu huruf setiap tiga digit — cukup untuk membuat isian ini tidak dapat
-/// dipakai dengan satu tangan di lapangan.
+/// Yang DIBACA tetap dikelompokkan (`formatKoordinat`). Mengetik dan
+/// membaca memang dua hal yang berbeda: saat membaca, kelompok ribuan
+/// menolong mata memeriksa jumlah digit; saat mengetik, ia justru
+/// memasukkan huruf yang tidak diketik siapa pun ke dalam teks yang sedang
+/// dibaca ulang mesin.
 class KoordinatInputFormatter extends TextInputFormatter {
   KoordinatInputFormatter({this.decimals = 3, this.maxIntDigits = 9});
 
   final int decimals;
   final int maxIntDigits;
+
+  static bool _digit(String c) => c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
 
   @override
   TextEditingValue formatEditUpdate(
@@ -64,15 +70,15 @@ class KoordinatInputFormatter extends TextInputFormatter {
     final mentah = newValue.text;
     final minus = mentah.startsWith('-');
 
-    // Hanya digit dan SATU pemisah desimal yang dipertahankan. Titik yang
-    // diketik sendiri oleh pemakainya diperlakukan sebagai pemisah ribuan
-    // dan dibuang — yang menentukan desimal hanyalah koma.
+    // Titik MAUPUN koma diterima sebagai pemisah desimal; yang disimpan
+    // selalu koma, supaya `parseKoordinat` dan seluruh tampilan lain
+    // membaca bentuk yang sama.
     final angka = StringBuffer();
     var adaKoma = false;
     for (final c in mentah.split('')) {
-      if (c.compareTo('0') >= 0 && c.compareTo('9') <= 0) {
+      if (_digit(c)) {
         angka.write(c);
-      } else if (c == ',' && !adaKoma && decimals > 0) {
+      } else if ((c == ',' || c == '.') && !adaKoma && decimals > 0) {
         adaKoma = true;
         angka.write(',');
       }
@@ -85,49 +91,30 @@ class KoordinatInputFormatter extends TextInputFormatter {
     final pecahan =
         diketik.length > decimals ? diketik.substring(0, decimals) : diketik;
 
-    final dikelompokkan = _kelompok(bulat);
-    final hasil = (minus ? '-' : '') +
-        dikelompokkan +
-        (adaKoma ? ',$pecahan' : '');
+    final hasil = (minus ? '-' : '') + bulat + (adaKoma ? ',$pecahan' : '');
 
-    // Digit (dan koma) di kiri kursor pada teks yang BARU diketik.
-    var digitKiri = 0;
+    // Kursor dihitung dari BANYAKNYA huruf yang dipertahankan di sebelah
+    // kirinya. Tanpa pengelompokan, tidak ada lagi huruf yang muncul atau
+    // hilang di tengah teks, jadi ini sudah cukup — dan `clamp` menangani
+    // satu-satunya penyusutan yang tersisa, yaitu desimal yang dipangkas.
+    var jaga = 0;
+    var komaDipakai = false;
     for (var i = 0; i < newValue.selection.end && i < mentah.length; i++) {
       final c = mentah[i];
-      if ((c.compareTo('0') >= 0 && c.compareTo('9') <= 0) || c == ',') {
-        digitKiri++;
+      if (i == 0 && c == '-' && minus) {
+        jaga++;
+      } else if (_digit(c)) {
+        jaga++;
+      } else if ((c == ',' || c == '.') && !komaDipakai && decimals > 0) {
+        komaDipakai = true;
+        jaga++;
       }
     }
-    var posisi = hasil.length;
-    var hitung = 0;
-    for (var i = 0; i < hasil.length; i++) {
-      final c = hasil[i];
-      if ((c.compareTo('0') >= 0 && c.compareTo('9') <= 0) || c == ',') {
-        hitung++;
-      }
-      if (hitung == digitKiri) {
-        posisi = i + 1;
-        break;
-      }
-    }
-    if (digitKiri == 0) posisi = minus ? 1 : 0;
 
     return TextEditingValue(
       text: hasil,
-      selection: TextSelection.collapsed(offset: posisi.clamp(0, hasil.length)),
+      selection: TextSelection.collapsed(offset: jaga.clamp(0, hasil.length)),
     );
-  }
-
-  static String _kelompok(String digit) {
-    if (digit.length <= 3) return digit;
-    final keluar = StringBuffer();
-    final sisa = digit.length % 3;
-    if (sisa > 0) keluar.write(digit.substring(0, sisa));
-    for (var i = sisa; i < digit.length; i += 3) {
-      if (keluar.isNotEmpty) keluar.write('.');
-      keluar.write(digit.substring(i, i + 3));
-    }
-    return keluar.toString();
   }
 }
 

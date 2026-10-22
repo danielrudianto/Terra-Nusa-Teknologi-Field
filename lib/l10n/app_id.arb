@@ -5441,5 +5441,27 @@
   "sheetSupplierBody": "Tiap pemasok satu lembar: TM, surat jalan, volume, dan totalnya.",
   "@sheetSupplierBody": {
     "description": "sheetSupplierBody"
+  },
+  "loginLockedTitle": "Terkunci sementara",
+  "@loginLockedTitle": {
+    "description": "Judul banner saat login terkunci sementara (429)"
+  },
+  "loginLockedBody": "Terlalu banyak percobaan masuk. Tombol Masuk hidup lagi dalam {sisa}. Menekannya sekarang tidak memperpanjang kunci, tetapi juga tidak mempercepatnya.",
+  "@loginLockedBody": {
+    "description": "Isi banner; {sisa} berbentuk \"14:03\"",
+    "placeholders": {
+      "sisa": {
+        "type": "String"
+      }
+    }
+  },
+  "loginLockedButton": "Tunggu {sisa}",
+  "@loginLockedButton": {
+    "description": "Tulisan tombol Masuk selama terkunci; {sisa} berbentuk \"14:03\"",
+    "placeholders": {
+      "sisa": {
+        "type": "String"
+      }
+    }
   }
 }

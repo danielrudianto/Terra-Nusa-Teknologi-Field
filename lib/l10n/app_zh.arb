@@ -1536,5 +1536,27 @@
   "sheetSupplierBody": "每个供应商一张表：车次、送货单、体积及合计。",
   "@sheetSupplierBody": {
     "description": "sheetSupplierBody"
+  },
+  "loginLockedTitle": "暂时锁定",
+  "@loginLockedTitle": {
+    "description": "Judul banner saat login terkunci sementara (429)"
+  },
+  "loginLockedBody": "登录尝试次数过多。\"登录\"按钮将在 {sisa} 后恢复。现在按它不会延长锁定，但也不会缩短。",
+  "@loginLockedBody": {
+    "description": "Isi banner; {sisa} berbentuk \"14:03\"",
+    "placeholders": {
+      "sisa": {
+        "type": "String"
+      }
+    }
+  },
+  "loginLockedButton": "请等待 {sisa}",
+  "@loginLockedButton": {
+    "description": "Tulisan tombol Masuk selama terkunci; {sisa} berbentuk \"14:03\"",
+    "placeholders": {
+      "sisa": {
+        "type": "String"
+      }
+    }
   }
 }

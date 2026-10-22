@@ -1536,5 +1536,27 @@
   "sheetSupplierBody": "One sheet per supplier: trucks, delivery tickets, volume, and totals.",
   "@sheetSupplierBody": {
     "description": "sheetSupplierBody"
+  },
+  "loginLockedTitle": "Locked for now",
+  "@loginLockedTitle": {
+    "description": "Judul banner saat login terkunci sementara (429)"
+  },
+  "loginLockedBody": "Too many sign-in attempts. The Sign in button comes back in {sisa}. Pressing it now does not extend the lock, but it does not shorten it either.",
+  "@loginLockedBody": {
+    "description": "Isi banner; {sisa} berbentuk \"14:03\"",
+    "placeholders": {
+      "sisa": {
+        "type": "String"
+      }
+    }
+  },
+  "loginLockedButton": "Wait {sisa}",
+  "@loginLockedButton": {
+    "description": "Tulisan tombol Masuk selama terkunci; {sisa} berbentuk \"14:03\"",
+    "placeholders": {
+      "sisa": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,19 @@ import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/i18n.dart';
+
+/// "14:03" — menit DAN detik, supaya terbaca BERJALAN.
+///
+/// Menit saja ("15 menit") diam di layar selama enam puluh detik, dan yang
+/// menatapnya menyimpulkan hitungannya macet — persis kesan yang hendak
+/// dihindari. Detik yang berubah tiap sekon adalah satu-satunya tanda bahwa
+/// kuncinya memang berjalan.
+String sisaTerbaca(int detik) {
+  final n = detik < 0 ? 0 : detik;
+  final m = n ~/ 60;
+  final d = n % 60;
+  return '$m:${d.toString().padLeft(2, '0')}';
+}
 
 /// Log in with the same TerraBot account as the web app.
 class LoginPage extends ConsumerStatefulWidget {
@@ -24,6 +39,62 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _showPassword = false;
   String? _error;
 
+  // ---------------------------------------------------------------- kunci
+  //
+  // TERKUNCI SEMENTARA — DIHITUNG MUNDUR DI LAYAR.
+  //
+  // Server menolak percobaan masuk yang beruntun dengan 429 berkode
+  // `TOO_MANY_ATTEMPTS` dan menyebutkan sisa detiknya. Sampai 22 Okt 2026
+  // layar ini hanya menampilkan kalimat server apa adanya — "Coba lagi
+  // dalam 15 menit" — yang TIDAK BERGERAK. Yang sudah menunggu lima menit
+  // lalu mencoba lagi tetap membaca lima belas, dan menyimpulkan kuncinya
+  // tidak jalan atau aplikasinya rusak. Itu persis kesimpulan yang diambil
+  // orang pada 6 Okt 2026, yang membuat hitung mundurnya dikerjakan di web.
+  //
+  // Angkanya DARI SERVER (`context.detik`), tidak ditebak di sini: tebakan
+  // yang meleset menyalakan tombolnya sebelum waktunya, lalu ditolak lagi.
+
+  /// Sisa detik penguncian; 0 berarti boleh mencoba.
+  int _sisaKunci = 0;
+  Timer? _jamKunci;
+
+  bool get _terkunci => _sisaKunci > 0;
+
+  String get _sisaTerbaca => sisaTerbaca(_sisaKunci);
+
+  /// Mulai hitung mundur bila galatnya memang penguncian.
+  ///
+  /// Mengembalikan `true` bila galat itu sudah ditangani di sini, sehingga
+  /// pemanggilnya tidak menuliskan lagi kalimat server yang beku.
+  bool _tangkapKunci(ApiError e) {
+    if (e.code != 'TOO_MANY_ATTEMPTS') return false;
+    final detik = (e.context?['detik'] as num?)?.toDouble();
+    if (detik == null || detik <= 0) return false;
+    _mulaiHitungMundur(detik.ceil());
+    return true;
+  }
+
+  void _mulaiHitungMundur(int detik) {
+    _jamKunci?.cancel();
+    setState(() {
+      _sisaKunci = detik;
+      _error = null;
+    });
+    _jamKunci = Timer.periodic(const Duration(seconds: 1), (j) {
+      if (!mounted) {
+        j.cancel();
+        return;
+      }
+      setState(() {
+        _sisaKunci--;
+        if (_sisaKunci <= 0) {
+          _sisaKunci = 0;
+          j.cancel();
+        }
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -34,12 +105,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   void dispose() {
+    // Dibatalkan, BUKAN dibiarkan: timer yang hidup sesudah layarnya
+    // hancur memanggil `setState` pada state yang sudah dibuang.
+    _jamKunci?.cancel();
     _email.dispose();
     _password.dispose();
     super.dispose();
   }
 
   Future<void> _checkIn() async {
+    // Ditahan di sini juga, bukan hanya pada tombolnya: isian sandi
+    // mengirim lewat `onSubmitted`, dan papan tombol tidak melihat tombol
+    // yang mati.
+    if (_terkunci) return;
     if (_email.text.trim().isEmpty || _password.text.isEmpty) {
       setState(() => _error = t(context).fillEmailPassword);
       return;
@@ -58,6 +136,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         await _askMoveDevice(e);
         return;
       }
+      if (_tangkapKunci(e)) return;
       setState(() => _error = e.offline ? t(context).loginNeedsSignal : e.message);
     } catch (e) {
       setState(() => _error = '$e');
@@ -162,6 +241,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         title: t(context).dataSafeHere,
                         body: t(context).signInAgainToSend,
                       ),
+                    if (_terkunci)
+                      TerraBanner(
+                        kind: BannerKind.danger,
+                        title: t(context).loginLockedTitle,
+                        body: t(context).loginLockedBody(_sisaTerbaca),
+                      ),
                     if (_error != null) TerraBanner(kind: BannerKind.danger, title: t(context).cannotSignInYet, body: _error),
                     TextField(
                       controller: _email,
@@ -188,10 +273,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     SizedBox(
                       height: Dimens.minTouch + 4,
                       child: FilledButton(
-                        onPressed: _busy ? null : _checkIn,
+                        onPressed: _busy || _terkunci ? null : _checkIn,
                         child: _busy
                             ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4))
-                            : Text(t(context).signIn, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                            : Text(
+                                // Sisa waktunya DI TOMBOL juga, bukan hanya
+                                // di banner: yang menekan tombol mati tanpa
+                                // keterangan di tempat yang sama menyimpulkan
+                                // tombolnya rusak.
+                                _terkunci
+                                    ? t(context).loginLockedButton(_sisaTerbaca)
+                                    : t(context).signIn,
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                              ),
                       ),
                     ),
                   ],

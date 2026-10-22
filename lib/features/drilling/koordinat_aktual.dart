@@ -88,13 +88,18 @@ class KoordinatAktualFields extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(child: _isian(context, xInput, wajib ? l.actualXRequired : l.actualX)),
-            const SizedBox(width: 10),
-            Expanded(child: _isian(context, yInput, wajib ? l.actualYRequired : l.actualY)),
-          ],
-        ),
+        // BERTUMPUK, bukan berdampingan.
+        //
+        // ROYAN, 21 Okt 2026: koordinatnya terpotong di kedua ujung dan ia
+        // tidak dapat membaca ulang apa yang baru diketiknya. Koordinat grid
+        // lengkap berbunyi "9.224.128,858 m" — tiga belas huruf. Dua isian
+        // berdampingan pada lebar dialog di HP memberi masing-masing sekitar
+        // separuhnya, dan angka yang terpotong pada isian koordinat lebih
+        // buruk daripada isian yang sempit: satu digit yang tidak terlihat
+        // menggeser titiknya satu kilometer.
+        _isian(context, xInput, wajib ? l.actualXRequired : l.actualX),
+        const SizedBox(height: 10),
+        _isian(context, yInput, wajib ? l.actualYRequired : l.actualY),
         // Koordinat rencana ditampilkan sebagai acuan. Tanpa itu yang
         // mengetik tidak punya pembanding, dan angka yang tertukar X dengan
         // Y hanya terlihat sebagai simpangan besar tanpa sebab yang jelas.
