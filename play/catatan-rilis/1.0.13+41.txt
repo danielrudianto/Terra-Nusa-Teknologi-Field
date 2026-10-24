@@ -1,0 +1,22 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.13 (41) — Koma X/Y & laporan galat otomatis
+
+# CATATAN: build 40 tidak pernah diunggah (`terakhir-diunggah.txt` = 39),
+# jadi rilis ini membawa isi 1.0.12+40 SEKALIGUS pelaporan galat. Catatan
+# untuk 40 ditinggalkan apa adanya sebagai riwayat; isinya ikut di bawah.
+
+<id>
+• Mengetik koordinat tanpa koma membuat isiannya berhenti menerima angka pada angka kesembilan, tanpa satu pun keterangan — terbaca seolah tombolnya rusak. Sekarang layarnya menyebutkan sebabnya, berikut berapa angka sebelum koma yang benar untuk titik itu.
+• Isian X dan Y aktual kini punya tombol kosongkan.
+• Bila muncul pesan gagal, aplikasinya kini mengabarkan sendiri ke kantor — tidak perlu menekan Kirim log. Yang terkirim hanya kode galat dan nama layarnya, bukan isi pekerjaan Anda.
+</id>
+<en-US>
+• Typing a coordinate without its decimal mark made the field stop accepting digits at the ninth one, with nothing said — it read as a broken keypad. The screen now names the cause, and how many digits belong before the mark for that point.
+• The actual X and Y fields now have a clear button.
+• When a failure message appears, the app now reports it to the office by itself — no need to press Send log. Only the error code and the screen name are sent, never your work.
+</en-US>
+<zh-CN>
+• 输入坐标时若漏掉小数点，输入框会在第九位数字处停止接受输入，且没有任何提示——看起来就像按键坏了。现在界面会说明原因，并指出该桩点小数点前应有几位数字。
+• 实际 X 与 Y 输入框新增清空按钮。
+• 出现失败提示时，应用会自动上报给办公室——无需再按「发送日志」。只会上传错误代码与界面名称，不会上传您的作业内容。
+</zh-CN>
