@@ -7,6 +7,7 @@ import 'device/device_id.dart';
 import 'device/device_name.dart';
 import 'session/session.dart';
 import 'sync/sync_engine.dart';
+import 'util/error_reporter.dart';
 
 /// Everything needed to talk to the server and the local database.
 ///
@@ -32,6 +33,10 @@ class AppContext {
     await Env.loadVersion();
     const storage = FlutterSecureStorage();
     final id = await loadDeviceId(storage);
+    // Perangkat ini dikenalkan ke pelapor galat, supaya catatannya dapat
+    // disambungkan ke armada HP di monitoring: "HP mana" menjadi "HP siapa,
+    // terakhir terlihat kapan".
+    ErrorReporter.deviceId = id;
     final nama = await loadDeviceName();
     final db = AppDatabase();
     final session = SessionStore(storage);

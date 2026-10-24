@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'error_reporter.dart';
+
 /// A small on-phone log of errors and notable events, for "it went wrong on
 /// site" — there is no crash-reporting service, and a foreman cannot read
 /// logcat. Settings has "Kirim log" that shares the file over WhatsApp.
@@ -31,10 +33,16 @@ class AppLog {
     final previous = FlutterError.onError;
     FlutterError.onError = (details) {
       error('flutter', details.exceptionAsString(), details.stack);
+      // Ikut dikirim ke server — lihat `ErrorReporter`. Yang tak tertangkap
+      // adalah galat yang paling tidak terlihat dari kantor: tidak ada
+      // kalimat di layar yang dapat dikeluhkan orang, hanya layar yang
+      // membeku atau tombol yang tidak berbuat apa-apa.
+      ErrorReporter.record(fallbackKey: 'crash.flutter');
       previous?.call(details);
     };
     PlatformDispatcher.instance.onError = (e, st) {
       error('dart', e, st);
+      ErrorReporter.record(fallbackKey: 'crash.dart');
       return false; // keep the default handling (prints in debug)
     };
   }
@@ -89,6 +97,10 @@ class AppLog {
     try {
       final f = await file();
       if (await f.exists()) await f.delete();
-    } catch (_) {}
+    } catch (_) {
+      // Pencatatnya sendiri yang gagal — tidak ada tempat untuk
+      // mencatatnya, dan melempar dari sini akan menggagalkan tindakan
+      // yang memanggilnya hanya karena berkas catatan tidak terhapus.
+    }
   }
 }

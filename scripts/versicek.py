@@ -131,12 +131,28 @@ def _kode_terbangun() -> tuple[int, str] | None:
     import json
     from datetime import datetime
 
-    akar_build = AKAR / "build"
-    if not akar_build.is_dir():
+    # DICARI DI BEBERAPA RANTING, bukan di seluruh `build/`.
+    #
+    # `build/` berisi puluhan ribu berkas antara, dan `rglob` atasnya
+    # memakan menit-menitan pada cakram yang lambat — pemeriksa yang
+    # dijalankan SEBELUM build tidak boleh lebih lama daripada build itu
+    # sendiri. Ranting di bawah ini yang benar-benar memuat nomor versinya;
+    # kalau Gradle memindahkannya kelak, hasilnya `None` dan pengingatnya
+    # diam — tidak ada yang rusak, hanya satu pengingat yang hilang.
+    ranting = [
+        AKAR / "build" / "app" / "outputs",
+        AKAR / "build" / "app" / "intermediates" / "linked_resources_proto_format",
+        AKAR / "build" / "app" / "intermediates" / "merged_manifests",
+    ]
+    berkas_ditemukan = []
+    for r in ranting:
+        if r.is_dir():
+            berkas_ditemukan.extend(r.rglob("output-metadata.json"))
+    if not berkas_ditemukan:
         return None
     tertinggi: int | None = None
     waktu: float | None = None
-    for berkas in akar_build.rglob("output-metadata.json"):
+    for berkas in berkas_ditemukan:
         try:
             isi = json.loads(berkas.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001

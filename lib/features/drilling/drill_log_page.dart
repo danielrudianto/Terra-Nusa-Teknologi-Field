@@ -12,6 +12,7 @@ import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
+import '../../core/util/app_log.dart';
 import '../../core/util/decimal_input.dart';
 import '../../core/util/format.dart';
 import '../../core/util/reasons.dart';
@@ -129,7 +130,15 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     if (_handedAway) {
       try {
         await Notifications.cancelDrillIdleReminders(widget.uuid);
-      } catch (_) {}
+      } catch (e) {
+        // Dicatat, tidak ditampilkan: log ini sudah dioper, dan yang
+        // mengopernya tidak sedang menunggu apa pun dari layar ini.
+        // Bila pembatalannya gagal, akibatnya pengingat yang masih
+        // berbunyi untuk log milik orang lain — menjengkelkan, tetapi
+        // tidak dapat ditindaklanjuti dari sini. Catatannya yang
+        // membuatnya dapat ditelusuri.
+        AppLog.error('pengingat', e);
+      }
     }
   }
 
@@ -229,7 +238,21 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         lastReadingAt: newest,
         snoozeUntil: (tunda != null && tunda.menunda(kini)) ? tunda.until : null,
       );
-    } catch (_) {}
+    } catch (e, st) {
+      // DICATAT — ini jaring pengamannya sendiri yang gagal.
+      //
+      // Penjadwalan inilah yang membuat pengingat jam 7 pagi berbunyi
+      // untuk log bor yang belum ditutup. Gagal diam-diam, jaring itu
+      // hilang tanpa satu pun tanda: layarnya tetap terlihat normal,
+      // pengingatnya tidak pernah datang, dan yang lupa menutup lognya
+      // baru tahu berhari-hari kemudian.
+      //
+      // Tidak dimunculkan ke layar: yang sedang mengebor tidak dapat
+      // berbuat apa pun atas kegagalan penjadwalan, dan dialog di tengah
+      // pencatatan kedalaman lebih berbahaya daripada pengingat yang
+      // hilang. Catatannya yang membuatnya dapat ditemukan.
+      AppLog.error('pengingat', e, st);
+    }
   }
 
   /// Change and save the log. Returns FALSE when nothing was written, so a

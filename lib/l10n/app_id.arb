@@ -5463,5 +5463,31 @@
         "type": "String"
       }
     }
+  },
+  "koordinatKomaJudul": "Komanya terlewat?",
+  "@koordinatKomaJudul": {
+    "description": "Judul banner saat koordinat diketik tanpa koma"
+  },
+  "koordinatKomaIsi": "{nama} aktual diketik {diketik} angka sebelum koma, sedangkan koordinat rencana titik ini {rencana} angka. Isian berhenti menerima angka pada {maks} — bukan rusak, melainkan penuh. Ketik komanya sesudah {rencana} angka, lalu angka desimalnya.",
+  "@koordinatKomaIsi": {
+    "description": "Isi banner; {nama} sumbu X/Y, {diketik}/{rencana}/{maks} jumlah angka",
+    "placeholders": {
+      "nama": {
+        "type": "String"
+      },
+      "diketik": {
+        "type": "int"
+      },
+      "rencana": {
+        "type": "int"
+      },
+      "maks": {
+        "type": "int"
+      }
+    }
+  },
+  "koordinatKosongkan": "Kosongkan isian ini",
+  "@koordinatKosongkan": {
+    "description": "Tooltip tombol kosongkan pada isian koordinat"
   }
 }

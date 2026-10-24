@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../util/error_reporter.dart';
+
 /// Error from the server in a displayable form.
 ///
 /// The TerraBot server sends `detail` as a `{code, message}` object for coded
@@ -46,7 +48,44 @@ class ApiError implements Exception {
           message = detail;
         }
       }
-      return ApiError(message: message, status: r.statusCode, code: code, context: context);
+      final galat = ApiError(
+        message: message,
+        status: r.statusCode,
+        code: code,
+        context: context,
+      );
+
+      /*
+       * DICATAT DI SINI, satu titik untuk seluruh galat server.
+       *
+       * Setiap galat server melewati pabrik ini — jadi dicatat di sini,
+       * semuanya ikut tanpa satu pun pemanggil disentuh. Dipasang satu per
+       * satu di penangannya, yang ditambahkan bulan depan akan terlupa.
+       *
+       * `error-logs` SENDIRI DIKECUALIKAN: pengirimannya yang gagal akan
+       * melewati pabrik ini juga, dan mencatat kegagalan pencatatan adalah
+       * lingkaran yang tidak berujung.
+       *
+       * Yang OFFLINE tidak sampai ke sini — ia keluar lebih dulu di atas,
+       * dan memang bukan kerusakan: tidak ada sinyal di lapangan adalah
+       * keadaan sehari-hari, dan armada HP yang diam sudah terlihat di
+       * monitoring lewat `lastSeenAt`.
+       */
+      final jalur = e.requestOptions.path;
+      if (!jalur.contains('error-logs')) {
+        ErrorReporter.record(
+          code: code,
+          status: r.statusCode,
+          screen: jalur,
+          // `expected` = aplikasinya MENGENALI penolakan ini dan punya
+          // layarnya sendiri untuk itu: versi kedaluwarsa dan sesi habis.
+          // Selebihnya jatuh ke kalimat apa adanya dari server, dan itu
+          // yang perlu dilihat.
+          expected: galat.appOutdated || galat.sessionExpired,
+        );
+      }
+
+      return galat;
     }
     return ApiError(message: e.toString());
   }

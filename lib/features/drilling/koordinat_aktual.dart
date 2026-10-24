@@ -22,6 +22,56 @@ import '../../core/widgets/terra_banner.dart';
 /// Batas nilai koordinat, sama dengan `_KOORD` di server.
 const koordinatMaks = 999999999.0;
 
+/// Batas angka SEBELUM koma pada isian koordinat. Sama dengan bawaan
+/// `koordinatInput`; dipakai di sini untuk menerangkan batasnya kepada yang
+/// menabraknya, bukan untuk menegakkannya lagi.
+const koordinatAngkaBulatMaks = 9;
+
+/// Banyaknya angka sebelum koma pada sebuah teks koordinat.
+int angkaSebelumKoma(String teks) {
+  final bersih = teks.trim();
+  final potong = bersih.indexOf(',');
+  final bulat = potong == -1 ? bersih : bersih.substring(0, potong);
+  var n = 0;
+  for (final c in bulat.split('')) {
+    if (c.compareTo('0') >= 0 && c.compareTo('9') <= 0) n++;
+  }
+  return n;
+}
+
+/// Angka sebelum koma pada koordinat RENCANA — acuan yang benar untuk titik
+/// ini. `null` bila rencananya belum ada.
+int? angkaRencana(double? rencana) {
+  if (rencana == null) return null;
+  final n = rencana.abs().truncate();
+  return n == 0 ? 1 : n.toString().length;
+}
+
+/// KOMANYA TERLEWAT? — ditanyakan, bukan disimpulkan diam-diam.
+///
+/// ARSAFIN, 22 Okt 2026, lewat Daniel: "1 angka nya ga bisa pak yang Y".
+/// Yang diketiknya `924128248` untuk titik yang koordinatnya
+/// `9241282,485` — seluruh angka diketik tanpa komanya, sehingga bagian
+/// bulatnya menabrak batas sembilan angka dan ketukan berikutnya DITOLAK
+/// TANPA SUARA. Tombolnya tidak rusak dan komanya tidak mati; isiannya
+/// hanya penuh, dan tidak ada satu pun kalimat yang mengatakannya.
+///
+/// Yang membuat peringatan ini berguna: koordinat RENCANA titik itu sudah
+/// ada di layar ini. Jadi yang dapat disebut bukan sekadar "maksimal
+/// sembilan angka" — melainkan berapa angka yang benar UNTUK TITIK INI.
+/// "Rencananya tujuh angka sebelum koma, yang diketik sembilan" menunjuk
+/// langsung ke komanya yang hilang.
+///
+/// TIDAK menyala bila komanya sudah ada: begitu komanya diketik, yang
+/// menjaga kebenarannya palang simpangan, bukan hitungan angka.
+bool komaMungkinTerlewat({required String teks, required double? rencana}) {
+  if (teks.contains(',')) return false;
+  final acuan = angkaRencana(rencana);
+  if (acuan == null) return false;
+  final diketik = angkaSebelumKoma(teks);
+  return diketik > acuan;
+}
+
 /// Simpangan antara posisi rencana dan posisi aktual, dalam MILIMETER.
 ///
 /// `null` bila salah satu dari empat angkanya belum ada — bukan nol. Titik
@@ -100,6 +150,23 @@ class KoordinatAktualFields extends StatelessWidget {
         _isian(context, xInput, wajib ? l.actualXRequired : l.actualX),
         const SizedBox(height: 10),
         _isian(context, yInput, wajib ? l.actualYRequired : l.actualY),
+        // KOMANYA TERLEWAT — disebut SEBELUM banner simpangan, sebab inilah
+        // yang menerangkan kenapa isiannya berhenti menerima angka.
+        // Simpangan ratusan kilometer di bawahnya hanya akibatnya.
+        if (_komaTerlewat != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TerraBanner(
+              kind: BannerKind.warning,
+              title: l.koordinatKomaJudul,
+              body: l.koordinatKomaIsi(
+                _komaTerlewat!.$1,
+                _komaTerlewat!.$2,
+                _komaTerlewat!.$3,
+                koordinatAngkaBulatMaks,
+              ),
+            ),
+          ),
         // Koordinat rencana ditampilkan sebagai acuan. Tanpa itu yang
         // mengetik tidak punya pembanding, dan angka yang tertukar X dengan
         // Y hanya terlihat sebagai simpangan besar tanpa sebab yang jelas.
@@ -120,12 +187,54 @@ class KoordinatAktualFields extends StatelessWidget {
     );
   }
 
+  /// (nama sumbu, angka yang diketik, angka pada rencananya) — atau null.
+  ///
+  /// X diperiksa lebih dulu dan hanya SATU yang ditampilkan: dua banner
+  /// berbunyi hampir sama di bawah dua isian yang berdampingan membuat
+  /// keduanya berhenti dibaca.
+  (String, int, int)? get _komaTerlewat {
+    for (final (nama, isi, rencana) in [
+      ('X', xInput.text, designX),
+      ('Y', yInput.text, designY),
+    ]) {
+      if (komaMungkinTerlewat(teks: isi, rencana: rencana)) {
+        return (nama, angkaSebelumKoma(isi), angkaRencana(rencana)!);
+      }
+    }
+    return null;
+  }
+
   Widget _isian(BuildContext context, TextEditingController c, String label) => TextField(
         controller: c,
         keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-        // Pemisah ribuan SAMBIL DIKETIK — lihat `KoordinatInputFormatter`.
         inputFormatters: koordinatInput(),
-        decoration: InputDecoration(labelText: label, suffixText: 'm'),
+        decoration: InputDecoration(
+          labelText: label,
+          suffixText: 'm',
+          // TOMBOL KOSONGKAN.
+          //
+          // ARSAFIN, 22 Okt 2026: "Y Aktual yang di isi terlebih dahulu
+          // Pak lalu X Aktual baru bisa". Urutannya kebetulan; yang
+          // sebenarnya terjadi, X masih berisi sembilan angka dari
+          // percobaan sebelumnya — sudah penuh, jadi tiap ketukan angka
+          // ditolak dan isiannya terasa mati sampai isinya dikosongkan.
+          //
+          // Satu-satunya jalan keluar sebelum ini menekan hapus sembilan
+          // kali, di samping rig, dengan satu tangan. Isian yang penuh dan
+          // salah harus dapat dikosongkan dalam satu ketukan — kalau
+          // tidak, yang mengalaminya akan menyimpulkan tombolnya rusak,
+          // dan itu sudah terjadi.
+          suffixIcon: c.text.isEmpty
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.backspace_outlined, size: 20),
+                  tooltip: t(context).koordinatKosongkan,
+                  onPressed: () {
+                    c.clear();
+                    onChanged();
+                  },
+                ),
+        ),
         onChanged: (_) => onChanged(),
       );
 }

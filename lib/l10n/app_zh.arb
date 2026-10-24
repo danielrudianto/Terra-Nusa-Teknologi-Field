@@ -1558,5 +1558,31 @@
         "type": "String"
       }
     }
+  },
+  "koordinatKomaJudul": "是不是漏了小数点？",
+  "@koordinatKomaJudul": {
+    "description": "Judul banner saat koordinat diketik tanpa koma"
+  },
+  "koordinatKomaIsi": "实际 {nama} 的小数点前有 {diketik} 位数字，而该桩点的设计坐标是 {rencana} 位。输入框在 {maks} 位时停止接受数字——不是坏了，是满了。请在第 {rencana} 位后输入小数点，再输入小数部分。",
+  "@koordinatKomaIsi": {
+    "description": "Isi banner; {nama} sumbu X/Y, {diketik}/{rencana}/{maks} jumlah angka",
+    "placeholders": {
+      "nama": {
+        "type": "String"
+      },
+      "diketik": {
+        "type": "int"
+      },
+      "rencana": {
+        "type": "int"
+      },
+      "maks": {
+        "type": "int"
+      }
+    }
+  },
+  "koordinatKosongkan": "清空此输入框",
+  "@koordinatKosongkan": {
+    "description": "Tooltip tombol kosongkan pada isian koordinat"
   }
 }

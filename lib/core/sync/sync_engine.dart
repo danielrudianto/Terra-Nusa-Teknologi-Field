@@ -17,6 +17,7 @@ import '../util/format.dart';
 import '../device/camera.dart';
 import '../device/device_lock.dart';
 import '../device/update_available.dart';
+import '../util/error_reporter.dart';
 
 /// Summary of one sync round — for the banner on Home and the background log.
 class SyncResult {
@@ -130,6 +131,22 @@ class SyncEngine {
     if (result.error != null) await db.writeMeta('last_sync_error', result.error);
     // Served again (e.g. the minimum was lowered): lift the update screen.
     if (result.success) await db.writeMeta(appOutdatedKey, null);
+
+    /*
+     * Antrean catatan galat dikirim DI SINI, menumpang sinkron.
+     *
+     * Bukan penjadwal sendiri: sinkron yang baru selesai sudah membuktikan
+     * dua hal yang dibutuhkan pengiriman itu — sinyalnya ada dan tokennya
+     * sah. Penjadwal tersendiri harus menebak keduanya, lalu gagal diam-diam
+     * di lapangan tanpa sinyal, yaitu tempat catatan itu justru lahir.
+     *
+     * TIDAK saat sesi habis atau offline: yang pertama akan dijawab 401 dan
+     * memicu penyegaran token demi sesuatu yang tidak ada yang menunggu,
+     * yang kedua pasti gagal.
+     */
+    if (!result.sessionExpired && !result.offline) {
+      await ErrorReporter.flush(_dio);
+    }
     return result;
   }
 

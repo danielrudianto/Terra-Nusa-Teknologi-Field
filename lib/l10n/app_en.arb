@@ -1558,5 +1558,31 @@
         "type": "String"
       }
     }
+  },
+  "koordinatKomaJudul": "Is the decimal mark missing?",
+  "@koordinatKomaJudul": {
+    "description": "Judul banner saat koordinat diketik tanpa koma"
+  },
+  "koordinatKomaIsi": "Actual {nama} has {diketik} digits before the decimal mark, while this point’s design coordinate has {rencana}. The field stops accepting digits at {maks} — it is full, not broken. Type the mark after {rencana} digits, then the decimals.",
+  "@koordinatKomaIsi": {
+    "description": "Isi banner; {nama} sumbu X/Y, {diketik}/{rencana}/{maks} jumlah angka",
+    "placeholders": {
+      "nama": {
+        "type": "String"
+      },
+      "diketik": {
+        "type": "int"
+      },
+      "rencana": {
+        "type": "int"
+      },
+      "maks": {
+        "type": "int"
+      }
+    }
+  },
+  "koordinatKosongkan": "Clear this field",
+  "@koordinatKosongkan": {
+    "description": "Tooltip tombol kosongkan pada isian koordinat"
   }
 }

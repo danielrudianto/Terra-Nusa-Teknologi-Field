@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.12 (40) — Peringatan koma pada X/Y aktual
+
+<id>
+• Mengetik koordinat tanpa koma membuat isiannya berhenti menerima angka pada angka kesembilan, tanpa satu pun keterangan — terbaca seolah tombolnya rusak. Sekarang layarnya menyebutkan sebabnya, dan menyebut berapa angka sebelum koma yang benar untuk titik itu menurut koordinat rencananya.
+• Isian X dan Y aktual kini punya tombol kosongkan. Isian yang terlanjur penuh sebelumnya hanya dapat dibersihkan dengan menekan hapus sembilan kali.
+</id>
+<en-US>
+• Typing a coordinate without its decimal mark made the field stop accepting digits at the ninth one, with nothing said — it read as a broken keypad. The screen now names the cause, and says how many digits belong before the mark for that point, taken from its design coordinate.
+• The actual X and Y fields now have a clear button. A field that had filled up could previously only be emptied by pressing backspace nine times.
+</en-US>
+<zh-CN>
+• 输入坐标时若漏掉小数点，输入框会在第九位数字处停止接受输入，且没有任何提示——看起来就像按键坏了。现在界面会说明原因，并根据该桩点的设计坐标指出小数点前应有几位数字。
+• 实际 X 与 Y 输入框新增清空按钮。此前已填满的输入框只能连按九次退格才能清空。
+</zh-CN>

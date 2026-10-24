@@ -165,7 +165,13 @@ Future<SavedPhoto?> takePhoto({
   await File(dest).writeAsBytes(bytes, flush: true);
   try {
     await File(raw.path).delete();
-  } catch (_) {}
+  } catch (_) {
+    // Berkas sementara dari kamera; salinannya sudah tersimpan dan
+    // tercatat di basis data. Gagal menghapusnya meninggalkan satu
+    // berkas di folder sementara yang dibersihkan sistem sendiri — tidak
+    // ada yang perlu dikatakan kepada siapa pun, dan tidak ada yang dapat
+    // ditindaklanjuti.
+  }
 
   await db.insertPhoto(
     PhotosCompanion.insert(
