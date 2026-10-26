@@ -211,18 +211,45 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   // sedang dikerjakan HP lain, dan menunggu sinkron berkala
                   // 15 menit untuk itu terasa seperti aplikasinya menggantung.
                   onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
-                  child: ListView(
+                  // DIBANGUN MALAS, bukan sekaligus.
+                  //
+                  // `ListView(children: [...])` membangun SELURUH kartu
+                  // sebelum satu pun terlihat. Dinding R501 berisi 744
+                  // titik, jadi setiap kali layar ini digambar ulang —
+                  // mengetik di kotak cari, menekan keping saringan,
+                  // sinkron selesai — 744 pohon widget dirakit untuk
+                  // menampilkan sekitar sepuluh. `.builder` merakit yang
+                  // terlihat saja.
+                  child: ListView.builder(
                   controller: _scroll,
                   keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 12, Dimens.pagePadding, 80),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Text(t(context).castProgress(castCount, all.length), style: TextStyle(color: w.muted)),
-                    ),
-                    if (items.isEmpty) EmptyState(message: t(context).noMatchingPoints),
-                    for (final (i, pt) in items.indexed) AppearIn(order: i, child: _card(pt)),
-                  ],
+                  // Butir 0 selalu baris kemajuan. Daftar kosong menambah
+                  // satu butir lagi untuk keterangannya, bukan membiarkan
+                  // layar kosong tanpa kata.
+                  itemCount: items.isEmpty ? 2 : items.length + 1,
+                  itemBuilder: (context, i) {
+                    if (i == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(t(context).castProgress(castCount, all.length), style: TextStyle(color: w.muted)),
+                      );
+                    }
+                    if (items.isEmpty) {
+                      return EmptyState(message: t(context).noMatchingPoints);
+                    }
+                    final k = i - 1;
+                    final kartu = _card(items[k]);
+                    // Animasi masuk HANYA untuk yang terlihat saat daftarnya
+                    // dibuka. Dibiarkan pada semua butir, tiap kartu akan
+                    // memudar masuk saat digulir melewatinya — dan pada
+                    // guliran cepat itu terbaca sebagai layar yang
+                    // tersendat, bukan sebagai sambutan.
+                    //
+                    // `AppearIn` sendiri sudah membatasi jedanya pada lima
+                    // butir pertama, jadi di luar itu tidak ada yang hilang.
+                    return k < _butirBeranimasi ? AppearIn(order: k, child: kartu) : kartu;
+                  },
                 ),
                 ),
               ),
@@ -232,6 +259,9 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
       ),
     );
   }
+
+  /// Sebanyak kartu yang muat di satu layar — selebihnya tidak dianimasikan.
+  static const _butirBeranimasi = 12;
 
   Widget _card(FieldPilePoint pt) {
     final w = context.colors;
@@ -527,9 +557,24 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   )
                 else if (!drilled && !drillingElsewhere) ...[
                   FilledButton.icon(
-                    onPressed: () {
+                    // Nomor titiknya diketik ulang dulu, sama seperti
+                    // sebelum mulai cor. Salah tap baris di daftar tidak
+                    // membedakan bor dan cor: yang membedakan hanya akibatnya
+                    // — log bor yang salah titik membuat kedalaman satu
+                    // lubang tercatat di lubang sebelahnya, dan dari situ
+                    // seluruh hitungan tertanam serta volume tiang itu
+                    // berdiri di atas angka yang bukan miliknya.
+                    onPressed: () async {
+                      final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
+                          .map((e) => e.code);
+                      final benar = await askCodeConfirm(context, code: pt.code, allCodes: semua);
+                      if (!benar || !mounted || !c.mounted) return;
                       Navigator.pop(c);
-                      context.push('/drilling/log/${newUuid()}?pilePoint=${pt.uuid}');
+                      unawaited(
+                        context.push(
+                          '/drilling/log/${newUuid()}?pilePoint=${pt.uuid}',
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.construction),
                     label: Text(t(context).startDrillLog),

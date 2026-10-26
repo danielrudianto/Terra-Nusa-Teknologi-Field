@@ -40,50 +40,67 @@ class AttendancePage extends ConsumerWidget {
         child: doc.when(
         loading: () => const SkeletonCards(),
         error: (e, _) => ErrorState(title: t(context).attendanceLoadError, message: '$e'),
-        data: (items) => ListView(
+        // DIBANGUN MALAS, bukan sekaligus.
+        //
+        // Riwayat absensi TIDAK DIBATASI — `watchDocuments` memulangkan
+        // seluruh dokumen absensi pengguna ini, dan seorang mandor menambah
+        // satu setiap hari kerja tanpa pernah berkurang. Dengan
+        // `ListView(children: [...])` setiap kartu dirakit sebelum satu pun
+        // terlihat, dan tiap kartu menjalankan `jsonDecode` atas isinya.
+        // Artinya seluruh riwayat diurai ulang setiap kali layar ini
+        // digambar ulang, dan biayanya bertambah tiap hari tanpa ada
+        // kejadian yang dapat ditunjuk sebagai penyebabnya.
+        //
+        // `.builder` merakit — dan mengurai — yang terlihat saja.
+        data: (items) => ListView.builder(
           padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 96),
-          children: [
-            const StatusBanners(showPending: false),
-            PageHeader(title: t(context).attendanceHistory, description: t(context).attendanceHistoryBody),
-            if (items.isEmpty) EmptyState(message: t(context).noAttendanceYet, icon: Icons.how_to_reg_outlined),
-            for (final d in items)
-              Builder(builder: (context) {
-                final body = (jsonDecode(d.body) as Map).cast<String, Object?>();
-                final p = projects['${body['projectID']}'];
-                final rows = (body['lines'] as List?)?.length ?? 0;
-                final hasCheckIn = body['checkIn'] != null;
-                final hasCheckOut = body['checkOut'] != null;
-                return ListCard(
-                  edgeColor: d.sendStatus == 'rejected' ? w.badFg : null,
-                  onTap: () => context.push('/attendance/${d.uuid}'),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          // Dua butir kepala selalu ada. Daftar kosong menambah satu lagi
+          // untuk keterangannya, bukan membiarkan layar kosong tanpa kata.
+          itemCount: items.isEmpty ? 3 : items.length + 2,
+          itemBuilder: (context, i) {
+            if (i == 0) return const StatusBanners(showPending: false);
+            if (i == 1) {
+              return PageHeader(title: t(context).attendanceHistory, description: t(context).attendanceHistoryBody);
+            }
+            if (items.isEmpty) {
+              return EmptyState(message: t(context).noAttendanceYet, icon: Icons.how_to_reg_outlined);
+            }
+            final d = items[i - 2];
+            final body = (jsonDecode(d.body) as Map).cast<String, Object?>();
+            final p = projects['${body['projectID']}'];
+            final rows = (body['lines'] as List?)?.length ?? 0;
+            final hasCheckIn = body['checkIn'] != null;
+            final hasCheckOut = body['checkOut'] != null;
+            return ListCard(
+              edgeColor: d.sendStatus == 'rejected' ? w.badFg : null,
+              onTap: () => context.push('/attendance/${d.uuid}'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              p == null ? 'Proyek #${body['projectID']}' : '${p['code']} · ${p['name']}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontWeight: FontWeight.w700, color: w.ink),
-                            ),
-                          ),
-                          StatusBadge.sendStatus(context, d.sendStatus),
-                        ],
+                      Expanded(
+                        child: Text(
+                          p == null ? 'Proyek #${body['projectID']}' : '${p['code']} · ${p['name']}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontWeight: FontWeight.w700, color: w.ink),
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text('${body['date']} · $rows kru · ${hasCheckIn ? 'masuk ✓' : 'belum masuk'} · ${hasCheckOut ? 'pulang ✓' : 'belum pulang'}',
-                          style: TextStyle(color: w.muted, fontSize: 13)),
-                      if (d.serverStatus != null) ...[
-                        const SizedBox(height: 6),
-                        ReviewBadge(status: d.serverStatus!),
-                      ],
+                      StatusBadge.sendStatus(context, d.sendStatus),
                     ],
                   ),
-                );
-              }),
-          ],
+                  const SizedBox(height: 4),
+                  Text('${body['date']} · $rows kru · ${hasCheckIn ? 'masuk ✓' : 'belum masuk'} · ${hasCheckOut ? 'pulang ✓' : 'belum pulang'}',
+                      style: TextStyle(color: w.muted, fontSize: 13)),
+                  if (d.serverStatus != null) ...[
+                    const SizedBox(height: 6),
+                    ReviewBadge(status: d.serverStatus!),
+                  ],
+                ],
+              ),
+            );
+          },
         ),
       ),
       ),

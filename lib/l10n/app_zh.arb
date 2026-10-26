@@ -381,8 +381,6 @@
   "noPoYet": "本项目尚无混凝土采购单",
   "suppliersWithPoBody": "作为每车的默认值；每车仍可单独选择供应商。列表中没有？请选择\"其他\"并输入名称，并告知办公室。",
   "noPoYetBody": "显示全部混凝土供应商；办公室开具采购单后列表会自动收窄。每车仍可单独选择供应商。",
-  "defaultSupplier": "默认混凝土供应商（搅拌站）",
-  "concreteSupplier": "混凝土供应商（搅拌站）",
   "noteField": "备注",
   "hangAboveGs": "高出地面 {top}–{bottom} m",
   "hangAcrossGs": "自高出地面 {top} m 至深度 {bottom} m",

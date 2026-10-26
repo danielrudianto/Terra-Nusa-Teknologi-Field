@@ -45,6 +45,12 @@ import '../../core/i18n.dart';
 ///   pilePointUuid, date, concreteGrade, supplierID, supplierName,
 ///   tremieBottomGapM, status, note, tremie[...], trucks[...]
 ///
+/// `supplierID` DAN `supplierName` SELALU KOSONG, jangan dibaca. Keduanya
+/// masih ada supaya APK lama tidak ditolak server, dan akan dibuang begitu
+/// seluruh HP memakai 1.0.15 ke atas. Pemasok yang benar ada di tiap
+/// `trucks[]`, dan hanya di situ — dua tempat untuk satu hal sudah pernah
+/// berselisih di sini.
+///
 /// WORK ORDER IN THE FIELD — and the order of this screen
 ///
 ///   1. Assemble the tremie (bottom segment → top).
@@ -217,6 +223,27 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   List<Map<String, Object?>> get _pauses =>
       [for (final p in (_doc!['pauses'] as List? ?? const [])) (p as Map).cast<String, Object?>()];
   List<Map<String, Object?>> get _trucks => [for (final t in (_doc!['trucks'] as List)) (t as Map).cast<String, Object?>()];
+
+  /// Pemasok yang BENAR-BENAR menuang titik ini, dibaca dari TM-nya.
+  ///
+  /// Satu titik boleh disuapi dua batching plant, jadi jawabannya memang
+  /// bisa lebih dari satu nama — dan itu justru yang perlu terlihat.
+  /// Digabung dengan " + ", sama dengan rekap Excel di kantor, supaya layar
+  /// dan kertas tidak menyebut hal berbeda untuk titik yang sama.
+  ///
+  /// DITURUNKAN, tidak disimpan. Satu nilai pemasok yang disimpan terpisah
+  /// dari TM-nya adalah tempat kedua yang akan berselisih dengan TM-nya
+  /// sendiri — itu persis kesalahan yang baru saja dicabut.
+  String? get _suppliersFromTrucks {
+    final urut = [..._trucks]..sort((a, b) => (toIntOrNull(a['seq']) ?? 0).compareTo(toIntOrNull(b['seq']) ?? 0));
+    final nama = <String>[];
+    for (final t in urut) {
+      final n = t['supplierName']?.toString().trim();
+      if (n == null || n.isEmpty || nama.contains(n)) continue;
+      nama.add(n);
+    }
+    return nama.isEmpty ? null : nama.join(' + ');
+  }
 
   Map<String, Object?>? get _lastTruck {
     final d = _trucks;
@@ -505,11 +532,18 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final seq = k.lastSeq + 1;
     if (k.reachedCutOffAfter(seq - 1) && !await _confirmTruckAboveCutOff(k, seq - 1)) return;
     // Supplier of THIS truck: one pile may be fed by two batching plants.
-    // Prefilled from the previous TM, else from Data cor, so the common
-    // case (one plant all day) costs no extra tap.
+    // Prefilled from the previous TM, so the common case (one plant all
+    // day) costs no extra tap.
+    //
+    // TIDAK LAGI mundur ke `_doc` — pemasok per titik sudah dipensiunkan.
+    // Log cor dulu menyimpan pemasoknya sendiri di kepala, terpisah dari
+    // pemasok tiap TM, dan keduanya berselisih tanpa satu pun galat: 26
+    // Okt 2026 seluruh TM datang dari Adhimix sementara kepalanya menyebut
+    // Jayamix. Kepala itu kini selalu kosong; membacanya hanya akan
+    // menyodorkan nama dari dokumen lama sebagai tawaran awal.
     final lastTruck = _trucks.lastOrNull;
-    final defaultSupplierId = toIntOrNull(lastTruck?['supplierID']) ?? toIntOrNull(_doc!['supplierID']);
-    final defaultSupplierName = (lastTruck?['supplierName'] ?? _doc!['supplierName'])?.toString();
+    final defaultSupplierId = toIntOrNull(lastTruck?['supplierID']);
+    final defaultSupplierName = lastTruck?['supplierName']?.toString();
     final offer = suppliersForProject(
       await ref.read(dbProvider).listMaster('supplier'),
       toIntOrNull(_pilePoint!['projectID']),
@@ -527,6 +561,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         pouredSoFarM3: k.totalVolumeM3,
         takeTicketPhoto: _takeTicketPhoto,
         suppliers: offer.suppliers,
+        suppliersNarrowed: offer.narrowed,
         supplierId: defaultSupplierId,
         supplierName: defaultSupplierName,
       ),
@@ -598,6 +633,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         pouredSoFarM3: k.totalVolumeM3 - (toDoubleOrNull(truck['volumeM3']) ?? 0),
         takeTicketPhoto: _takeTicketPhoto,
         suppliers: offer.suppliers,
+        suppliersNarrowed: offer.narrowed,
         supplierId: supplierId,
         supplierName: truck['supplierName']?.toString(),
       ),
@@ -1080,15 +1116,23 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     }
   }
 
+  /// Data cor — mutu beton, kedalaman tremie, catatan.
+  ///
+  /// PEMASOK SUDAH TIDAK DI SINI.
+  ///
+  ///     "supplier per titik jangan pernah ada lagi deh bang"
+  ///
+  /// Satu titik dulu menyimpan pemasoknya di dua tempat: satu di kepala log
+  /// ini, satu lagi di tiap TM. Keduanya berselisih tanpa satu pun galat —
+  /// 26 Okt 2026 seluruh TM datang dari Adhimix sementara kepalanya menyebut
+  /// Jayamix — dan yang membaca layar tidak punya cara tahu mana yang benar.
+  ///
+  /// Kepalanya kini selalu kosong di server. Kendalinya dicabut dari sini
+  /// juga, sebab kendali yang masih dapat diketuk dan diubah padahal
+  /// nilainya tidak disimpan ke mana pun adalah kebohongan yang lebih buruk
+  /// daripada tidak ada kendali sama sekali: orangnya mengira sudah
+  /// mencatat.
   Future<void> _editHeader() async {
-    // Concrete suppliers marked in the ERP (Pemasok → "Pemasok beton").
-    // Only those with a PO in this project, when there are any.
-    final offer = suppliersForProject(
-      await ref.read(dbProvider).listMaster('supplier'),
-      toIntOrNull(_pilePoint!['projectID']),
-      keepId: toIntOrNull(_doc!['supplierID']),
-    );
-    if (!mounted) return;
     final result = await showModalBottomSheet<Map<String, Object?>>(
       context: context,
       isScrollControlled: true,
@@ -1096,10 +1140,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       builder: (c) => _HeaderSheet(
         grade: toDoubleOrNull(_doc!['concreteGrade']),
         defaultGrade: toDoubleOrNull(_pilePoint!['concreteGrade']) ?? toDoubleOrNull(_project?['defaultConcreteGrade']),
-        suppliers: offer.suppliers,
-        suppliersNarrowed: offer.narrowed,
-        supplierId: toIntOrNull(_doc!['supplierID']),
-        supplier: _doc!['supplierName']?.toString(),
         bottomDepthM: _castingState.geometry.bottomDepthM,
         tremieDepthStartM: toDoubleOrNull(_doc!['tremieDepthStartM']),
         note: _doc!['note']?.toString(),
@@ -1377,7 +1417,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               body: t(context).drillDepthUnmarkedBody,
             ),
 
-          _SummaryCard(geometry: g, castingState: k, grade: _grade, supplier: _doc!['supplierName']?.toString(), onEdit: _readOnly ? null : _editHeader),
+          _SummaryCard(geometry: g, castingState: k, grade: _grade, supplier: _suppliersFromTrucks, onEdit: _readOnly ? null : _editHeader),
           if (_row?.serverStatus != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: ReviewBadge(status: _row!.serverStatus!)),
 
           // --- live cross-section -------------------------------------------
@@ -2416,6 +2456,7 @@ class _TruckSheet extends ConsumerStatefulWidget {
     required this.pouredSoFarM3,
     required this.takeTicketPhoto,
     required this.suppliers,
+    required this.suppliersNarrowed,
     required this.supplierId,
     required this.supplierName,
   });
@@ -2438,9 +2479,18 @@ class _TruckSheet extends ConsumerStatefulWidget {
   /// Foto slump yang sudah diambil sebelum TM ini masuk, berikut jamnya.
   /// Isian ini terbuka dengan foto tersebut sudah terpasang.
 
-  /// Concrete suppliers to offer, and the previous TM's (or the header's)
-  /// choice as the preselected default.
+  /// Concrete suppliers to offer, and the previous TM's choice as the
+  /// preselected default.
   final List<Map<String, Object?>> suppliers;
+
+  /// [suppliers] hanya berisi yang punya PO di proyek ini.
+  ///
+  /// Menentukan bunyi banner di atas pilihannya: daftar yang menyempit
+  /// karena PO berbeda artinya dengan daftar yang memang belum disaring,
+  /// dan yang di lapangan harus tahu yang mana — kalau tidak, pemasok yang
+  /// hilang dari daftar terbaca sebagai aplikasi yang rusak.
+  final bool suppliersNarrowed;
+
   final int? supplierId;
   final String? supplierName;
 
@@ -2785,6 +2835,19 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
             TextField(controller: _truck, decoration: InputDecoration(labelText: t(context).hullNoField)),
             const SizedBox(height: 12),
             if (widget.suppliers.isNotEmpty) ...[
+              // PANDUAN PEMASOK ADA DI SINI, bukan lagi di lembar Data cor.
+              //
+              // Kedua banner ini dulu menemani pemilih pemasok di kepala log,
+              // dan ikut hilang ketika pemilih itu dicabut — sementara
+              // memilih pemasok justru pindah SELURUHNYA ke lembar ini.
+              // Panduan yang tertinggal di layar yang sudah tidak ada sama
+              // saja dengan tidak pernah ditulis.
+              TerraBanner(
+                kind: BannerKind.info,
+                title: widget.suppliersNarrowed ? t(context).suppliersWithPo : t(context).noPoYet,
+                body: widget.suppliersNarrowed ? t(context).suppliersWithPoBody : t(context).noPoYetBody,
+              ),
+              const SizedBox(height: 8),
               DropdownButtonFormField<int?>(
                 initialValue: _supplierChoice,
                 isExpanded: true,
@@ -2797,6 +2860,14 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
                   DropdownMenuItem<int?>(value: _lokal, child: Text(t(context).supplierLocal)),
                 ],
                 onChanged: _pilihPemasok,
+              ),
+              // Jalan keluar ketika pemasok yang benar tidak ada di daftar,
+              // ditulis DI TEMPAT jalan buntunya ditemui.
+              const SizedBox(height: 8),
+              TerraBanner(
+                kind: BannerKind.info,
+                title: t(context).supplierMissingTitle,
+                body: t(context).supplierMissingBody,
               ),
               if (_ketikanWarisan != null) ...[
                 const SizedBox(height: 8),
@@ -2891,30 +2962,23 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   }
 }
 
-/// Casting data: grade, supplier, tremie bottom gap, note.
+/// Data cor: mutu beton, kedalaman tremie, catatan.
+///
+/// TANPA PEMASOK. Pemasok dicatat per TM, di `_TruckSheet`, dan hanya di
+/// sana — lihat catatan di `_editHeader`. Kendali pemasok di lembar ini
+/// pernah ada dan sudah dicabut: isinya tidak lagi disimpan ke mana pun,
+/// jadi ia hanya terlihat bekerja.
 class _HeaderSheet extends StatefulWidget {
   const _HeaderSheet({
     required this.grade,
     required this.defaultGrade,
-    required this.suppliers,
-    required this.suppliersNarrowed,
-    required this.supplierId,
-    required this.supplier,
     required this.bottomDepthM,
     required this.tremieDepthStartM,
     required this.note,
   });
 
-  /// [suppliers] holds only those with a PO in this project.
-  final bool suppliersNarrowed;
-
   final double? grade;
   final double? defaultGrade;
-
-  /// Concrete suppliers from the ERP: `{id, name}`. Empty = type the name.
-  final List<Map<String, Object?>> suppliers;
-  final int? supplierId;
-  final String? supplier;
 
   /// Dasar lubang dari GS. Celahnya dihitung dari sini, tidak diisi tangan.
   final double bottomDepthM;
@@ -2929,7 +2993,6 @@ class _HeaderSheet extends StatefulWidget {
 
 class _HeaderSheetState extends State<_HeaderSheet> {
   late final _grade = TextEditingController(text: widget.grade == null ? '' : _decimal(widget.grade, d: 1));
-  late final _supplier = TextEditingController(text: widget.supplier ?? '');
   late final _gap = TextEditingController(
       text: widget.tremieDepthStartM == null ? '' : _decimal(widget.tremieDepthStartM));
   late final _note = TextEditingController(text: widget.note ?? '');
@@ -3007,101 +3070,19 @@ class _HeaderSheetState extends State<_HeaderSheet> {
 
   Map<String, String?> _isianSekarang() => {
         'grade': _grade.text,
-        'supplier': _supplier.text,
         'gap': _gap.text,
         'note': _note.text,
-        'pemasok': _supplierChoice?.toString(),
       };
-
-  /// Chosen supplier id. `null` = belum dipilih.
-  ///
-  /// ───────────────────────────────────────────────────────────────────────
-  /// TYPING A NAME IS ONLY OFFERED WHEN THERE IS NO LIST AT ALL
-  /// ───────────────────────────────────────────────────────────────────────
-  ///
-  /// Reported by Daniel, 16 Oct 2026: this project has exactly two concrete
-  /// suppliers, and a foreman still managed to enter "Jaya mix". The "other"
-  /// item on the dropdown was the door, and the cost is not a messy list.
-  /// A typed name matches no supplier row, so the casting carries a
-  /// `supplierName` with no `supplierID`: it never reaches that supplier's
-  /// recap, it never matches the delivery tickets, and the office only finds
-  /// out while reconciling an invoice weeks later. That is how "SCG Jayamix"
-  /// was born — a supplier that turned out never to have existed.
-  ///
-  /// So: when the app HAS a list, the list is the only way. If the real
-  /// supplier is missing from it, the fix belongs in the office (mark the
-  /// supplier "Pemasok beton", or issue the PO for this project) and the
-  /// banner says so — otherwise the only way forward a foreman can see is
-  /// to invent a name that nobody can trace.
-  ///
-  /// Free text survives for ONE case: no concrete supplier in the ERP at
-  /// all. Without it, such a project could not log a casting.
-  /// Beton SITE-MIX — diaduk di lokasi, bukan dari batching plant.
-  ///
-  /// Pilihan TETAP, bukan ketikan. Daniel, 16 Okt 2026: "seumur hidup cuma
-  /// ada 1 proyek yang kaya gitu" — jarang, tetapi nyata, dan justru karena
-  /// jarang ia tidak boleh dikembalikan menjadi isian bebas. Satu pilihan
-  /// tetap menghasilkan satu nilai yang sama di seluruh HP; isian bebas
-  /// menghasilkan "lokal", "Lokal", "site mix", "sitemix", dan "cor manual"
-  /// untuk satu hal yang sama.
-  ///
-  /// Yang TERSIMPAN selalu [_namaLokal] — bukan labelnya di layar. Label
-  /// boleh diterjemahkan; nilai yang tersimpan tidak, kalau tidak HP
-  /// berbahasa Inggris akan menulis nama lain untuk beton yang sama.
-  static const _lokal = -2;
-
-  /// Nilai `supplierName` untuk site-mix. TETAP, tidak diterjemahkan.
-  static const _namaLokal = 'Lokal';
-  late int? _supplierChoice = widget.supplierId ??
-      ((widget.supplier ?? '') == _namaLokal ? _lokal : null);
-
-  /// Nama yang DIKETIK pada build lama — lihat kembarannya di `_TruckSheet`.
-  String? get _ketikanWarisan {
-    final n = (widget.supplier ?? '').trim();
-    if (widget.suppliers.isEmpty || widget.supplierId != null) return null;
-    if (n.isEmpty || n == _namaLokal) return null;
-    return n;
-  }
 
   @override
   void dispose() {
-    for (final c in [_grade, _supplier, _gap, _note]) {
+    for (final c in [_grade, _gap, _note]) {
       c.dispose();
     }
     super.dispose();
   }
 
 
-  /// Pilihan pemasok berubah — "Lokal" ditanyakan lebih dulu.
-  ///
-  /// Diminta Daniel, 16 Okt 2026: "takutnya salah klik loh". Butirnya duduk
-  /// tepat di bawah pemasok sungguhan, dan jari yang meleset satu baris
-  /// mengubah beton ready-mix menjadi site-mix — pada dokumen yang dipakai
-  /// menagih, dan yang tidak akan pernah cocok dengan surat jalan mana pun
-  /// sesudahnya.
-  ///
-  /// Hanya "Lokal" yang ditanyakan. Setiap pilihan yang ditanyakan membuat
-  /// pertanyaannya makin tidak dibaca; yang perlu dipastikan di sini satu,
-  /// yaitu yang artinya "tidak ada pemasok sama sekali".
-  ///
-  /// Dibatalkan berarti pilihannya TIDAK berubah — bukan kembali ke kosong.
-  /// Kembali ke kosong, satu ketukan salah akan membuang pemasok yang sudah
-  /// benar dan orangnya harus memilih ulang.
-  Future<void> _pilihPemasok(int? v) async {
-    if (v != _lokal) {
-      setState(() => _supplierChoice = v);
-      return;
-    }
-    final ya = await askConfirm(
-      context,
-      title: t(context).supplierLocalConfirmTitle,
-      body: t(context).supplierLocalConfirmBody,
-      confirmLabel: t(context).supplierLocalConfirmYes,
-      icon: Icons.handyman_outlined,
-    );
-    if (!mounted || !ya) return;
-    setState(() => _supplierChoice = v);
-  }
 
   void _submit() {
     final grade = _grade.text.trim().isEmpty ? null : parseNumber(_grade.text);
@@ -3124,26 +3105,8 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       return;
     }
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
-    final picked = widget.suppliers.where((s) => toIntOrNull(s['id']) == _supplierChoice).firstOrNull;
-    // With a list on hand, a supplier must be picked from it. Held HERE and
-    // not left to the server: the server would reject the whole sync item
-    // hours later, when this sheet is long closed and nobody can still tell
-    // which casting it belonged to.
-    final lokal = _supplierChoice == _lokal;
-    if (widget.suppliers.isNotEmpty && picked == null && !lokal) {
-      setState(() => _error = t(context).supplierMustBePicked);
-      return;
-    }
     Navigator.pop(context, {
       'concreteGrade': grade == null ? null : decimalText(grade, decimals: 1),
-      // Picked from the list: id + its name. Typed: name only.
-      // Dipilih dari daftar: id + namanya. Site-mix: tanpa id, nama TETAP
-      // `Lokal` (bukan labelnya di layar, yang boleh diterjemahkan).
-      // Ketikan: nama saja, dan itu hanya mungkin bila daftarnya kosong.
-      'supplierID': picked == null ? null : toIntOrNull(picked['id']),
-      'supplierName': picked != null
-          ? '${picked['name']}'
-          : (lokal ? _namaLokal : orNull(_supplier)),
       'tremieDepthStartM': decimalText(dalam),
       // Celahnya ikut dikirim: server lama tidak mengenal kolom terukurnya,
       // dan hitungannya mundur ke sini.
@@ -3186,48 +3149,6 @@ class _HeaderSheetState extends State<_HeaderSheet> {
                 body: t(context).defaultGradeBody,
               ),
             TextField(controller: _grade, keyboardType: numeric, inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1), decoration: InputDecoration(labelText: t(context).cellGrade, suffixText: 'MPa')),
-            const SizedBox(height: 12),
-            if (widget.suppliers.isNotEmpty) ...[
-              TerraBanner(
-                kind: BannerKind.info,
-                title: widget.suppliersNarrowed ? t(context).suppliersWithPo : t(context).noPoYet,
-                body: widget.suppliersNarrowed ? t(context).suppliersWithPoBody : t(context).noPoYetBody,
-              ),
-              DropdownButtonFormField<int?>(
-                initialValue: _supplierChoice,
-                isExpanded: true,
-                decoration: InputDecoration(labelText: t(context).defaultSupplier),
-                items: [
-                  for (final s in widget.suppliers)
-                    DropdownMenuItem<int?>(value: toIntOrNull(s['id']), child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
-                  // Paling bawah, sesudah pemasok sungguhan: site-mix
-                  // adalah perkecualian, dan letaknya mengatakan itu.
-                  DropdownMenuItem<int?>(value: _lokal, child: Text(t(context).supplierLocal)),
-                ],
-                onChanged: _pilihPemasok,
-              ),
-              // What to do when the right supplier is not on the list, said
-              // where the dead end is met.
-              const SizedBox(height: 8),
-              TerraBanner(
-                kind: BannerKind.info,
-                title: t(context).supplierMissingTitle,
-                body: t(context).supplierMissingBody,
-              ),
-              if (_ketikanWarisan != null) ...[
-                const SizedBox(height: 8),
-                TerraBanner(
-                  kind: BannerKind.warning,
-                  title: t(context).supplierTypedBefore,
-                  body: _ketikanWarisan!,
-                ),
-              ],
-            ],
-            if (widget.suppliers.isEmpty)
-              TextField(
-                controller: _supplier,
-                decoration: InputDecoration(labelText: t(context).concreteSupplier),
-              ),
             const SizedBox(height: 12),
             TextField(
               controller: _gap,

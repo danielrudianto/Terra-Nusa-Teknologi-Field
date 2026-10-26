@@ -381,8 +381,6 @@
   "noPoYet": "No concrete PO on this project yet",
   "suppliersWithPoBody": "Used as the default for each truck; every truck can still pick its own supplier. Not in the list? Choose \"Other\", type the name, and tell the office.",
   "noPoYetBody": "Showing every concrete supplier; the list narrows by itself once the office raises a PO. Every truck can still pick its own supplier.",
-  "defaultSupplier": "Default concrete supplier (batching plant)",
-  "concreteSupplier": "Concrete supplier (batching plant)",
   "noteField": "Note",
   "hangAboveGs": "{top}–{bottom} m above ground level",
   "hangAcrossGs": "{top} m above ground level down to {bottom} m deep",

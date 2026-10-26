@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.15 (43) — Konfirmasi titik sebelum mengebor
+
+<id>
+• Sebelum mulai mengebor, nomor titiknya harus diketik ulang — seperti sebelum mengecor. Salah menekan satu baris membuat kedalaman satu lubang tercatat di lubang sebelahnya, dan hitungan tiang itu berdiri di atas angka yang bukan miliknya.
+• Pemasok hanya dicatat per truk mixer. Isian pemasok di Data cor dihapus — isinya sudah tidak tersimpan — dan ringkasan titik kini menyebut pemasok yang benar-benar menuang.
+• Daftar titik dan riwayat absensi terbuka jauh lebih cepat, berapa pun panjangnya.
+</id>
+<en-US>
+• Before drilling starts, the point number must be typed again — the same as before a pour. One wrong row puts a hole's depth on the hole next to it, and that pile's figures then rest on a number that is not its own.
+• The supplier is recorded per mixer truck only. The supplier field on Casting data is gone — it no longer saved — and the point summary now names who actually poured.
+• The point list and attendance history open far faster, however long they are.
+</en-US>
+<zh-CN>
+• 开钻前须重新输入桩号，与灌注前相同。误点一行会把某孔的深度记到相邻孔上，该桩数据便建立在并非自己的数字之上。
+• 供应商仅按每辆搅拌车记录。「灌注数据」中的供应商栏已移除（其内容早已不再保存），桩位摘要改为显示实际供料方。
+• 桩位列表与考勤记录无论多长，打开速度都大幅提升。
+</zh-CN>

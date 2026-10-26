@@ -2081,14 +2081,6 @@
   "@noPoYetBody": {
     "description": "noPoYetBody"
   },
-  "defaultSupplier": "Pemasok beton bawaan (batching plant)",
-  "@defaultSupplier": {
-    "description": "defaultSupplier"
-  },
-  "concreteSupplier": "Pemasok beton (batching plant)",
-  "@concreteSupplier": {
-    "description": "concreteSupplier"
-  },
   "noteField": "Catatan",
   "@noteField": {
     "description": "noteField"
