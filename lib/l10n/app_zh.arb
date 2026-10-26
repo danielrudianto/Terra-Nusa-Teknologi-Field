@@ -63,6 +63,10 @@
   "notifTitle": "震动提醒",
   "notifOn": "已开启。罐车超过 20 分钟及浇筑暂停期间手机会振动。已与手机配对的手表同样会收到提醒和\"结束罐车\"按钮——此处无需额外设置。",
   "notifOff": "已关闭。点按授权；否则灌注提醒不会出现。",
+  "notifBlockedTitle": "提醒将不会出现",
+  "notifBlockedBody": "本手机尚未允许 TerraBot Field 显示通知。超过 20 分钟的罐车、暂停的浇筑、未关闭的钻孔记录，所有提醒都不会响。请点按「允许」。",
+  "notifAllow": "允许",
+  "notifAllowManual": "通知仍被手机关闭。请打开手机设置 → 应用 → TerraBot Field → 通知，并将其打开。",
   "powerTitle": "电池与自启动",
   "powerOk": "无限制。息屏时提醒与自动上传仍会运行。",
   "powerRestricted": "仍被系统限制。点按设置，以免错过灌注提醒。",
@@ -151,6 +155,11 @@
   "correctDrillGs": "修正钻孔深度 / 地面标高",
   "openCastLog": "打开灌注记录",
   "startCastLog": "开始灌注记录",
+  "confirmPointCodeTitle": "请输入桩号",
+  "confirmPointCodeBody": "请看您即将灌注的桩，而不是手机上的列表。您在此输入的桩号可防止记录录入邻桩。",
+  "confirmPointCodeField": "桩号",
+  "confirmPointCodeConfirm": "正确，开始灌注",
+  "confirmPointCodeMismatch": "您在列表中选择了 {selected}，但输入的是 {typed}。如果 {typed} 才是正确的，请关闭此窗口并在列表中选择它。",
   "colleague": "同事",
   "markedDrilled": "{code} 已标记为钻孔 {depth}。",
   "gsInvalid": "地面标高无效。",
@@ -1056,6 +1065,8 @@
   "@denahLabelToggle": {
     "description": "denahLabelToggle"
   },
+  "denahRotate": "旋转 90°",
+  "denahFit": "适应屏幕",
   "denahDeviationToggle": "偏差连线",
   "@denahDeviationToggle": {
     "description": "denahDeviationToggle"

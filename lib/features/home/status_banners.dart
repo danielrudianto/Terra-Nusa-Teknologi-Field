@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/providers.dart';
+import '../../core/device/notifications.dart';
 import '../../core/util/clock_drift.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/util/format.dart';
@@ -15,7 +16,12 @@ import '../../core/i18n.dart';
 /// rejected (something the foreman must fix), then not yet pushed (just
 /// good to know).
 class StatusBanners extends ConsumerWidget {
-  const StatusBanners({super.key, this.showPending = true, this.showUpdate = false});
+  const StatusBanners({
+    super.key,
+    this.showPending = true,
+    this.showUpdate = false,
+    this.showNotifWarning = false,
+  });
 
   final bool showPending;
 
@@ -27,6 +33,15 @@ class StatusBanners extends ConsumerWidget {
   /// sebelum mulai bekerja; di situ memperbarui tidak memotong apa pun.
   final bool showUpdate;
 
+  /// Tampilkan peringatan bahwa HP tidak mengizinkan notifikasi.
+  ///
+  /// MATI bawaannya, dan dinyalakan HANYA di beranda — alasannya sama
+  /// dengan `showUpdate`: peringatan yang muncul di layar pengecoran akan
+  /// ditutup refleks tanpa dibaca. Beranda tempat orang berdiri sebelum
+  /// mulai bekerja, dan satu ketukan di situ membetulkannya untuk seluruh
+  /// hari itu.
+  final bool showNotifWarning;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider).value;
@@ -37,6 +52,11 @@ class StatusBanners extends ConsumerWidget {
     final syncState = ref.watch(syncProvider);
     final oldest = ref.watch(oldestPendingProvider).value;
     final drift = ref.watch(clockDriftProvider).value;
+
+    // `false` saat masih dimuat, bukan `true`: spanduk yang berkedip muncul
+    // lalu hilang tiap kali beranda dibuka lebih buruk daripada sedetik
+    // terlambat.
+    final notifMati = ref.watch(notificationsEnabledProvider).value == false;
     final clockOff = drift != null && drift.abs() > clockDriftWarn;
     // Waiting more than a day: something is wrong (no signal for days, an
     // app killed by battery saving) and someone has to act on it.
@@ -82,6 +102,51 @@ class StatusBanners extends ConsumerWidget {
             title: t(context).sessionExpired,
             body: t(context).sessionExpiredBody,
             action: FilledButton(onPressed: () => context.go('/login'), child: Text(t(context).signIn)),
+          ),
+        // PENGINGAT TIDAK AKAN MUNCUL — dan itu diam tanpa peringatan ini.
+        //
+        // Ditaruh di atas yang lain selain kunci perangkat dan sesi habis:
+        // yang ini bukan satu dokumen yang tertahan, ini SELURUH pengingat
+        // hari itu — TM yang lewat 20 menit, cor yang dijeda, log bor yang
+        // lupa ditutup. Satu ketukan membetulkannya.
+        if (showNotifWarning && notifMati)
+          TerraBanner(
+            kind: BannerKind.danger,
+            icon: Icons.notifications_off,
+            title: t(context).notifBlockedTitle,
+            body: t(context).notifBlockedBody,
+            action: FilledButton(
+              onPressed: () async {
+                await Notifications.requestPermission();
+                if (!context.mounted) return;
+                ref.invalidate(notificationsEnabledProvider);
+
+                // KALAU MASIH MATI, KATAKAN APA YANG HARUS DILAKUKAN.
+                //
+                // `requestPermission` hanya memanggil
+                // `requestNotificationsPermission()`, yang baru ada sejak
+                // Android 13 — sementara `minSdk` aplikasi ini 24. Pada
+                // Android 12 ke bawah tidak ada izin runtime sama sekali:
+                // notifikasinya dimatikan dari Setelan telepon, dan tombol
+                // ini tidak dapat menyalakannya. Hal yang sama terjadi di
+                // Android 13+ sesudah dua kali ditolak — sistem berhenti
+                // menampilkan dialognya.
+                //
+                // Tanpa kalimat ini, yang menekan tombol melihat spanduk
+                // merah yang tidak bisa ditutup dan tidak berubah apa pun,
+                // berapa kali pun ditekan. Spanduk yang tidak dapat
+                // dipatuhi akan diabaikan — termasuk saat ia benar.
+                final hidup = await Notifications.enabled();
+                if (!context.mounted || hidup) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(t(context).notifAllowManual),
+                    duration: const Duration(seconds: 6),
+                  ),
+                );
+              },
+              child: Text(t(context).notifAllow),
+            ),
           ),
         if (clockOff)
           TerraBanner(

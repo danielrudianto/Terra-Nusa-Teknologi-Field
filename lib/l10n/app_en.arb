@@ -63,6 +63,10 @@
   "notifTitle": "Vibrating reminders",
   "notifOn": "On. The phone buzzes when a truck passes 20 minutes and while a pour is paused. A watch already paired to the phone receives the reminders and the Finish truck button too — no extra setting here.",
   "notifOff": "Off. Tap to allow; without it the casting reminders never appear.",
+  "notifBlockedTitle": "Reminders will not appear",
+  "notifBlockedBody": "This phone has not allowed TerraBot Field to show notifications. Reminders for a TM past 20 minutes, a paused pour, and a drill log left open will all stay silent. Tap Allow.",
+  "notifAllow": "Allow",
+  "notifAllowManual": "Notifications are still turned off by the phone. Open phone Settings → Apps → TerraBot Field → Notifications and switch them on.",
   "powerTitle": "Battery & auto-start",
   "powerOk": "Unrestricted. Reminders and auto-send keep running with the screen off.",
   "powerRestricted": "Still restricted by the phone. Tap to fix, so casting reminders are not missed.",
@@ -151,6 +155,11 @@
   "correctDrillGs": "Correct drilled depth / GS",
   "openCastLog": "Open casting log",
   "startCastLog": "Start casting log",
+  "confirmPointCodeTitle": "Type the point number",
+  "confirmPointCodeBody": "Look at the pile you are about to cast, not the list on the phone. What you type here is what keeps this log off the point next door.",
+  "confirmPointCodeField": "Point number",
+  "confirmPointCodeConfirm": "Correct, start casting",
+  "confirmPointCodeMismatch": "You picked {selected} in the list; you typed {typed}. If {typed} is the right one, close this and pick it from the list.",
   "colleague": "A colleague",
   "markedDrilled": "{code} marked as drilled {depth}.",
   "gsInvalid": "The ground level is not valid.",
@@ -1056,6 +1065,8 @@
   "@denahLabelToggle": {
     "description": "denahLabelToggle"
   },
+  "denahRotate": "Rotate 90°",
+  "denahFit": "Fit to screen",
   "denahDeviationToggle": "Deviation lines",
   "@denahDeviationToggle": {
     "description": "denahDeviationToggle"

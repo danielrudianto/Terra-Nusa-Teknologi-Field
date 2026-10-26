@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.14 (42) — Denah terbaca & konfirmasi titik
+
+<id>
+• Sebelum mulai mengecor, nomor titiknya harus diketik ulang. Salah menekan baris di daftar pernah membuat cor tercatat di titik sebelahnya, dan baru ketahuan setelah angkanya ikut terhitung di volume.
+• Denah terbaca lagi: kode titik tidak lagi ikut membesar saat dizum, jadi tumpukannya terurai, dan gambarnya memenuhi layar.
+• Denah dapat diputar 90° mengikuti gambar kerja; ketuk dua kali untuk menzum, Pas layar untuk kembali.
+• Layar utama memperingatkan bila notifikasi dimatikan telepon.
+</id>
+<en-US>
+• Before a pour starts, the point number must be typed again. Tapping the wrong row once put a pour on the neighbouring point, found only after the figure had been counted into the volume.
+• The plan is readable again: point codes no longer grow with the zoom, so pile-ups come apart, and the drawing fills the screen.
+• The plan rotates 90° to match your drawing; double-tap to zoom, Fit to screen to come back.
+• The home screen warns when the phone has notifications off.
+</en-US>
+<zh-CN>
+• 开始灌注前须重新输入桩号。此前误点一行曾把灌注记到相邻桩上，直到数据计入方量才被发现。
+• 桩位图恢复可读：桩号不再随缩放放大，重叠得以散开，图形充满屏幕。
+• 可旋转 90° 以匹配施工图，双击缩放至桩点，点击「适应屏幕」返回全图。
+• 若手机关闭了通知，主屏幕会提示。
+</zh-CN>

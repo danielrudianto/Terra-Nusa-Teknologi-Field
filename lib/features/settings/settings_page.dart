@@ -541,8 +541,6 @@ class _MyProjectOptions extends ConsumerWidget {
   }
 }
 
-final _notificationsEnabledProvider = FutureProvider.autoDispose<bool>((ref) => Notifications.enabled());
-
 /// Whether the casting reminders can buzz. Off = the reminders after 20
 /// minutes and during a pause never reach the user.
 class _NotificationTile extends ConsumerWidget {
@@ -551,7 +549,7 @@ class _NotificationTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final w = context.colors;
-    final on = ref.watch(_notificationsEnabledProvider).value ?? true;
+    final on = ref.watch(notificationsEnabledProvider).value ?? true;
     return _Tile(
       icon: on ? Icons.notifications_active : Icons.notifications_off,
       title: t(context).notifTitle,
@@ -564,7 +562,7 @@ class _NotificationTile extends ConsumerWidget {
           ? null
           : () async {
               await Notifications.requestPermission();
-              ref.invalidate(_notificationsEnabledProvider);
+              ref.invalidate(notificationsEnabledProvider);
             },
     );
   }

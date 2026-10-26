@@ -10,6 +10,7 @@ import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
 import '../../core/util/decimal_input.dart';
 import '../../core/util/format.dart';
+import '../../core/widgets/confirm_code.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
@@ -566,11 +567,41 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   )
                 else if (pt.stage != 'sudah_cor' && !elsewhere)
                   FilledButton.icon(
+                    // Nomor titiknya diketik ulang dulu. Salah tap baris di
+                    // daftar inilah yang pernah membuat cor satu titik
+                    // tercatat di titik sebelahnya, dan baru ketahuan setelah
+                    // angkanya ikut terhitung di volume. Lihat askCodeConfirm.
                     onPressed: g == null || !drilled
                         ? null
-                        : () {
+                        : () async {
+                            final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
+                                .map((e) => e.code);
+                            final benar = await askCodeConfirm(context, code: pt.code, allCodes: semua);
+                            // DUA pemeriksaan mounted, dan keduanya perlu —
+                            // tetapi masing-masing pada JENIS yang benar.
+                            //
+                            // `context` di sini milik State-nya, dan untuk
+                            // itu yang sah adalah `mounted` milik State,
+                            // bukan `context.mounted`. Analyzer menyebut
+                            // yang kedua "unrelated mounted check" dan
+                            // menolaknya lewat use_build_context_synchronously
+                            // — benar, sebab `context.mounted` hanya
+                            // menyatakan elemennya masih terpasang, bukan
+                            // bahwa State yang memakainya masih hidup.
+                            //
+                            // `c` milik lembar bawah dan dipakai
+                            // `Navigator.pop`, jadi ia diperiksa sendiri.
+                            if (!benar || !mounted || !c.mounted) return;
                             Navigator.pop(c);
-                            context.push('/casting/log/${newUuid()}?pilePoint=${pt.uuid}');
+                            // `unawaited`: badan ini `async`, dan
+                            // `analysis_options.yaml` menyalakan
+                            // `unawaited_futures`. Lihat pemakaian yang sama
+                            // di bawah pada _bukaLog.
+                            unawaited(
+                              context.push(
+                                '/casting/log/${newUuid()}?pilePoint=${pt.uuid}',
+                              ),
+                            );
                           },
                     icon: const Icon(Icons.play_arrow),
                     label: Text(t(context).startCastLog),

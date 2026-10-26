@@ -62,7 +62,7 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: 18),
             // `showUpdate` HANYA di sini. Lihat keterangannya di
             // `StatusBanners`: ajakan di layar kerja ditutup refleks.
-            const StatusBanners(showUpdate: true),
+            const StatusBanners(showUpdate: true, showNotifWarning: true),
             const PowerBanner(),
             const _WatchedCard(),
             // Sejauh mana pekerjaan HARI INI — hak bacanya SAMA dengan

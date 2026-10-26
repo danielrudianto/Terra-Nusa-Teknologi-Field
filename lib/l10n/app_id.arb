@@ -196,6 +196,22 @@
   "@notifOff": {
     "description": "Halaman Pengaturan: notifOff"
   },
+  "notifBlockedTitle": "Pengingat tidak akan muncul",
+  "@notifBlockedTitle": {
+    "description": "Spanduk beranda: notifBlockedTitle"
+  },
+  "notifBlockedBody": "HP ini belum mengizinkan TerraBot Field memunculkan notifikasi. Pengingat TM lewat 20 menit, cor yang dijeda, dan log bor yang belum ditutup semuanya tidak akan terdengar. Ketuk Izinkan.",
+  "@notifBlockedBody": {
+    "description": "Spanduk beranda: notifBlockedBody"
+  },
+  "notifAllow": "Izinkan",
+  "@notifAllow": {
+    "description": "Spanduk beranda: notifAllow"
+  },
+  "notifAllowManual": "Notifikasi masih dimatikan telepon. Buka Setelan telepon → Aplikasi → TerraBot Field → Notifikasi, lalu nyalakan.",
+  "@notifAllowManual": {
+    "description": "Spanduk notifikasi diblokir: kalau permintaan izin tidak mengubah apa pun"
+  },
   "powerTitle": "Baterai & mulai otomatis",
   "@powerTitle": {
     "description": "Halaman Pengaturan: powerTitle"
@@ -581,6 +597,34 @@
   "startCastLog": "Mulai log cor",
   "@startCastLog": {
     "description": "startCastLog"
+  },
+  "confirmPointCodeTitle": "Ketik nomor titiknya",
+  "@confirmPointCodeTitle": {
+    "description": "Dialog konfirmasi nomor titik: confirmPointCodeTitle"
+  },
+  "confirmPointCodeBody": "Lihat tiang yang akan Anda cor, jangan daftar di HP. Nomor yang Anda ketik inilah yang menjaga log ini tidak masuk ke titik sebelah.",
+  "@confirmPointCodeBody": {
+    "description": "Dialog konfirmasi nomor titik: confirmPointCodeBody"
+  },
+  "confirmPointCodeField": "Nomor titik",
+  "@confirmPointCodeField": {
+    "description": "Dialog konfirmasi nomor titik: confirmPointCodeField"
+  },
+  "confirmPointCodeConfirm": "Benar, mulai cor",
+  "@confirmPointCodeConfirm": {
+    "description": "Dialog konfirmasi nomor titik: confirmPointCodeConfirm"
+  },
+  "confirmPointCodeMismatch": "Di daftar Anda memilih {selected}, yang Anda ketik {typed}. Kalau yang benar {typed}, tutup ini lalu pilih titik itu di daftar.",
+  "@confirmPointCodeMismatch": {
+    "description": "Dialog konfirmasi nomor titik: confirmPointCodeMismatch",
+    "placeholders": {
+      "selected": {
+        "type": "String"
+      },
+      "typed": {
+        "type": "String"
+      }
+    }
   },
   "colleague": "Rekan",
   "@colleague": {
@@ -4873,6 +4917,14 @@
   "denahLabelToggle": "Kode titik",
   "@denahLabelToggle": {
     "description": "denahLabelToggle"
+  },
+  "denahRotate": "Putar 90°",
+  "@denahRotate": {
+    "description": "Denah titik: denahRotate"
+  },
+  "denahFit": "Pas layar",
+  "@denahFit": {
+    "description": "Denah titik: denahFit"
   },
   "denahDeviationToggle": "Garis simpangan",
   "@denahDeviationToggle": {

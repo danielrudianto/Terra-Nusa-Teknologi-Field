@@ -448,3 +448,20 @@ Stream<R> _combine<A, B, R>(Stream<A> a, Stream<B> b, R Function(A, B) f) {
   );
   return c.stream;
 }
+
+/// Apakah HP ini MENGIZINKAN TerraBot Field memunculkan notifikasi.
+///
+/// KENAPA INI PERLU JADI PROVIDER BERSAMA
+///
+/// Seluruh pengingat app ini LOKAL — dijadwalkan di HP, bukan dikirim
+/// server. `zonedSchedule()` berhasil meski izinnya ditolak: tidak ada
+/// galat, tidak ada tanda, dan pengingatnya tidak pernah muncul. Sebelum
+/// ini keadaan itu hanya terlihat di satu keping di Setelan, dan yang tidak
+/// pernah membuka Setelan tidak punya cara mengetahuinya sama sekali.
+///
+/// Dilaporkan Daniel 26 Okt 2026: notifikasi di HP-nya dan HP Koko tidak
+/// jalan. Bukan pengingatnya yang rusak — tidak ada yang memberi tahu
+/// bahwa HP-nya memang tidak mengizinkannya muncul.
+final notificationsEnabledProvider = FutureProvider<bool>(
+  (ref) => Notifications.enabled(),
+);
