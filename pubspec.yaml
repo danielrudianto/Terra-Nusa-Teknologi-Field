@@ -1,7 +1,7 @@
 name: terrabot_field
 description: TerraBot Field — AKN field app (crew attendance & pile casting log), offline-first.
 publish_to: "none"
-version: 1.0.15+43
+version: 1.0.17+45
 environment:
   # Flutter stable as of October 2026 = 3.47 (Dart 3.12). The package versions below
   # were checked against the source code of each latest release.
@@ -40,6 +40,12 @@ dependencies:
   flutter_image_compress: ^2.4.0
   google_mlkit_face_detection: ">=0.13.0 <1.0.0"
   flutter_local_notifications: ^22.3.1
+  # Kabar dari SERVER: "SP.B56 mulai dicor". Lihat core/device/pesan_awan.dart.
+  # Butuh android/app/google-services.json. Tanpa berkas itu APK tetap
+  # terbangun dan jalan — hanya kabar dari server yang mati; lihat
+  # blok `if` di android/app/build.gradle.kts.
+  firebase_core: ^5.1.0
+  firebase_messaging: ^17.0.1
   # Scheduled reminders take a TZDateTime; already a dependency of the
   # notifications plugin, listed here because the app imports it.
   timezone: ^0.11.0

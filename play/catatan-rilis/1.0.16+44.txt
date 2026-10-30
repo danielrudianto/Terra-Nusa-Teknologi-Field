@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.16 (44) — Mutu, tremie, dan bahasa layar
+
+<id>
+• "Selesai cor" tidak bisa ditekan sebelum mutu beton diisi — dan mutunya kini terisi sendiri dari titiknya. Dulu catatan bisa ditutup lalu ditolak server berjam-jam kemudian, saat tak ada lagi yang bisa membetulkan di lokasi.
+• Kedalaman ujung tremie ditanya sebelum TM pertama, bukan saat selesai. Cukup jawab berapa meter pipa menyembul di atas tanah.
+• Peringatan bila sounding satu TM tidak cocok dengan volume betonnya, dibanding TM sebelumnya di titik itu.
+• Istilah di layar disederhanakan.
+</id>
+<en-US>
+• "Finish pour" cannot be pressed until the concrete grade is filled — and the grade now fills itself from the point. The log could previously be closed, then rejected hours later with nobody left on site to fix it.
+• The tremie bottom depth is asked before the first truck, not at the end. Just answer how many metres of pipe stick out above the ground.
+• A warning when a truck's sounding does not match its concrete volume, against the earlier trucks on that pile.
+• Plainer wording throughout.
+</en-US>
+<zh-CN>
+• 未填写混凝土等级前，「完成灌注」无法点击，且等级现由桩位自动带出。此前记录可被关闭，数小时后才被服务器退回，那时现场已无人能更正。
+• 导管下端深度改为在首车罐车之前询问，而非完工时。只需回答导管露出地面多少米，深度由应用计算。
+• 当某车的声测与其混凝土方量不符时发出提醒，并与同一桩位此前各车对比。
+• 界面用语更通俗。
+</zh-CN>

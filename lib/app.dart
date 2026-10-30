@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/device/pesan_awan.dart';
 import 'core/device/reminder_rearm.dart';
 import 'core/i18n.dart';
 import 'core/providers.dart';
@@ -46,6 +47,10 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       if (me != null) {
         unawaited(rearmReminders(db: ref.read(dbProvider), userId: me.id).catchError((_) {}));
       }
+      // Sama alasannya dengan pengingat di atas: murah, idempoten, dan
+      // satu-satunya kesempatan memperbaiki pendaftaran token yang gagal
+      // karena HP-nya tanpa sinyal saat aplikasi dibuka.
+      unawaited(PesanAwan.pastikanTerdaftar(ref.read(apiProvider)));
     }
     // Back from the phone's settings: read battery saving again.
     if (state == AppLifecycleState.resumed) ref.invalidate(powerStatusProvider);

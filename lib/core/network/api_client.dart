@@ -307,6 +307,49 @@ class ApiClient {
     }
   }
 
+  /// Daftarkan token FCM HP ini atas nama pengguna yang sedang masuk.
+  ///
+  /// Dipanggil saat masuk, saat aplikasi dibuka, dan setiap kali Firebase
+  /// MEMUTAR tokennya sendiri. Aman diulang: server memperbarui baris yang
+  /// tokennya sama, bukan menggandakannya.
+  Future<void> registerPushToken({
+    required String token,
+    required String platform,
+    String? appVersion,
+  }) async {
+    try {
+      await dio.post<Map<String, dynamic>>(
+        '/device-tokens/register',
+        data: {
+          'token': token,
+          'platform': platform,
+          'deviceId': deviceId,
+          'deviceName': deviceName,
+          'appVersion': appVersion,
+        },
+      );
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Cabut token HP ini — dipanggil SEBELUM `logout()`.
+  ///
+  /// Urutannya penting: `logout()` mencabut refresh token, dan sesudah itu
+  /// panggilan ini tidak punya izin lagi. Kalau tidak dicabut, HP yang
+  /// sudah berganti pemegang tetap menerima kabar untuk pemegang
+  /// sebelumnya sampai ada orang lain yang masuk di HP itu.
+  Future<void> unregisterPushToken(String token) async {
+    try {
+      await dio.post<Map<String, dynamic>>(
+        '/device-tokens/unregister',
+        data: {'token': token},
+      );
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
   Future<void> logout() async {
     final refresh = await session.refreshToken();
     if (refresh == null) return;

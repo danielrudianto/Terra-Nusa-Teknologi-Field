@@ -20,6 +20,7 @@ import '../../core/widgets/app_snack.dart';
 import '../../core/widgets/number_dialog.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/blocked_action.dart';
+import '../../core/widgets/step_progress.dart';
 import '../../core/widgets/confirm.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/list_card.dart';
@@ -32,6 +33,7 @@ import 'calc/cut_plan.dart';
 import 'calc/pauses.dart';
 import 'calc/pile_snapshot.dart';
 import 'calc/volume.dart';
+import 'measure_diagram.dart';
 import 'concrete_suppliers.dart';
 import 'handover.dart';
 import 'pile_section_view.dart';
@@ -1030,36 +1032,112 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final k = _castingState;
     final seq = toIntOrNull(truck['seq']) ?? 0;
     final before = toDoubleOrNull(truck['concreteDepthBeforeM']) ?? k.concreteAfter(seq - 1).depthM;
-    final v = await _askNumber(
-      title: t(context).soundingAfter('$seq'),
-      label: t(context).concreteDepthField,
-      icon: Icons.local_shipping_outlined,
-      suffix: 'm',
-      maxValue: 200,
-      initial: toDoubleOrNull(truck['concreteDepthAfterM']),
-      hint: t(context).soundingHint(formatMeters(k.concreteAfter(seq).depthM)),
-      validate: (v) => soundingProblem(v, before: before, bottom: k.geometry.bottomDepthM),
-    );
-    final value = v?.$1;
-    if (value == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.white),
-                const SizedBox(width: 10),
-                Expanded(child: Text(t(context).soundingMissing(seq))),
-              ],
+    // DIULANG SAMPAI ANGKANYA MASUK AKAL, bukan ditanya sekali lalu
+    // diterima apa adanya: yang menekan "Ukur ulang" harus kembali ke
+    // kolom yang sama, bukan kehilangan seluruh isiannya.
+    var awal = toDoubleOrNull(truck['concreteDepthAfterM']);
+    while (true) {
+      // Putaran kedua dan seterusnya datang SESUDAH dialog — layarnya bisa
+      // sudah ditutup orangnya di antara keduanya, dan `context` yang
+      // dipakai di bawah tidak lagi menempel ke pohon widget mana pun.
+      if (!mounted) return false;
+      final v = await _askNumber(
+        title: t(context).soundingAfter('$seq'),
+        label: t(context).concreteDepthField,
+        icon: Icons.local_shipping_outlined,
+        suffix: 'm',
+        maxValue: 200,
+        initial: awal,
+        question: t(context).soundingQuestion,
+        diagram: const SoundingDiagram(),
+        hint: t(context).soundingHint(formatMeters(k.concreteAfter(seq).depthM)),
+        validate: (v) => soundingProblem(v, before: before, bottom: k.geometry.bottomDepthM),
+      );
+      final value = v?.$1;
+      if (value == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(t(context).soundingMissing(seq))),
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        }
+        return false;
       }
-      return false;
+      if (!await _rasioMasukAkal(truck, seq: seq, before: before, after: value)) {
+        awal = value;
+        continue;
+      }
+      // The sounding is the gate before the next TM and before "Selesai cor":
+      // report whether it was really stored, not just that it was typed.
+      return _updateTruck('${truck['uuid']}', (t) => t['concreteDepthAfterM'] = decimalText(value));
     }
-    // The sounding is the gate before the next TM and before "Selesai cor":
-    // report whether it was really stored, not just that it was typed.
-    return _updateTruck('${truck['uuid']}', (t) => t['concreteDepthAfterM'] = decimalText(value));
+  }
+
+  /// Rasio yang MELOMPAT dari pola titik ini ditanyakan dulu, tidak
+  /// langsung disimpan.
+  ///
+  /// Kejadian nyata, 27 Okt 2026: satu titik berjalan 1,04 · 1,04 · 1,05
+  /// lalu tiba-tiba 0,50 — dan yang 0,50 itu salah ketik sounding. Tanpa
+  /// penjaga ini, angkanya masuk tanpa sepatah kata pun dan baru
+  /// ketahuan kalau ada yang membaca rekapnya baris per baris.
+  ///
+  /// MEMPERINGATKAN, BUKAN MENOLAK. Lubang memang bisa menyempit
+  /// (necking), dan menolak angka yang benar hanya mengajari orang
+  /// mengetik angka yang salah supaya diterima. Yang ditahan hanya
+  /// kecepatannya: angkanya diperlihatkan di samping pola titiknya
+  /// sendiri, lalu orangnya memilih.
+  ///
+  /// Kembalian: true bila boleh disimpan.
+  Future<bool> _rasioMasukAkal(
+    Map<String, Object?> truck, {
+    required int seq,
+    required double before,
+    required double after,
+  }) async {
+    final k = _castingState;
+    final ratio = overbreakRatio(
+      diameterMm: k.geometry.diameterMm,
+      volumeM3: toDoubleOrNull(truck['volumeM3']) ?? 0,
+      depthBeforeM: before,
+      depthAfterM: after,
+    );
+    if (ratio == null) return true;
+    final ganjil = overbreakOddity(ratio: ratio, sebelumnya: k.ratiosBefore(seq));
+    if (ganjil == null) return true;
+    // Layarnya sudah ditutup: tidak ada tempat untuk bertanya, dan
+    // angkanya TETAP DISIMPAN. Membuangnya lebih buruk — sounding sesudah
+    // adalah gerbang sebelum TM berikutnya, jadi yang hilang memaksa
+    // orangnya mengukur ulang sesuatu yang sudah diukur. Yang hilang di
+    // sini hanya pertanyaannya, bukan datanya.
+    if (!mounted) return true;
+
+    final pola = ganjil.sebelumnya.map(_persenLebih).join(' · ');
+    final jawab = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        icon: Icon(Icons.warning_amber_rounded, size: 32, color: c.colors.warnFg),
+        title: Text(t(c).ratioOddTitle, textAlign: TextAlign.center),
+        content: Text(
+          ganjil.pembanding == null
+              ? t(c).ratioOddAlone(_persenLebih(ratio))
+              : t(c).ratioOddBody(_persenLebih(ratio), pola),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(t(c).saveAnyway)),
+          FilledButton(onPressed: () => Navigator.pop(c, false), child: Text(t(c).remeasure)),
+        ],
+      ),
+    );
+    // Dialog ditutup lewat tombol kembali = belum memutuskan apa pun, dan
+    // yang belum diputuskan tidak boleh berarti "simpan saja".
+    return jawab ?? false;
   }
 
   /// The last finished truck still waiting for its sounding, if any.
@@ -1092,6 +1170,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       suffix: 'm',
       maxValue: 200,
       initial: toDoubleOrNull(truck[key]),
+      question: t(context).soundingQuestion,
+      diagram: const SoundingDiagram(),
       // Before is optional; after is required and can only be corrected.
       allowEmpty: !after,
       validate: after
@@ -1105,6 +1185,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     );
     if (v == null) return; // cancelled
     final value = v.$1;
+    // Pembetulan lewat ketukan baris melewati gerbang yang sama dengan
+    // pengisian pertama. Kalau tidak, satu jalur menjaga dan satu jalur
+    // tidak — dan yang salah ketik akan lewat dari jalur yang tidak.
+    if (after && value != null) {
+      final seqIni = toIntOrNull(truck['seq']) ?? 1;
+      final sebelum = toDoubleOrNull(truck['concreteDepthBeforeM']) ??
+          _castingState.concreteAfter(seqIni - 1).depthM;
+      if (!await _rasioMasukAkal(truck, seq: seqIni, before: sebelum, after: value)) return;
+    }
     await _updateTruck('${truck['uuid']}', (t) => t[key] = value == null ? null : decimalText(value));
     if (mounted) {
       showSnack(
@@ -1150,25 +1239,147 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (mounted) showSnack(context, t(context).castDataSaved);
   }
 
+  /// Dua pertanyaan sebelum TM pertama, satu layar satu pertanyaan.
+  ///
+  /// Bukan `_editHeader`: lembar Data cor memuat enam isian sekaligus dan
+  /// meminta kedalaman yang harus dihitung sendiri. Di sini yang ditanya
+  /// hanya yang BISA DILIHAT — berapa meter pipa menyembul — dan
+  /// kedalamannya diturunkan aplikasi. Data cor tetap ada untuk
+  /// membetulkan apa pun sesudahnya.
+  Future<void> _mulaiCor() async {
+    final k = _castingState;
+    final hasil = await showModalBottomSheet<Map<String, Object?>>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => _PourStartSheet(
+        bottomDepthM: k.geometry.bottomDepthM,
+        // Panjang SEBELUM TM pertama: belum ada satu segmen pun yang
+        // dicabut, jadi ini seluruh rangkaian yang turun ke lubang.
+        tremieLengthM: k.installedLengthAfter(0),
+        grade: toDoubleOrNull(_doc!['concreteGrade']),
+        defaultGrade: toDoubleOrNull(_pilePoint!['concreteGrade']) ??
+            toDoubleOrNull(_project?['defaultConcreteGrade']),
+      ),
+    );
+    if (hasil == null) return;
+    if (!await _update((d) => d.addAll(hasil))) return;
+    if (mounted) showSnack(context, t(context).castDataSaved);
+  }
+
+  /// Mutu beton belum terisi — log cor tidak boleh ditutup.
+  bool get _mutuKosong => toDoubleOrNull(_doc?['concreteGrade']) == null;
+
+  /// Kedalaman ujung tremie belum diukur, DAN belum ada satu TM pun.
+  ///
+  /// SATU-SATUNYA SAAT ANGKA INI MASIH ADA ADALAH SEKARANG.
+  ///
+  /// Dulu ia ditahan di tombol "Selesai cor" saja. Pada SP.B58 (27 Okt
+  /// 2026) akibatnya terlihat: pengecoran selesai jam 16:33, tremie sudah
+  /// tinggal 3,3 m, lalu tombol Selesai menolak dan meminta kedalaman
+  /// ujung tremie SAAT MULAI — angka yang tiga jam sebelumnya masih bisa
+  /// diukur dan saat itu sudah tidak ada lagi di dunia. Meteran tidak
+  /// dapat diturunkan ke masa lalu; yang tersisa hanya menebak, atau
+  /// mencatat asumsi aplikasi sebagai hasil ukur.
+  ///
+  /// Bedanya dengan mutu beton, yang ditahan di tombol Selesai dan memang
+  /// pantas di sana: mutu beton masih terbaca di surat jalan sampai kapan
+  /// pun. Yang ini tidak. Karena itu penahannya dipindahkan ke SEBELUM TM
+  /// pertama — saat tremienya sudah tersusun dan lubangnya masih kosong.
+  ///
+  /// Hanya berlaku selama belum ada TM: sesudah itu saat mulainya memang
+  /// sudah lewat, dan menahan di sana hanya mengulang kesalahan yang sama
+  /// di tempat yang berbeda. Log yang sudah telanjur berjalan tetap
+  /// dijaga penahan lama di tombol Selesai.
+  bool get _ukurTremieDulu =>
+      _trucks.isEmpty && toDoubleOrNull(_doc?['tremieDepthStartM']) == null;
+
+  /// TM dengan nomor terkecil — yang sounding sebelumnya dicari.
+  Map<String, Object?>? get _tmPertama => _trucks.isEmpty
+      ? null
+      : _trucks.reduce(
+          (a, b) => (toIntOrNull(a['seq']) ?? 0) <= (toIntOrNull(b['seq']) ?? 0) ? a : b,
+        );
+
+  /// Apa saja yang masih kurang sebelum catatan cor boleh ditutup.
+  ///
+  /// SATU DAFTAR, SATU TEMPAT. Sebelumnya ketiganya berupa tiga penjagaan
+  /// berturut-turut di `_finishCasting`, masing-masing menampilkan snack
+  /// lalu pulang — jadi yang kurang tiga hal menekan Selesai tiga kali dan
+  /// diberi tahu satu per satu, tanpa pernah melihat berapa sisanya.
+  List<_Kurang> get _kurangUntukSelesai => [
+        // Yang hanya dapat diukur di lokasi lebih dulu: kalau orangnya
+        // menyerah di tengah, yang sempat terisi adalah yang paling tidak
+        // dapat diisi ulang nanti.
+        if (toDoubleOrNull(_doc?['tremieDepthStartM']) == null) _Kurang.tremie,
+        if (_mutuKosong) _Kurang.mutu,
+        if (_tmPertama != null &&
+            toDoubleOrNull(_tmPertama!['concreteDepthBeforeM']) == null)
+          _Kurang.soundingAwal,
+      ];
+
+  /// Tanyakan yang kurang SEKARANG, di tempat orangnya berdiri.
+  ///
+  /// DIMINTA DANIEL, 28 Okt 2026: "langsung tampilkan kartu untuk isi itu
+  /// boleh ga bang? jadi orang ga bingung dan harus cari cari lagi".
+  ///
+  /// Sebelumnya tiap penghalang hanya menampilkan satu kalimat lalu
+  /// menutup diri — "buka Data cor dan ukur dulu". Kalimat yang menyuruh
+  /// orang membuka layar lain adalah kalimat yang dilewati, dan yang
+  /// membacanya di samping rig sambil menunggu TM berikutnya melewatinya
+  /// hampir pasti.
+  ///
+  /// Server memang menolak log yang kurang (`MUTU_KOSONG` dan
+  /// kembarannya), tetapi penolakan itu datang saat sinkron — bisa
+  /// berjam-jam sesudahnya, saat QS sudah pulang dan catatannya
+  /// menggantung ditolak tanpa ada yang tahu.
+  ///
+  /// Kembalian: true bila sekarang sudah lengkap.
+  Future<bool> _lengkapiDulu() async {
+    final kurang = _kurangUntukSelesai;
+    if (kurang.isEmpty) return true;
+    final k = _castingState;
+    final hasil = await showModalBottomSheet<_LengkapiHasil>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => _LengkapiSheet(
+        kurang: kurang,
+        bottomDepthM: k.geometry.bottomDepthM,
+        // Panjang SELURUH rangkaian, termasuk pipa yang sudah dicabut:
+        // yang ditanya kembali ke keadaan SEBELUM TM pertama.
+        tremieLengthM: k.installedLengthAfter(0),
+        grade: toDoubleOrNull(_doc!['concreteGrade']),
+        defaultGrade: toDoubleOrNull(_pilePoint!['concreteGrade']) ??
+            toDoubleOrNull(_project?['defaultConcreteGrade']),
+      ),
+    );
+    if (hasil == null) return false;
+    if (hasil.doc.isNotEmpty && !await _update((d) => d.addAll(hasil.doc))) {
+      return false;
+    }
+    final awal = hasil.soundingAwal;
+    final tm = _tmPertama;
+    if (awal != null && tm != null) {
+      final ok = await _updateTruck(
+        '${tm['uuid']}',
+        (t) => t['concreteDepthBeforeM'] = decimalText(awal),
+      );
+      if (!ok) return false;
+    }
+    // Diperiksa ULANG dari keadaan terbaru, bukan dianggap beres karena
+    // lembarnya ditutup: penyimpanan dapat gagal diam-diam, dan menutup
+    // catatan atas dasar isian yang tidak tersimpan persis kesalahan yang
+    // hendak dicegah penjagaan ini.
+    return _kurangUntukSelesai.isEmpty;
+  }
+
   Future<void> _finishCasting() async {
     final unsounded = _unsoundedTruck;
     if (unsounded != null && !await _askSoundingAfter(unsounded)) return;
 
-    // Dua angka yang hanya dapat diukur di lokasi, dan yang tanpanya seluruh
-    // angka tertanam log ini kosong selamanya. Ditahan DI SINI, bukan
-    // dibiarkan ditolak server sesudah QS pulang: yang menolak nanti tidak
-    // dapat lagi menurunkan meteran ke dalam lubang.
-    if (toDoubleOrNull(_doc!['tremieDepthStartM']) == null) {
-      if (mounted) showSnack(context, t(context).tremieDepthNeeded);
-      return;
-    }
-    final pertama = _trucks.isEmpty
-        ? null
-        : _trucks.reduce((a, b) => (toIntOrNull(a['seq']) ?? 0) <= (toIntOrNull(b['seq']) ?? 0) ? a : b);
-    if (pertama != null && toDoubleOrNull(pertama['concreteDepthBeforeM']) == null) {
-      if (mounted) showSnack(context, t(context).soundingBeforeNeeded);
-      return;
-    }
+    if (!await _lengkapiDulu()) return;
+    if (!mounted) return;
 
     final k = _castingState;
     final last = k.lastSeq;
@@ -1313,6 +1524,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     String? suffix,
     required double maxValue,
     double? initial,
+    String? question,
+    Widget? diagram,
     String? hint,
     bool allowEmpty = false,
     String? Function(double value)? validate,
@@ -1325,6 +1538,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         suffix: suffix,
         maxValue: maxValue,
         initial: initial,
+        question: question,
+        diagram: diagram,
         hint: hint,
         allowEmpty: allowEmpty,
         validate: validate,
@@ -1499,7 +1714,23 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                   children: [
                     if (!_finished && running == null && _trucks.isNotEmpty)
                       Expanded(
-                        child: OutlinedButton(onPressed: _finishCasting, child: Text(t(context).finishCasting)),
+                        // Tombol MATI, dan sebabnya tertulis DI TOMBOLNYA.
+                        //
+                        // Bukan dialog: dialog yang muncul tiap kali akan
+                        // ditutup tanpa dibaca dalam sepekan, dan sesudah itu
+                        // dialog mana pun — termasuk yang benar-benar genting
+                        // — ikut tidak dibaca. Tombol mati tidak menuntut
+                        // siapa pun membaca apa pun; ia hanya tidak bisa
+                        // ditekan, dan alasannya ada tepat di tempat jari
+                        // mendarat.
+                        child: OutlinedButton(
+                          onPressed: _mutuKosong ? null : _finishCasting,
+                          child: Text(
+                            _mutuKosong
+                                ? t(context).finishNeedsGrade
+                                : t(context).finishCasting,
+                          ),
+                        ),
                       ),
                     if (!_finished && running == null && _trucks.isNotEmpty) const SizedBox(width: 10),
                     if (!_finished && running != null) ...[
@@ -1543,12 +1774,30 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                                   // melainkan DI MANA — dan itu yang dijawab
                                   // kalau tombolnya tetap ditekan.
                                   : BlockedAction(
-                                      reason: _tremie.isEmpty ? t(context).blockedNeedTremie : null,
-                                      icon: Icons.plumbing,
+                                      reason: _tremie.isEmpty
+                                          ? t(context).blockedNeedTremie
+                                          : _ukurTremieDulu
+                                              ? t(context).blockedNeedTremieDepth
+                                              : null,
+                                      icon: _tremie.isEmpty ? Icons.plumbing : Icons.straighten,
+                                      // Ketukannya MEMBUKA pertanyaannya,
+                                      // bukan menyuruh orang mencarinya
+                                      // sendiri: isiannya ada di layar lain,
+                                      // dan petunjuk arah di snack adalah hal
+                                      // yang paling mudah dilewati.
+                                      onTap: _tremie.isNotEmpty && _ukurTremieDulu
+                                          ? () {
+                                              _mulaiCor();
+                                            }
+                                          : null,
                                       child: FilledButton.icon(
-                                        onPressed: _tremie.isEmpty ? null : _newTruck,
+                                        onPressed: _tremie.isEmpty || _ukurTremieDulu ? null : _newTruck,
                                         icon: const Icon(Icons.local_shipping_outlined),
-                                        label: Text(_tremie.isEmpty ? t(context).tremieFirst : t(context).truckArrived(seq + 1)),
+                                        label: Text(_tremie.isEmpty
+                                            ? t(context).tremieFirst
+                                            : _ukurTremieDulu
+                                                ? t(context).tremieDepthFirst
+                                                : t(context).truckArrived(seq + 1)),
                                       ),
                                     ),
                         ),
@@ -2172,7 +2421,7 @@ class _TruckCard extends StatelessWidget {
                 ],
               ),
             ),
-          if (ratio != null) value(t(context).overbreakRatio, _decimal(ratio)),
+          if (ratio != null) value(t(context).overbreakRatio, _persenLebih(ratio)),
           if (truck['ticketPhotoUuid'] != null || truck['slumpPhotoUuid'] != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -2785,8 +3034,288 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
         child: _isi(context),
       );
 
-  Widget _isi(BuildContext context) {
-    const numeric = TextInputType.numberWithOptions(decimal: true);
+  // ───────────────────────────────────────────────────────────────────────
+  // DUA TATA LETAK, SATU SUMBER UNTUK TIAP ISIAN
+  // ───────────────────────────────────────────────────────────────────────
+  //
+  // TM DATANG ditanya SATU LAYAR SATU PERTANYAAN. Diminta Daniel, 27 Okt
+  // 2026: sasarannya orang yang tidak terbiasa membaca banyak, dan lembar
+  // berisi lima isian sekaligus menuntut orangnya memutuskan dari mana
+  // mulai sebelum sempat menjawab apa pun.
+  //
+  // MEMBETULKAN TM TETAP SATU LEMBAR, dan itu disengaja. Yang membuka
+  // lembar koreksi sudah tahu persis angka mana yang salah; memaksanya
+  // melewati empat pertanyaan untuk sampai ke sana bukan menyederhanakan,
+  // hanya memperpanjang.
+  //
+  // Tiap isian ditulis SEKALI sebagai fungsi di bawah dan dipakai kedua
+  // tata letak. Menuliskannya dua kali berarti perbaikan berikutnya
+  // mengenai satu jalur saja — dan yang terlewat adalah jalur yang lebih
+  // jarang dibuka, yaitu yang paling lama tidak ketahuan.
+
+  /// Pertanyaan ke berapa yang sedang tampil. Hanya dipakai saat TM BARU.
+  int _step = 0;
+
+  /// Pemasok terbawa dari TM sebelumnya, lalu orangnya menekan "Ubah".
+  bool _paksaPemasok = false;
+
+  /// Pemasok masih perlu ditanya: belum ada pilihan, tidak ada daftarnya
+  /// sama sekali (harus diketik), atau orangnya minta mengubahnya.
+  bool get _pemasokPerluDitanya =>
+      widget.suppliers.isEmpty || _supplierChoice == null || _paksaPemasok;
+
+  /// Urutan pertanyaan, masing-masing dengan PENANDA.
+  ///
+  /// Penandanya ada supaya `_maju` tidak perlu membandingkan fungsi untuk
+  /// tahu sedang di pertanyaan mana. Perbandingan tear-off memang bekerja
+  /// di Dart, tetapi kalau suatu saat tidak, gejalanya bukan galat
+  /// melainkan pemeriksaan yang diam-diam tidak pernah jalan — dan itu
+  /// jenis kegagalan yang paling mahal di berkas ini.
+  List<({String tanda, List<Widget> Function() isi})> get _urutan => [
+        (tanda: 'lambung', isi: _qLambung),
+        (tanda: 'volume', isi: _qVolume),
+        if (_pemasokPerluDitanya) (tanda: 'pemasok', isi: _qPemasok),
+        (tanda: 'slump', isi: _qSlump),
+        (tanda: 'penutup', isi: _qPenutup),
+      ];
+
+  Widget _tanya(String teks) => Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Text(teks,
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, height: 1.3)),
+      );
+
+  // ── Isian, satu sumber untuk kedua tata letak ──────────────────────────
+
+  List<Widget> _isianFoto() => [
+        // Two photos per TM. The delivery-note NUMBER is no longer typed:
+        // it is already on the note in the photo, and a retyped number is
+        // one more thing to get wrong at 2 a.m.
+        _PhotoField(
+          uuid: _photo,
+          label: t(context).deliveryNote,
+          emptyLabel: t(context).photoTicket,
+          icon: Icons.receipt_long_outlined,
+          onTake: () async {
+            final f = await widget.takeTicketPhoto();
+            if (f != null) setState(() => _photo = f);
+          },
+        ),
+        // FOTO SLUMP TIDAK DIAMBIL LAGI — hanya ditampilkan bila sudah ada.
+        //
+        // Dicabut atas permintaan Daniel, 19 Oktober 2026. Angka slump
+        // (`slumpCm`) tetap dicatat seperti biasa; yang hilang hanya
+        // fotonya.
+        //
+        // Yang SUDAH terlanjur ada tetap dapat dibuka: 60 dari 382 TM
+        // memilikinya. Foto yang masih tersimpan tetapi tidak ada satu
+        // layar pun yang menampilkannya adalah bentuk kehilangan yang
+        // paling sulit disadari — datanya ada, tetapi praktis lenyap.
+        if (_slumpPhoto != null) ...[
+          const SizedBox(height: 8),
+          _PhotoField(
+            uuid: _slumpPhoto,
+            label: t(context).slumpTest,
+            emptyLabel: t(context).photoSlump,
+            icon: Icons.science_outlined,
+          ),
+        ],
+      ];
+
+  List<Widget> _isianLambung() => [
+        TextField(
+          controller: _truck,
+          decoration: InputDecoration(labelText: t(context).hullNoField),
+        ),
+      ];
+
+  List<Widget> _isianPemasok() => [
+        if (widget.suppliers.isNotEmpty) ...[
+          // PANDUAN PEMASOK ADA DI SINI, bukan lagi di lembar Data cor.
+          //
+          // Kedua banner ini dulu menemani pemilih pemasok di kepala
+          // catatan, dan ikut hilang ketika pemilih itu dicabut —
+          // sementara memilih pemasok justru pindah SELURUHNYA ke lembar
+          // ini. Panduan yang tertinggal di layar yang sudah tidak ada
+          // sama saja dengan tidak pernah ditulis.
+          TerraBanner(
+            kind: BannerKind.info,
+            title: widget.suppliersNarrowed ? t(context).suppliersWithPo : t(context).noPoYet,
+            body: widget.suppliersNarrowed ? t(context).suppliersWithPoBody : t(context).noPoYetBody,
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<int?>(
+            initialValue: _supplierChoice,
+            isExpanded: true,
+            decoration: InputDecoration(labelText: t(context).truckSupplier),
+            items: [
+              for (final s in widget.suppliers)
+                DropdownMenuItem<int?>(
+                    value: toIntOrNull(s['id']),
+                    child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
+              // Paling bawah, sesudah pemasok sungguhan: site-mix adalah
+              // perkecualian, dan letaknya mengatakan itu.
+              DropdownMenuItem<int?>(value: _lokal, child: Text(t(context).supplierLocal)),
+            ],
+            onChanged: _pilihPemasok,
+          ),
+          // Jalan keluar ketika pemasok yang benar tidak ada di daftar,
+          // ditulis DI TEMPAT jalan buntunya ditemui.
+          const SizedBox(height: 8),
+          TerraBanner(
+            kind: BannerKind.info,
+            title: t(context).supplierMissingTitle,
+            body: t(context).supplierMissingBody,
+          ),
+          if (_ketikanWarisan != null) ...[
+            const SizedBox(height: 8),
+            TerraBanner(
+              kind: BannerKind.warning,
+              title: t(context).supplierTypedBefore,
+              body: _ketikanWarisan!,
+            ),
+          ],
+        ],
+        if (widget.suppliers.isEmpty)
+          TextField(
+            controller: _supplier,
+            decoration: InputDecoration(labelText: t(context).truckSupplier),
+          ),
+      ];
+
+  List<Widget> _isianVolume() => [
+        TextField(
+          controller: _volume,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: decimalInput(maxIntDigits: 2),
+          decoration: InputDecoration(labelText: t(context).volumePouredHere, suffixText: 'm³'),
+          onChanged: (_) {
+            setState(() {
+              if (_volumeConfirmed) _volumeConfirmed = false;
+            });
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 6, left: 2),
+          child: Text(t(context).volumeSharedHint,
+              style: TextStyle(color: context.colors.muted, fontSize: 12.5, height: 1.35)),
+        ),
+        ?_overuseBanner(),
+      ];
+
+  List<Widget> _isianSlump() => [
+        TextField(
+          controller: _slump,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: decimalInput(maxIntDigits: 2, decimals: 1),
+          decoration: InputDecoration(labelText: t(context).slumpField, suffixText: 'cm'),
+        ),
+      ];
+
+  List<Widget> _isianSounding() => [
+        TextField(
+          controller: _sounding,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: decimalInput(maxIntDigits: 3),
+          decoration: InputDecoration(
+            labelText: t(context).soundingBeforeOptional,
+            suffixText: 'm',
+            hintText: t(context)
+                .estimateHint(widget.estimatedConcreteBefore.toStringAsFixed(2).replaceAll('.', ',')),
+            // Kalimatnya sama persis dengan yang muncul di dialog sounding
+            // sesudah. Dua penjelasan berbeda untuk satu pengukuran yang
+            // sama membuat orang mengira keduanya mengukur hal berbeda.
+            helperText: t(context).soundingQuestion,
+            helperMaxLines: 2,
+          ),
+        ),
+      ];
+
+  // ── Pertanyaan ─────────────────────────────────────────────────────────
+
+  List<Widget> _qLambung() => [_tanya(t(context).qTruckNo), ..._isianLambung()];
+
+  List<Widget> _qVolume() => [_tanya(t(context).qVolume), ..._isianVolume()];
+
+  List<Widget> _qPemasok() => [_tanya(t(context).qSupplier), ..._isianPemasok()];
+
+  List<Widget> _qSlump() => [
+        _tanya(t(context).qSlump),
+        const SlumpDiagram(),
+        const SizedBox(height: 12),
+        ..._isianSlump(),
+      ];
+
+  List<Widget> _qPenutup() => [
+        _tanya(t(context).qPhoto),
+        ..._isianFoto(),
+        // Pemasok yang TIDAK ditanya tetap diperlihatkan di sini.
+        //
+        // Yang terbawa diam-diam dari TM sebelumnya adalah yang paling
+        // mudah salah tanpa ada yang menyadarinya — TM kelima dari
+        // pemasok lain masuk atas nama pemasok TM keempat, dan selisihnya
+        // baru ketahuan kantor saat mencocokkan tagihan.
+        if (!_pemasokPerluDitanya) ...[
+          const SizedBox(height: 12),
+          TerraBanner(
+            kind: BannerKind.info,
+            title: t(context).supplierSameAsBefore(widget.supplierName ?? ''),
+            action: TextButton(
+              onPressed: () => setState(() {
+                _paksaPemasok = true;
+                // Pertanyaannya masuk SEBELUM slump dan penutup, jadi
+                // indeksnya persis di posisi ketiga.
+                _step = 2;
+              }),
+              child: Text(t(context).changeIt),
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        ..._isianSounding(),
+      ];
+
+  // ── Tata letak ─────────────────────────────────────────────────────────
+
+  Widget _isi(BuildContext context) => _editing ? _lembarPenuh(context) : _bertahap(context);
+
+  Widget _lembarPenuh(BuildContext context) => Padding(
+        padding: sheetPadding(context),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(t(context).editTruck(widget.seq),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
+              ..._isianFoto(),
+              const SizedBox(height: 12),
+              ..._isianLambung(),
+              const SizedBox(height: 12),
+              ..._isianPemasok(),
+              const SizedBox(height: 12),
+              ..._isianVolume(),
+              const SizedBox(height: 12),
+              ..._isianSlump(),
+              const SizedBox(height: 12),
+              ..._isianSounding(),
+              const SizedBox(height: 18),
+              SizedBox(
+                height: Dimens.minTouch + 4,
+                child: FilledButton(
+                    onPressed: _submit, child: Text(t(context).saveChanges)),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _bertahap(BuildContext context) {
+    final langkah = _urutan;
+    final i = _step.clamp(0, langkah.length - 1);
+    final terakhir = i == langkah.length - 1;
     return Padding(
       padding: sheetPadding(context),
       child: SingleChildScrollView(
@@ -2794,149 +3323,101 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(_editing ? t(context).editTruck(widget.seq) : t(context).truckArrived(widget.seq),
+            Text(t(context).truckArrived(widget.seq),
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 12),
-            if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
-            // Two photos per TM. The delivery-note NUMBER is no longer typed:
-            // it is already on the note in the photo, and a retyped number is
-            // one more thing to get wrong at 2 a.m.
-            _PhotoField(
-              uuid: _photo,
-              label: t(context).deliveryNote,
-              emptyLabel: t(context).photoTicket,
-              icon: Icons.receipt_long_outlined,
-              onTake: () async {
-                final f = await widget.takeTicketPhoto();
-                if (f != null) setState(() => _photo = f);
-              },
-            ),
-            // FOTO SLUMP TIDAK DIAMBIL LAGI — hanya ditampilkan bila sudah ada.
-            //
-            // Dicabut atas permintaan Daniel, 19 Oktober 2026. Angka slump
-            // (`slumpCm`) tetap dicatat seperti biasa; yang hilang hanya
-            // fotonya.
-            //
-            // Yang SUDAH terlanjur ada tetap dapat dibuka: 60 dari 382 TM
-            // memilikinya, yang terakhir pagi ini. Foto yang masih tersimpan
-            // tetapi tidak ada satu layar pun yang menampilkannya adalah
-            // bentuk kehilangan yang paling sulit disadari — datanya ada,
-            // tetapi praktis lenyap.
-            if (_slumpPhoto != null) ...[
-              const SizedBox(height: 8),
-              _PhotoField(
-                uuid: _slumpPhoto,
-                label: t(context).slumpTest,
-                emptyLabel: t(context).photoSlump,
-                icon: Icons.science_outlined,
-              ),
-            ],
-            const SizedBox(height: 12),
-            TextField(controller: _truck, decoration: InputDecoration(labelText: t(context).hullNoField)),
-            const SizedBox(height: 12),
-            if (widget.suppliers.isNotEmpty) ...[
-              // PANDUAN PEMASOK ADA DI SINI, bukan lagi di lembar Data cor.
-              //
-              // Kedua banner ini dulu menemani pemilih pemasok di kepala log,
-              // dan ikut hilang ketika pemilih itu dicabut — sementara
-              // memilih pemasok justru pindah SELURUHNYA ke lembar ini.
-              // Panduan yang tertinggal di layar yang sudah tidak ada sama
-              // saja dengan tidak pernah ditulis.
-              TerraBanner(
-                kind: BannerKind.info,
-                title: widget.suppliersNarrowed ? t(context).suppliersWithPo : t(context).noPoYet,
-                body: widget.suppliersNarrowed ? t(context).suppliersWithPoBody : t(context).noPoYetBody,
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<int?>(
-                initialValue: _supplierChoice,
-                isExpanded: true,
-                decoration: InputDecoration(labelText: t(context).truckSupplier),
-                items: [
-                  for (final s in widget.suppliers)
-                    DropdownMenuItem<int?>(value: toIntOrNull(s['id']), child: Text('${s['name']}', overflow: TextOverflow.ellipsis)),
-                  // Paling bawah, sesudah pemasok sungguhan: site-mix
-                  // adalah perkecualian, dan letaknya mengatakan itu.
-                  DropdownMenuItem<int?>(value: _lokal, child: Text(t(context).supplierLocal)),
-                ],
-                onChanged: _pilihPemasok,
-              ),
-              // Jalan keluar ketika pemasok yang benar tidak ada di daftar,
-              // ditulis DI TEMPAT jalan buntunya ditemui.
-              const SizedBox(height: 8),
-              TerraBanner(
-                kind: BannerKind.info,
-                title: t(context).supplierMissingTitle,
-                body: t(context).supplierMissingBody,
-              ),
-              if (_ketikanWarisan != null) ...[
-                const SizedBox(height: 8),
-                TerraBanner(
-                  kind: BannerKind.warning,
-                  title: t(context).supplierTypedBefore,
-                  body: _ketikanWarisan!,
-                ),
-              ],
+            const SizedBox(height: 10),
+            StepProgress(step: i + 1, total: langkah.length),
+            const SizedBox(height: 16),
+            if (_error != null) ...[
+              TerraBanner(kind: BannerKind.danger, title: _error!),
               const SizedBox(height: 12),
             ],
-            if (widget.suppliers.isEmpty) ...[
-              TextField(
-                controller: _supplier,
-                decoration: InputDecoration(labelText: t(context).truckSupplier),
-              ),
-              const SizedBox(height: 12),
-            ],
-            Row(children: [
-              Expanded(
-                child: TextField(
-                  controller: _volume,
-                  keyboardType: numeric,
-                  inputFormatters: decimalInput(maxIntDigits: 2),
-                  decoration: InputDecoration(labelText: t(context).volumePouredHere, suffixText: 'm³'),
-                  onChanged: (_) {
-                    setState(() {
-                      if (_volumeConfirmed) _volumeConfirmed = false;
-                    });
-                  },
+            // PERTANYAANNYA BERGANTI DENGAN BERGERAK, bukan berkedip.
+            //
+            // Kosakatanya sama dengan `AnimatedFigure` di
+            // `core/theme/motion.dart`: yang baru datang dari bawah sambil
+            // memudar masuk. Di layar yang isinya berganti total tiap
+            // ketukan, itu satu-satunya tanda bahwa yang berganti memang
+            // pertanyaannya — bukan layarnya yang melompat sendiri.
+            AnimatedSwitcher(
+              duration: Dimens.motionMedium,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+                      .animate(animation),
+                  child: child,
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: _slump,
-                  keyboardType: numeric,
-                  inputFormatters: decimalInput(maxIntDigits: 2, decimals: 1),
-                  decoration: InputDecoration(labelText: t(context).slumpField, suffixText: 'cm'),
-                ),
-              ),
-            ]),
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 2),
-              child: Text(t(context).volumeSharedHint,
-                  style: TextStyle(color: context.colors.muted, fontSize: 12.5, height: 1.35)),
-            ),
-            ?_overuseBanner(),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _sounding,
-              keyboardType: numeric,
-              inputFormatters: decimalInput(maxIntDigits: 3),
-              decoration: InputDecoration(
-                labelText: t(context).soundingBeforeOptional,
-                suffixText: 'm',
-                hintText: t(context).estimateHint(widget.estimatedConcreteBefore.toStringAsFixed(2).replaceAll('.', ',')),
+              child: Column(
+                key: ValueKey(langkah[i].tanda),
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: langkah[i].isi(),
               ),
             ),
             const SizedBox(height: 18),
-            SizedBox(
-              height: Dimens.minTouch + 4,
-              child: FilledButton(onPressed: _submit,
-                  child: Text(_editing ? t(context).saveChanges : t(context).saveTruck)),
+            Row(
+              children: [
+                if (i > 0) ...[
+                  Expanded(
+                    child: SizedBox(
+                      height: Dimens.minTouch + 4,
+                      child: OutlinedButton(
+                        onPressed: () => setState(() {
+                          _error = null;
+                          _step = i - 1;
+                        }),
+                        child: Text(t(context).backStep),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: Dimens.minTouch + 4,
+                    child: FilledButton(
+                      onPressed: terakhir ? _submit : () => _maju(i),
+                      child: Text(terakhir ? t(context).saveTruck : t(context).nextStep),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Maju satu pertanyaan.
+  ///
+  /// Yang diperiksa di sini hanya KEHADIRAN jawabannya, bukan aturannya.
+  /// Aturan sungguhan tetap satu tempat, di `_submit` — volume yang ganjil,
+  /// pemasok yang wajib dipilih, site-mix yang ditanyakan ulang. Yang
+  /// ditambahkan di sini cuma supaya galatnya muncul di layar PEMILIKNYA:
+  /// pesan "volume belum diisi" yang tampil di layar foto tidak memberi
+  /// tahu siapa pun harus kembali ke mana.
+  void _maju(int i) {
+    if (_urutan[i].tanda == 'volume') {
+      // Kalimatnya SAMA PERSIS dengan yang dipakai `_submit` untuk aturan
+      // yang sama. Dua kalimat berbeda untuk satu aturan membuat orangnya
+      // mengira ada dua aturan.
+      final v = parseNumber(_volume.text);
+      if (v == null || v <= 0 || v > truckVolumeMaxM3) {
+        setState(() => _error =
+            t(context).volumeInvalid(decimalText(truckVolumeMaxM3, decimals: 0)));
+        return;
+      }
+    }
+    setState(() {
+      _error = null;
+      _step = i + 1;
+    });
   }
 
   /// Di mana beton ini mendarat terhadap teoritis.
@@ -2960,6 +3441,561 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
       ),
     );
   }
+}
+
+/// Apa yang masih kurang sebelum catatan cor boleh ditutup.
+enum _Kurang {
+  /// Kedalaman ujung tremie saat mulai — ditanya lewat yang menyembul.
+  tremie,
+  mutu,
+
+  /// Sounding sebelum TM PERTAMA, yang boleh dilewati saat TM itu dicatat.
+  soundingAwal,
+}
+
+/// Jawaban lembar "Lengkapi dulu".
+///
+/// Dipisah karena tujuannya memang dua tempat: [doc] masuk ke kepala
+/// catatan cor, [soundingAwal] masuk ke BARIS TM pertama. Dijadikan satu
+/// peta, pemanggilnya harus menebak kunci mana milik siapa.
+class _LengkapiHasil {
+  const _LengkapiHasil({required this.doc, this.soundingAwal});
+
+  final Map<String, Object?> doc;
+  final double? soundingAwal;
+}
+
+/// Lembar "Lengkapi dulu" — menanyakan HANYA yang kurang, satu per layar.
+///
+/// DIMINTA DANIEL, 28 Okt 2026: "langsung tampilkan kartu untuk isi itu
+/// boleh ga bang? jadi orang ga bingung dan harus cari cari lagi. kalau
+/// memang ada multiple yauda minta dia input beberapa inputan gitu".
+///
+/// Bentuknya sengaja SAMA dengan lembar "Sebelum TM pertama" dan lembar
+/// "TM datang": bar kemajuan, satu pertanyaan per layar, gambar yang
+/// menunjukkan apa yang diukur. Yang sudah mengerti ketiganya di satu
+/// tempat tidak perlu belajar lagi di tempat lain.
+class _LengkapiSheet extends StatefulWidget {
+  const _LengkapiSheet({
+    required this.kurang,
+    required this.bottomDepthM,
+    required this.tremieLengthM,
+    required this.grade,
+    required this.defaultGrade,
+  });
+
+  final List<_Kurang> kurang;
+  final double bottomDepthM;
+  final double tremieLengthM;
+  final double? grade;
+  final double? defaultGrade;
+
+  @override
+  State<_LengkapiSheet> createState() => _LengkapiSheetState();
+}
+
+class _LengkapiSheetState extends State<_LengkapiSheet> {
+  int _step = 0;
+  final _stickOut = TextEditingController();
+  final _sounding = TextEditingController();
+  late final _grade = TextEditingController(
+    text: (widget.grade ?? widget.defaultGrade) == null
+        ? ''
+        : _decimal(widget.grade ?? widget.defaultGrade, d: 1),
+  );
+  String? _error;
+
+  @override
+  void dispose() {
+    _stickOut.dispose();
+    _sounding.dispose();
+    _grade.dispose();
+    super.dispose();
+  }
+
+  double? get _depthM {
+    final menyembul = parseNumber(_stickOut.text);
+    if (menyembul == null) return null;
+    return widget.tremieLengthM - menyembul;
+  }
+
+  static const _tanya =
+      TextStyle(fontSize: 18, fontWeight: FontWeight.w700, height: 1.3);
+  static const _numerik = TextInputType.numberWithOptions(decimal: true);
+
+  /// Isian langkah ke-[i] sudah sah? Pesannya, atau null bila sah.
+  String? _periksa(_Kurang k) {
+    switch (k) {
+      case _Kurang.tremie:
+        final d = _depthM;
+        if (d == null) return t(context).stickOutRequired;
+        final gap = widget.bottomDepthM - d;
+        if (gap < -0.005) return t(context).stickOutTooDeep;
+        if (gap > 5.005) return t(context).stickOutTooHigh(formatMeters(gap));
+        return null;
+      case _Kurang.mutu:
+        final g = parseNumber(_grade.text);
+        if (g == null || g <= 0 || g > 150) return 'Mutu beton tidak masuk akal.';
+        return null;
+      case _Kurang.soundingAwal:
+        final v = parseNumber(_sounding.text);
+        if (v == null) return t(context).soundingBeforeNeeded;
+        // Muka beton tidak mungkin lebih dalam daripada dasar lubangnya.
+        //
+        // Angkanya dikirim TANPA satuan: kalimatnya sudah menuliskan " m"
+        // sendiri, dan `formatMeters` akan membuatnya "29,50 m m".
+        if (v > widget.bottomDepthM + 0.05) {
+          return t(context).soundDeeperThanBottom(
+            widget.bottomDepthM.toStringAsFixed(2).replaceAll('.', ','),
+          );
+        }
+        return null;
+    }
+  }
+
+  void _maju() {
+    final galat = _periksa(widget.kurang[_step]);
+    if (galat != null) {
+      setState(() => _error = galat);
+      return;
+    }
+    if (_step + 1 < widget.kurang.length) {
+      setState(() {
+        _error = null;
+        _step += 1;
+      });
+      return;
+    }
+    _simpan();
+  }
+
+  void _simpan() {
+    final doc = <String, Object?>{};
+    double? soundingAwal;
+    for (final k in widget.kurang) {
+      switch (k) {
+        case _Kurang.tremie:
+          final d = _depthM!;
+          final gap = widget.bottomDepthM - d;
+          doc['tremieDepthStartM'] = decimalText(d);
+          doc['tremieBottomGapM'] = decimalText(gap < 0 ? 0 : gap);
+        case _Kurang.mutu:
+          doc['concreteGrade'] = decimalText(parseNumber(_grade.text)!, decimals: 1);
+        case _Kurang.soundingAwal:
+          soundingAwal = parseNumber(_sounding.text);
+      }
+    }
+    Navigator.pop(context, _LengkapiHasil(doc: doc, soundingAwal: soundingAwal));
+  }
+
+  List<Widget> _isi(_Kurang k) {
+    switch (k) {
+      case _Kurang.tremie:
+        final dalam = _depthM;
+        final gap = dalam == null ? null : widget.bottomDepthM - dalam;
+        return [
+          Text(t(context).stickOutQuestion, style: _tanya),
+          const SizedBox(height: 10),
+          const StickOutDiagram(),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _stickOut,
+            autofocus: true,
+            keyboardType: _numerik,
+            inputFormatters: decimalInput(maxIntDigits: 3),
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: t(context).stickOutField,
+              suffixText: 'm',
+              helperText: t(context).stickOutBasis(formatMeters(widget.tremieLengthM)),
+              helperMaxLines: 2,
+            ),
+          ),
+          if (dalam != null && gap != null) ...[
+            const SizedBox(height: 12),
+            TerraBanner(
+              kind: gap < -0.005 || gap > 5.005 ? BannerKind.warning : BannerKind.info,
+              title: t(context).stickOutResult(formatMeters(dalam), formatMeters(gap)),
+            ),
+          ],
+        ];
+      case _Kurang.mutu:
+        return [
+          Text(t(context).gradeQuestion, style: _tanya),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _grade,
+            autofocus: true,
+            keyboardType: _numerik,
+            inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1),
+            decoration: InputDecoration(labelText: t(context).cellGrade, suffixText: 'MPa'),
+          ),
+          if (widget.defaultGrade != null) ...[
+            const SizedBox(height: 12),
+            TerraBanner(
+              kind: BannerKind.info,
+              title: t(context).defaultGrade(_decimal(widget.defaultGrade, d: 1)),
+              body: t(context).defaultGradeBody,
+            ),
+          ],
+        ];
+      case _Kurang.soundingAwal:
+        return [
+          Text(t(context).qSoundingAwal, style: _tanya),
+          const SizedBox(height: 10),
+          const SoundingDiagram(),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _sounding,
+            autofocus: true,
+            keyboardType: _numerik,
+            inputFormatters: decimalInput(maxIntDigits: 3),
+            decoration: InputDecoration(
+              labelText: t(context).concreteDepthField,
+              suffixText: 'm',
+              helperText: t(context).soundingQuestion,
+              helperMaxLines: 2,
+            ),
+          ),
+        ];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final k = widget.kurang[_step.clamp(0, widget.kurang.length - 1)];
+    final terakhir = _step >= widget.kurang.length - 1;
+    return Padding(
+      padding: sheetPadding(context),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(t(context).lengkapiTitle,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text(t(context).lengkapiBody,
+                style: TextStyle(color: context.colors.muted, height: 1.35)),
+            const SizedBox(height: 10),
+            // Satu ruas pun tetap digambar: yang kurang satu hal berhak
+            // tahu bahwa memang tinggal satu.
+            StepProgress(step: _step + 1, total: widget.kurang.length),
+            const SizedBox(height: 16),
+            if (_error != null) ...[
+              TerraBanner(kind: BannerKind.danger, title: _error!),
+              const SizedBox(height: 12),
+            ],
+            AnimatedSwitcher(
+              duration: Dimens.motionMedium,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+                      .animate(animation),
+                  child: child,
+                ),
+              ),
+              child: Column(
+                key: ValueKey(k),
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _isi(k),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                if (_step > 0) ...[
+                  Expanded(
+                    child: SizedBox(
+                      height: Dimens.minTouch + 4,
+                      child: OutlinedButton(
+                        onPressed: () => setState(() {
+                          _error = null;
+                          _step -= 1;
+                        }),
+                        child: Text(t(context).backStep),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: Dimens.minTouch + 4,
+                    child: FilledButton(
+                      onPressed: _maju,
+                      child: Text(terakhir ? t(context).save : t(context).nextStep),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Dua pertanyaan sebelum TM pertama — satu layar satu pertanyaan.
+///
+/// KENAPA YANG DITANYA BUKAN KEDALAMANNYA
+///
+/// Kolom lamanya meminta "kedalaman ujung tremie dari GS". Tidak ada
+/// seorang pun di lokasi yang dapat MELIHAT angka itu: meteran tidak
+/// diturunkan ke dalam lubang yang sebentar lagi diisi beton. Yang
+/// benar-benar dilihat orang adalah berapa meter pipa MENYEMBUL di atas
+/// tanah — dan kedalamannya tinggal dikurangkan dari panjang pipa yang
+/// sudah tersusun, yang memang sudah diketahui aplikasi.
+///
+/// Terbukti pada 27 Okt 2026: ditanyai kedalamannya, jawabannya tidak
+/// ada; ditanyai yang menyembul, jawabannya "kira-kira 1 m" dalam
+/// hitungan detik. Pertanyaan yang salah membuat data yang benar
+/// terlihat seperti data yang hilang.
+///
+/// Hasil hitungannya DIKEMBALIKAN KE LAYAR untuk dibenarkan, bukan
+/// disimpan diam-diam. Yang menjawab berhak tahu angka apa yang jadi
+/// atas namanya — dan satu salah ketik (10 m, bukan 1 m) langsung
+/// terlihat di kalimat itu, bukan nanti di rekap kantor.
+class _PourStartSheet extends StatefulWidget {
+  const _PourStartSheet({
+    required this.bottomDepthM,
+    required this.tremieLengthM,
+    required this.grade,
+    required this.defaultGrade,
+  });
+
+  /// Dasar lubang dari GS; celahnya dihitung terhadap ini.
+  final double bottomDepthM;
+
+  /// Panjang pipa tremie yang SUDAH tersusun — dasar pengurangannya.
+  final double tremieLengthM;
+
+  final double? grade;
+  final double? defaultGrade;
+
+  @override
+  State<_PourStartSheet> createState() => _PourStartSheetState();
+}
+
+class _PourStartSheetState extends State<_PourStartSheet> {
+  int _step = 0;
+  final _stickOut = TextEditingController();
+  late final _grade = TextEditingController(
+    text: (widget.grade ?? widget.defaultGrade) == null
+        ? ''
+        : _decimal(widget.grade ?? widget.defaultGrade, d: 1),
+  );
+  String? _error;
+
+  @override
+  void dispose() {
+    _stickOut.dispose();
+    _grade.dispose();
+    super.dispose();
+  }
+
+  /// Kedalaman ujung tremie dari GS — DITURUNKAN, tidak pernah diketik.
+  double? get _depthM {
+    final menyembul = parseNumber(_stickOut.text);
+    if (menyembul == null) return null;
+    return widget.tremieLengthM - menyembul;
+  }
+
+  double? get _gapM {
+    final d = _depthM;
+    return d == null ? null : widget.bottomDepthM - d;
+  }
+
+  void _next() {
+    final gap = _gapM;
+    if (gap == null) {
+      setState(() => _error = t(context).stickOutRequired);
+      return;
+    }
+    // Batasnya SAMA dengan `_HeaderSheet._submit` dan dengan server
+    // (`TREMIE_DALAM_SALAH`): 0 sampai 5 m di atas dasar lubang. Tiga
+    // tempat satu angka; yang berbeda-beda akan menolak di satu tempat
+    // dan menerima di tempat lain.
+    if (gap < -0.005) {
+      setState(() => _error = t(context).stickOutTooDeep);
+      return;
+    }
+    if (gap > 5.005) {
+      setState(() => _error = t(context).stickOutTooHigh(formatMeters(gap)));
+      return;
+    }
+    setState(() {
+      _error = null;
+      _step = 1;
+    });
+  }
+
+  void _save() {
+    final grade = _grade.text.trim().isEmpty ? null : parseNumber(_grade.text);
+    if (grade == null || grade <= 0 || grade > 150) {
+      setState(() => _error = 'Mutu beton tidak masuk akal.');
+      return;
+    }
+    final dalam = _depthM!;
+    final gap = widget.bottomDepthM - dalam;
+    Navigator.pop(context, {
+      'concreteGrade': decimalText(grade, decimals: 1),
+      'tremieDepthStartM': decimalText(dalam),
+      // Celahnya ikut dikirim, sama seperti `_HeaderSheet`: server lama
+      // tidak mengenal kolom terukurnya dan hitungannya mundur ke sini.
+      'tremieBottomGapM': decimalText(gap < 0 ? 0 : gap),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: sheetPadding(context),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(t(context).pourStartTitle,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            StepProgress(step: _step + 1, total: 2),
+            const SizedBox(height: 14),
+            if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
+            // Pertanyaannya berganti dengan BERGERAK — kosakata yang sama
+            // dengan lembar TM dan dengan `AnimatedFigure`.
+            AnimatedSwitcher(
+              duration: Dimens.motionMedium,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+                      .animate(animation),
+                  child: child,
+                ),
+              ),
+              child: Column(
+                key: ValueKey(_step),
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _step == 0 ? _langkahTremie() : _langkahMutu(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const _tanya =
+      TextStyle(fontSize: 18, fontWeight: FontWeight.w700, height: 1.3);
+  static const _numerik = TextInputType.numberWithOptions(decimal: true);
+
+  List<Widget> _langkahTremie() {
+    final dalam = _depthM;
+    final gap = _gapM;
+    return [
+      Text(t(context).stickOutQuestion, style: _tanya),
+      const SizedBox(height: 10),
+      const StickOutDiagram(),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _stickOut,
+        autofocus: true,
+        keyboardType: _numerik,
+        inputFormatters: decimalInput(maxIntDigits: 3),
+        // Hitungannya ikut berubah sambil diketik: itulah yang membuat
+        // salah ketik terlihat sebelum disimpan.
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          labelText: t(context).stickOutField,
+          suffixText: 'm',
+          helperText: t(context).stickOutBasis(formatMeters(widget.tremieLengthM)),
+          helperMaxLines: 2,
+        ),
+      ),
+      const SizedBox(height: 12),
+      // HASIL HITUNGANNYA IKUT BERGERAK SAAT ANGKANYA BERUBAH.
+      //
+      // Alasannya sama dengan `AnimatedFigure`: angka yang berganti harus
+      // TERLIHAT berganti. Di sini itu bukan hiasan — kalimat ini satu-
+      // satunya tempat salah ketik "10" yang dimaksud "1" kelihatan, dan
+      // kalimat yang berganti diam-diam adalah kalimat yang tidak dibaca.
+      AnimatedSwitcher(
+        duration: Dimens.motionMedium,
+        switchInCurve: Curves.easeOutCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SizeTransition(sizeFactor: animation, child: child),
+        ),
+        child: dalam == null || gap == null
+            ? const SizedBox.shrink()
+            : TerraBanner(
+                key: ValueKey('${formatMeters(dalam)}|${formatMeters(gap)}'),
+                kind: gap < -0.005 || gap > 5.005 ? BannerKind.warning : BannerKind.info,
+                title: t(context).stickOutResult(formatMeters(dalam), formatMeters(gap)),
+              ),
+      ),
+      const SizedBox(height: 18),
+      SizedBox(
+        height: Dimens.minTouch + 4,
+        child: FilledButton(onPressed: _next, child: Text(t(context).nextStep)),
+      ),
+    ];
+  }
+
+  List<Widget> _langkahMutu() => [
+        Text(t(context).gradeQuestion, style: _tanya),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _grade,
+          autofocus: true,
+          keyboardType: _numerik,
+          inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1),
+          decoration: InputDecoration(labelText: t(context).cellGrade, suffixText: 'MPa'),
+        ),
+        if (widget.defaultGrade != null) ...[
+          const SizedBox(height: 12),
+          TerraBanner(
+            kind: BannerKind.info,
+            title: t(context).defaultGrade(_decimal(widget.defaultGrade, d: 1)),
+            body: t(context).defaultGradeBody,
+          ),
+        ],
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: Dimens.minTouch + 4,
+                child: OutlinedButton(
+                  onPressed: () => setState(() {
+                    _error = null;
+                    _step = 0;
+                  }),
+                  child: Text(t(context).backStep),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              flex: 2,
+              child: SizedBox(
+                height: Dimens.minTouch + 4,
+                child: FilledButton(onPressed: _save, child: Text(t(context).save)),
+              ),
+            ),
+          ],
+        ),
+      ];
 }
 
 /// Data cor: mutu beton, kedalaman tremie, catatan.
@@ -3087,7 +4123,7 @@ class _HeaderSheetState extends State<_HeaderSheet> {
   void _submit() {
     final grade = _grade.text.trim().isEmpty ? null : parseNumber(_grade.text);
     if (_grade.text.trim().isNotEmpty && (grade == null || grade <= 0 || grade > 150)) {
-      setState(() => _error = "Mutu fc' tidak masuk akal.");
+      setState(() => _error = 'Mutu beton tidak masuk akal.');
       return;
     }
     // DIUKUR, bukan diasumsikan: yang diisi QS adalah kedalaman ujung bawah
@@ -3100,7 +4136,24 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       return;
     }
     final gap = widget.bottomDepthM - dalam;
-    if (gap < -0.005 || gap > 1.005) {
+    // BATAS ATASNYA 5 M, BUKAN 1 M — disamakan dengan server.
+    //
+    // Sampai 27 Okt 2026 batasnya di sini 1 m, sementara server menerima
+    // sampai 5 m di atas dasar lubang. Angka 1 m itu bukan batas fisik:
+    // ia ASUMSI bawaan yang dipakai saat kedalamannya belum diukur, dan
+    // ia menyelinap ke sini sebagai batas.
+    //
+    // Akibatnya kolom yang seluruh gunanya MENGGANTI asumsi dengan hasil
+    // ukur hanya mau menerima angka yang sependapat dengan asumsinya.
+    // Pada SP.B58 ujung tremie sungguhan berada 1,90 m di atas dasar
+    // lubang; formulirnya menjawab "tidak masuk akal", dan satu-satunya
+    // cara menutup log adalah mengetik angka yang tidak benar. Penjaga
+    // yang memaksa orang berbohong lebih buruk daripada tidak ada
+    // penjaga.
+    //
+    // 5 m tetap batas kewarasan: lebih dari itu tremienya memang salah
+    // susun, dan server menolaknya juga.
+    if (gap < -0.005 || gap > 5.005) {
       setState(() => _error = t(context).tremieDepthInvalid(formatMeters(widget.bottomDepthM)));
       return;
     }
@@ -3170,6 +4223,21 @@ class _HeaderSheetState extends State<_HeaderSheet> {
       ),
     );
   }
+}
+
+/// "+4%" / "−50%" — seberapa jauh lubangnya lebih besar daripada gambar.
+///
+/// DITAMPILKAN SEBAGAI PERSEN, BUKAN SEBAGAI ANGKA RASIO. "1,04" menuntut
+/// pembacanya tahu bahwa 1,00 berarti pas, lalu mengalikan selisihnya
+/// seratus. Yang tidak tahu membacanya sebagai "1,04 meter", atau tidak
+/// membacanya sama sekali.
+///
+/// Bentuk yang sama dipakai di kartu TM DAN di peringatan rasio yang
+/// melompat, supaya yang dibandingkan orangnya memang dua angka yang
+/// ditulis dengan cara yang sama.
+String _persenLebih(double ratio) {
+  final persen = ((ratio - 1) * 100).round();
+  return '${persen >= 0 ? '+' : '−'}${persen.abs()}%';
 }
 
 /// "kedalaman 3,00–6,00 m", or with the part above ground spelled out.

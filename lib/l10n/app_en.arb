@@ -231,7 +231,8 @@
   "addTruckAnyway": "Add a truck anyway",
   "soundingAfter": "Sounding after truck #{seq}",
   "soundingBefore": "Sounding before truck #{seq}",
-  "concreteDepthField": "Concrete level depth from ground (m)",
+  "soundingQuestion": "From the ground down to the concrete surface, how many metres?",
+  "concreteDepthField": "Ground down to concrete surface",
   "soundingHint": "Must be measured. Estimated from volume: {est}.",
   "soundingMissing": "Sounding for truck #{seq} is missing. Required before the next truck.",
   "truckStartTime": "Start time of truck #{seq}",
@@ -277,6 +278,7 @@
   "cannotChangeAnymore": "This casting log can no longer be changed.",
   "gradeMissingTitle": "Concrete grade (fc') not filled in",
   "gradeMissingBody": "Neither this point nor this project has a default grade. Enter it in the casting details, or the server will reject the log.",
+  "finishNeedsGrade": "Fill the grade first",
   "fill": "Fill it in",
   "drillDepthUnmarked": "Drilled depth not marked",
   "drillDepthUnmarkedBody": "The figures use the PLANNED drill length. Mark the actual depth from the point list so the cut suggestion is right.",
@@ -350,7 +352,7 @@
   "soundingBeforeLabel": "Sounding before",
   "soundingAfterLabel": "Sounding after",
   "soundingAfterRequired": "The sounding after is required. Tap the row above.",
-  "overbreakRatio": "Overbreak ratio",
+  "overbreakRatio": "Hole wider than design",
   "deliveryNote": "Delivery note",
   "slumpTest": "Slump test",
   "pausedLabel": "Paused",
@@ -369,7 +371,7 @@
   "otherTypeName": "Other — type the name",
   "otherSupplierName": "Other supplier name",
   "volumeField": "Volume",
-  "slumpField": "Slump",
+  "slumpField": "Tested slump",
   "soundingBeforeOptional": "Sounding before (optional)",
   "estimateHint": "estimated {value}",
   "saveChanges": "Save changes",
@@ -1246,6 +1248,32 @@
       }
     }
   },
+  "pourStartTitle": "Before the first truck",
+  "stickOutQuestion": "How many metres of tremie pipe stick out above the ground?",
+  "stickOutField": "Sticking out above ground",
+  "stickOutBasis": "Pipe already built: {panjang}.",
+  "stickOutResult": "So the tremie bottom sits at {dalam}, which is {celah} above the hole bottom.",
+  "stickOutRequired": "Fill in how many metres are sticking out first.",
+  "stickOutTooHigh": "That puts the tremie bottom {celah} above the hole bottom. Too high \u2014 check again.",
+  "stickOutTooDeep": "That puts the tremie bottom deeper than the hole bottom. Check again.",
+  "gradeQuestion": "What is the concrete grade today?",
+  "nextStep": "Next",
+  "backStep": "Back",
+  "ratioOddTitle": "Sounding does not match the concrete volume",
+  "ratioOddBody": "This truck comes out at {ini}, while the earlier trucks were {pola}. The hole was finished before any concrete went in, so its shape does not change mid-pour — most often the sounding was misread.",
+  "ratioOddAlone": "This truck comes out at {ini}, with no earlier truck to compare against. The usual range is −20% to +100%; outside it the sounding is usually misread.",
+  "remeasure": "Measure again",
+  "saveAnyway": "Save anyway",
+  "qTruckNo": "What is the truck's hull number?",
+  "qVolume": "How many cubic metres in this truck?",
+  "qSupplier": "Which supplier is the concrete from?",
+  "qSlump": "What was the tested slump?",
+  "qPhoto": "Photo of the delivery note",
+  "supplierSameAsBefore": "Still {nama}, same as the previous truck.",
+  "changeIt": "Change",
+  "lengkapiTitle": "A few things first",
+  "lengkapiBody": "The casting log cannot be closed yet. Fill in what is missing below, then carry on.",
+  "qSoundingAwal": "Before the first truck was poured, how many metres from the ground to the concrete?",
   "tremieDepthField": "Tremie bottom depth from GS",
   "@tremieDepthField": {
     "description": "Measured depth of the tremie bottom end when casting starts"
@@ -1263,7 +1291,7 @@
   "@tremieDepthRequired": {
     "description": "The tremie depth field was left empty"
   },
-  "tremieDepthInvalid": "The tremie bottom must sit between the hole bottom ({dasar}) and 1 m above it.",
+  "tremieDepthInvalid": "The tremie bottom must sit between the hole bottom ({dasar}) and 5 m above it.",
   "@tremieDepthInvalid": {
     "description": "The typed tremie depth is not plausible",
     "placeholders": {
@@ -1271,10 +1299,6 @@
         "type": "String"
       }
     }
-  },
-  "tremieDepthNeeded": "The tremie bottom depth is missing - open Casting data and measure it first.",
-  "@tremieDepthNeeded": {
-    "description": "Blocks finishing the casting until the tremie depth is recorded"
   },
   "soundingBeforeNeeded": "The before-sounding of truck #1 is missing - without it there is never an embedment-before.",
   "@soundingBeforeNeeded": {
@@ -1429,6 +1453,8 @@
   "blockedConfirmed": "Checked by the office; this log can no longer be changed.",
   "blockedCast": "Already cast; the drill log is closed for good.",
   "blockedNeedTremie": "Set up the tremie string first, then add the truck.",
+  "tremieDepthFirst": "Measure the tremie first",
+  "blockedNeedTremieDepth": "Measure the tremie bottom depth first. Once concrete goes in, it can no longer be measured.",
   "drillReopenConfirmTitle": "Open this drill log again?",
   "drillReopenConfirmBody": "The log is closed now. Opening it again lets depths be added and changed, and the office will see that it was reopened. Only do this if a figure really is wrong.",
   "castReopenConfirmTitle": "Open this casting log again?",

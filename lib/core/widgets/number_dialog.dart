@@ -22,6 +22,8 @@ Future<(double?,)?> showNumberDialog(
   String? suffix,
   required double maxValue,
   double? initial,
+  String? question,
+  Widget? diagram,
   String? hint,
   bool allowEmpty = false,
   String? Function(double value)? validate,
@@ -31,6 +33,8 @@ Future<(double?,)?> showNumberDialog(
     builder: (_) => _NumberDialog(
       title: title,
       label: label,
+      question: question,
+      diagram: diagram,
       icon: icon,
       suffix: suffix,
       maxValue: maxValue,
@@ -50,6 +54,8 @@ class _NumberDialog extends StatefulWidget {
     required this.suffix,
     required this.maxValue,
     required this.initial,
+    required this.question,
+    required this.diagram,
     required this.hint,
     required this.allowEmpty,
     required this.validate,
@@ -61,6 +67,28 @@ class _NumberDialog extends StatefulWidget {
   final String? suffix;
   final double maxValue;
   final double? initial;
+
+  /// Pertanyaan dalam kalimat biasa, di atas segalanya.
+  ///
+  /// Judul dialog ini menyebut ISTILAHNYA ("Sounding setelah TM #3") —
+  /// berguna, sebab itu kata yang dipakai di lapangan dan di rekap. Tapi
+  /// istilah bukan perintah: yang baru sebulan di proyek tahu kata itu
+  /// tanpa tahu dari mana ke mana diukurnya, dan label teknis di bawah
+  /// kolom tidak pernah menjawabnya — ia hanya menamai hal yang sama
+  /// dengan kata yang sama.
+  ///
+  /// Kalimat ini yang menjawab: "Dari muka tanah turun ke muka beton,
+  /// berapa meter?". Istilahnya tetap ada di judul, jadi orangnya
+  /// sekalian belajar kata itu menunjuk apa.
+  final String? question;
+
+  /// Gambar kecil yang menunjukkan APA yang diukur, di atas pertanyaannya.
+  ///
+  /// Dititipkan pemanggil, bukan dibuat di sini: berkas ini milik
+  /// `core/widgets` dan tidak boleh tahu soal tremie, sounding, atau
+  /// kerucut slump.
+  final Widget? diagram;
+
   final String? hint;
   final bool allowEmpty;
 
@@ -108,10 +136,25 @@ class _NumberDialogState extends State<_NumberDialog> {
     return AlertDialog(
       icon: Icon(widget.icon, size: 32, color: w.brand),
       title: Text(widget.title, textAlign: TextAlign.center),
-      content: Column(
+      // DIGULUNG. Dengan gambar di atasnya, papan ketik yang terbuka pada
+      // HP pendek menyisakan ruang yang tidak cukup — dan yang terdorong
+      // ke luar adalah kolom isiannya sendiri.
+      content: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (widget.diagram != null) ...[
+            widget.diagram!,
+            const SizedBox(height: 10),
+          ],
+          if (widget.question != null) ...[
+            Text(
+              widget.question!,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.35),
+            ),
+            if (widget.hint != null) const SizedBox(height: 8),
+          ],
           if (widget.hint != null) Text(widget.hint!, style: TextStyle(color: w.muted, height: 1.4)),
           // Room for the floating label, which sits ON the field's top border.
           const SizedBox(height: 20),
@@ -139,6 +182,7 @@ class _NumberDialogState extends State<_NumberDialog> {
             ),
           ],
         ],
+        ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),

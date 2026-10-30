@@ -7,7 +7,7 @@
   "navHome": "Beranda",
   "navAttendance": "Absensi",
   "navCasting": "Cor",
-  "navQueue": "Antrean",
+  "navQueue": "Pending",
   "navSettings": "Pengaturan",
   "navAttendanceSoon": "Absensi belum aktif — segera hadir.",
   "@navAttendanceSoon": {
@@ -38,7 +38,7 @@
     }
   },
   "homeWatched": "Sedang dipantau",
-  "homeWatchedCount": "{count} log",
+  "homeWatchedCount": "{count} catatan",
   "@homeWatchedCount": {
     "placeholders": {
       "count": {
@@ -47,8 +47,8 @@
       }
     }
   },
-  "homeDrillRunning": "log bor berjalan",
-  "homeCastRunning": "log cor berjalan",
+  "homeDrillRunning": "catatan bor berjalan",
+  "homeCastRunning": "catatan cor berjalan",
   "labelDrill": "Bor",
   "@labelDrill": {
     "description": "Awalan judul kartu: Bor PP.A13"
@@ -59,7 +59,7 @@
   },
   "shortcutAttendance": "Absen kru",
   "shortcutAttendanceBody": "Foto masuk & pulang, centang kru yang hadir",
-  "shortcutCasting": "Log bor & cor",
+  "shortcutCasting": "Catatan bor & cor",
   "shortcutCastingBody": "Catat kedalaman bor, TM, tremie & sounding per titik",
   "shortcutWorkers": "Pekerja",
   "shortcutWorkersBody": "Semua pekerja per proyek, daftarkan pekerja baru",
@@ -156,7 +156,7 @@
   "@textSizeHuge": {
     "description": "Halaman Pengaturan: textSizeHuge"
   },
-  "myProjectBodyAttendance": "Absen, pekerja baru dan log cor langsung memakai proyek ini. Masih bisa diganti di tiap layar.",
+  "myProjectBodyAttendance": "Absen, pekerja baru dan catatan cor langsung memakai proyek ini. Masih bisa diganti di tiap layar.",
   "@myProjectBodyAttendance": {
     "description": "Halaman Pengaturan: myProjectBodyAttendance"
   },
@@ -200,7 +200,7 @@
   "@notifBlockedTitle": {
     "description": "Spanduk beranda: notifBlockedTitle"
   },
-  "notifBlockedBody": "HP ini belum mengizinkan TerraBot Field memunculkan notifikasi. Pengingat TM lewat 20 menit, cor yang dijeda, dan log bor yang belum ditutup semuanya tidak akan terdengar. Ketuk Izinkan.",
+  "notifBlockedBody": "HP ini belum mengizinkan TerraBot Field memunculkan notifikasi. Pengingat TM lewat 20 menit, cor yang dijeda, dan catatan bor yang belum ditutup semuanya tidak akan terdengar. Ketuk Izinkan.",
   "@notifBlockedBody": {
     "description": "Spanduk beranda: notifBlockedBody"
   },
@@ -290,19 +290,19 @@
       }
     }
   },
-  "sendLog": "Kirim log ke admin",
+  "sendLog": "Kirim catatan masalah ke admin",
   "@sendLog": {
     "description": "Halaman Pengaturan: sendLog"
   },
-  "sendLogBody": "Bila aplikasi bermasalah: catatan galat dari HP ini, tanpa data pribadi.",
+  "sendLogBody": "Bila aplikasi bermasalah: catatan masalah dari HP ini, tanpa data pribadi.",
   "@sendLogBody": {
     "description": "Halaman Pengaturan: sendLogBody"
   },
-  "noLogYet": "Belum ada catatan galat di HP ini.",
+  "noLogYet": "Belum ada catatan masalah di HP ini.",
   "@noLogYet": {
     "description": "Halaman Pengaturan: noLogYet"
   },
-  "logShareFailed": "Log gagal dibagikan: {error}",
+  "logShareFailed": "Catatan masalah gagal dibagikan: {error}",
   "@logShareFailed": {
     "description": "Halaman Pengaturan: logShareFailed",
     "placeholders": {
@@ -311,7 +311,7 @@
       }
     }
   },
-  "castingTitle": "Log pengecoran",
+  "castingTitle": "Catatan pengecoran",
   "@castingTitle": {
     "description": "AppBar layar cor"
   },
@@ -471,7 +471,7 @@
   "@fieldPlannedEff": {
     "description": "fieldPlannedEff"
   },
-  "fieldPlannedVol": "Volume teoritis rencana",
+  "fieldPlannedVol": "Volume beton rencana",
   "@fieldPlannedVol": {
     "description": "fieldPlannedVol"
   },
@@ -483,7 +483,7 @@
   "@gsMissingTitle": {
     "description": "gsMissingTitle"
   },
-  "gsMissingBody": "Kedalaman dari GS belum dapat dihitung, dan log cor baru bisa dimulai setelah GS terisi. Isi GS saat menandai titik ini sudah dibor.",
+  "gsMissingBody": "Kedalaman dari GS belum dapat dihitung, dan catatan cor baru bisa dimulai setelah GS terisi. Isi GS saat menandai titik ini sudah dibor.",
   "@gsMissingBody": {
     "description": "gsMissingBody"
   },
@@ -491,11 +491,11 @@
   "@notFilled": {
     "description": "notFilled"
   },
-  "castLogExists": "Titik ini sudah punya log cor",
+  "castLogExists": "Titik ini sudah punya catatan cor",
   "@castLogExists": {
     "description": "castLogExists"
   },
-  "castLogOnMyOther": "Log cornya ada di HP Anda yang lain",
+  "castLogOnMyOther": "Catatan cornya ada di HP Anda yang lain",
   "@castLogOnMyOther": {
     "description": "castLogOnMyOther"
   },
@@ -503,7 +503,7 @@
   "@castLogElsewhere": {
     "description": "castLogElsewhere"
   },
-  "castLogHeldBody": "{who} yang memegang log cornya. Satu titik hanya boleh satu log cor. Bila log itu salah, minta kantor menghapusnya dulu.",
+  "castLogHeldBody": "{who} yang memegang catatan cornya. Satu titik hanya boleh satu catatan cor. Bila catatan itu salah, minta kantor menghapusnya dulu.",
   "@castLogHeldBody": {
     "description": "castLogHeldBody",
     "placeholders": {
@@ -512,11 +512,11 @@
       }
     }
   },
-  "logIsMineBody": "Log ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. Ambil langsung ke sini tanpa kode oper.",
+  "logIsMineBody": "Catatan ini dipegang akun Anda sendiri, hanya isinya belum ada di HP ini. Ambil langsung ke sini tanpa kode oper.",
   "@logIsMineBody": {
     "description": "logIsMineBody"
   },
-  "castLogHandoverBody": "{who} yang memegang log cornya. Satu titik hanya boleh satu log cor. Untuk melanjutkan dari HP ini, minta dia menekan \"Oper ke rekan\" lalu masukkan kodenya di sini.",
+  "castLogHandoverBody": "{who} yang memegang catatan cornya. Satu titik hanya boleh satu catatan cor. Untuk melanjutkan dari HP ini, minta dia menekan \"Oper ke rekan\" lalu masukkan kodenya di sini.",
   "@castLogHandoverBody": {
     "description": "castLogHandoverBody",
     "placeholders": {
@@ -533,7 +533,7 @@
   "@continueHereCode": {
     "description": "continueHereCode"
   },
-  "drillLogOnMyOther": "Log bornya ada di HP Anda yang lain",
+  "drillLogOnMyOther": "Catatan bornya ada di HP Anda yang lain",
   "@drillLogOnMyOther": {
     "description": "drillLogOnMyOther"
   },
@@ -541,7 +541,7 @@
   "@drillLogElsewhere": {
     "description": "drillLogElsewhere"
   },
-  "drillLogHandoverBody": "Log bornya dipegang {who}. Satu titik hanya boleh satu log bor. Untuk melanjutkan dari HP ini, minta dia menekan \"Oper ke rekan\" lalu masukkan kodenya di sini.",
+  "drillLogHandoverBody": "Catatan bornya dipegang {who}. Satu titik hanya boleh satu catatan bor. Untuk melanjutkan dari HP ini, minta dia menekan \"Oper ke rekan\" lalu masukkan kodenya di sini.",
   "@drillLogHandoverBody": {
     "description": "drillLogHandoverBody",
     "placeholders": {
@@ -554,11 +554,11 @@
   "@drillFirstTitle": {
     "description": "drillFirstTitle"
   },
-  "castAfterDrillLog": "Log cor bisa dimulai setelah log bor ditutup dengan \"Selesai bor\".",
+  "castAfterDrillLog": "Catatan cor bisa dimulai setelah catatan bor ditutup dengan \"Selesai bor\".",
   "@castAfterDrillLog": {
     "description": "castAfterDrillLog"
   },
-  "castAfterDrilled": "Log cor baru bisa dimulai setelah titik ini selesai dibor: lewat log bor, atau tandai langsung.",
+  "castAfterDrilled": "Catatan cor baru bisa dimulai setelah titik ini selesai dibor: lewat catatan bor, atau tandai langsung.",
   "@castAfterDrilled": {
     "description": "castAfterDrilled"
   },
@@ -566,23 +566,23 @@
   "@viewOnlyTitle": {
     "description": "viewOnlyTitle"
   },
-  "viewOnlyCastBody": "Akun ini tidak berhak mencatat log cor.",
+  "viewOnlyCastBody": "Akun ini tidak berhak mencatat catatan cor.",
   "@viewOnlyCastBody": {
     "description": "viewOnlyCastBody"
   },
-  "continueDrillLog": "Lanjutkan log bor",
+  "continueDrillLog": "Lanjutkan catatan bor",
   "@continueDrillLog": {
     "description": "continueDrillLog"
   },
-  "viewDrillLog": "Lihat log bor",
+  "viewDrillLog": "Lihat catatan bor",
   "@viewDrillLog": {
     "description": "viewDrillLog"
   },
-  "startDrillLog": "Mulai log bor",
+  "startDrillLog": "Mulai catatan bor",
   "@startDrillLog": {
     "description": "startDrillLog"
   },
-  "markDrilledNoLog": "Tandai sudah dibor (tanpa log)",
+  "markDrilledNoLog": "Tandai sudah dibor (tanpa catatan)",
   "@markDrilledNoLog": {
     "description": "markDrilledNoLog"
   },
@@ -590,11 +590,11 @@
   "@correctDrillGs": {
     "description": "correctDrillGs"
   },
-  "openCastLog": "Buka log cor",
+  "openCastLog": "Buka catatan cor",
   "@openCastLog": {
     "description": "openCastLog"
   },
-  "startCastLog": "Mulai log cor",
+  "startCastLog": "Mulai catatan cor",
   "@startCastLog": {
     "description": "startCastLog"
   },
@@ -602,7 +602,7 @@
   "@confirmPointCodeTitle": {
     "description": "Dialog konfirmasi nomor titik: confirmPointCodeTitle"
   },
-  "confirmPointCodeBody": "Lihat tiang yang akan Anda cor, jangan daftar di HP. Nomor yang Anda ketik inilah yang menjaga log ini tidak masuk ke titik sebelah.",
+  "confirmPointCodeBody": "Lihat tiang yang akan Anda cor, jangan daftar di HP. Nomor yang Anda ketik inilah yang menjaga catatan ini tidak masuk ke titik sebelah.",
   "@confirmPointCodeBody": {
     "description": "Dialog konfirmasi nomor titik: confirmPointCodeBody"
   },
@@ -646,7 +646,7 @@
   "@gsInvalid": {
     "description": "gsInvalid"
   },
-  "gsRequiredMsg": "Isi elevasi GS titik ini. Log cor tidak dapat dimulai tanpanya.",
+  "gsRequiredMsg": "Isi elevasi GS titik ini. Catatan cor tidak dapat dimulai tanpanya.",
   "@gsRequiredMsg": {
     "description": "gsRequiredMsg"
   },
@@ -723,11 +723,11 @@
   "@save": {
     "description": "save"
   },
-  "drillLogWord": "log bor",
+  "drillLogWord": "catatan bor",
   "@drillLogWord": {
     "description": "drillLogWord"
   },
-  "castLogWord": "log cor",
+  "castLogWord": "catatan cor",
   "@castLogWord": {
     "description": "castLogWord"
   },
@@ -791,7 +791,7 @@
       }
     }
   },
-  "codeValidBody": "Begitu rekan memasukkannya, log pindah ke dia dan HP ini hanya bisa melihat. Foto yang diambil di HP ini tetap terkirim dari sini.",
+  "codeValidBody": "Begitu rekan memasukkannya, catatan pindah ke dia dan HP ini hanya bisa melihat. Foto yang diambil di HP ini tetap terkirim dari sini.",
   "@codeValidBody": {
     "description": "codeValidBody"
   },
@@ -811,7 +811,7 @@
       }
     }
   },
-  "takeLogHereBody": "{log} ini memang dipegang akun Anda, hanya isinya belum ada di HP ini. Tidak perlu kode oper.\n\nBila log ini sedang terbuka di HP Anda yang lain, lanjutkan di SATU HP saja supaya isiannya tidak bertabrakan.",
+  "takeLogHereBody": "{log} ini memang dipegang akun Anda, hanya isinya belum ada di HP ini. Tidak perlu kode oper.\n\nBila catatan ini sedang terbuka di HP Anda yang lain, lanjutkan di SATU HP saja supaya isiannya tidak bertabrakan.",
   "@takeLogHereBody": {
     "description": "takeLogHereBody",
     "placeholders": {
@@ -853,7 +853,7 @@
       }
     }
   },
-  "enterHandoverCode": "Masukkan kode oper 6 angka yang disebutkan pemegang lognya (dia menekan \"Oper ke rekan\" di HP-nya).",
+  "enterHandoverCode": "Masukkan kode oper 6 angka yang disebutkan pemegang catatannya (dia menekan \"Oper ke rekan\" di HP-nya).",
   "@enterHandoverCode": {
     "description": "enterHandoverCode"
   },
@@ -861,7 +861,7 @@
   "@takeOver": {
     "description": "takeOver"
   },
-  "castLogNotOnPhone": "Log cor tidak ditemukan di HP ini.",
+  "castLogNotOnPhone": "Catatan cor tidak ditemukan di HP ini.",
   "@castLogNotOnPhone": {
     "description": "castLogNotOnPhone"
   },
@@ -878,7 +878,7 @@
       }
     }
   },
-  "pointHasCastLog": "Titik {code} sudah punya log cor{by}. Satu titik hanya boleh satu log cor.",
+  "pointHasCastLog": "Titik {code} sudah punya catatan cor{by}. Satu titik hanya boleh satu catatan cor.",
   "@pointHasCastLog": {
     "description": "pointHasCastLog",
     "placeholders": {
@@ -912,11 +912,11 @@
   "@notSignedIn": {
     "description": "notSignedIn"
   },
-  "lockedByOffice": "Log cor sudah diperiksa kantor — tidak dapat diubah lagi.",
+  "lockedByOffice": "Catatan cor sudah diperiksa kantor — tidak dapat diubah lagi.",
   "@lockedByOffice": {
     "description": "lockedByOffice"
   },
-  "heldByOther": "Log cor ini dipegang {who} — ubah dari HP pemegangnya.",
+  "heldByOther": "Catatan cor ini dipegang {who} — ubah dari HP pemegangnya.",
   "@heldByOther": {
     "description": "heldByOther",
     "placeholders": {
@@ -929,7 +929,7 @@
   "@tremieTooLongTitle": {
     "description": "tremieTooLongTitle"
   },
-  "tremieTooLongAdd": "Dengan segmen {len} m ini, ujung atas tremie {stick} di atas GS (paling tinggi {max}, setinggi hopper). Lubang ini cukup {need} tremie. Periksa lagi segmen yang terpasang.",
+  "tremieTooLongAdd": "Dengan pipa {len} m ini, ujung atas tremie {stick} di atas GS (paling tinggi {max}, setinggi hopper). Lubang ini cukup {need} tremie. Periksa lagi pipa yang terpasang.",
   "@tremieTooLongAdd": {
     "description": "tremieTooLongAdd",
     "placeholders": {
@@ -959,11 +959,11 @@
   "@tremieBottomHint": {
     "description": "tremieBottomHint"
   },
-  "topSegmentRemoved": "Segmen teratas dihapus dari susunan.",
+  "topSegmentRemoved": "Pipa tremie paling atas dihapus dari susunan.",
   "@topSegmentRemoved": {
     "description": "topSegmentRemoved"
   },
-  "segmentLength": "Panjang segmen",
+  "segmentLength": "Panjang pipa tremie",
   "@segmentLength": {
     "description": "segmentLength"
   },
@@ -971,11 +971,11 @@
   "@dontPullYet": {
     "description": "dontPullYet"
   },
-  "embedTooShortTitle": "Tertanam terlalu pendek",
+  "embedTooShortTitle": "Tremie kurang tertanam",
   "@embedTooShortTitle": {
     "description": "embedTooShortTitle"
   },
-  "embedAfterRemoval": "Setelah segmen {len} m ini dicabut, tremie tinggal tertanam {after} di beton (paling sedikit {min}). Beton baru bisa menembus muka beton dan bercampur lumpur.",
+  "embedAfterRemoval": "Setelah pipa {len} m ini dicabut, tremie tinggal tertanam {after} di beton (paling sedikit {min}). Beton baru bisa menembus muka beton dan bercampur lumpur.",
   "@embedAfterRemoval": {
     "description": "embedAfterRemoval",
     "placeholders": {
@@ -1003,7 +1003,7 @@
   "@tickAnyway": {
     "description": "tickAnyway"
   },
-  "pullUndone": "Cabut dibatalkan; segmen terpasang lagi.",
+  "pullUndone": "Cabut dibatalkan; pipa tremienya terpasang lagi.",
   "@pullUndone": {
     "description": "pullUndone"
   },
@@ -1011,7 +1011,7 @@
   "@pullTickTitle": {
     "description": "pullTickTitle"
   },
-  "pullTickBody": "Segmen #{pos} ({panjang} m) akan tercatat dicabut setelah TM #{seq}, dan tertanamnya menjadi {sisa}. Catatan ini masuk Piling Record sebagai bukti.",
+  "pullTickBody": "Pipa #{pos} ({panjang} m) akan tercatat dicabut setelah TM #{seq}, dan tremie tertanam menjadi {sisa}. Catatan ini masuk Piling Record sebagai bukti.",
   "@pullTickBody": {
     "description": "pullTickBody",
     "placeholders": {
@@ -1038,7 +1038,7 @@
       }
     }
   },
-  "pullRecorded": "Segmen tercatat dicabut setelah TM #{seq}.",
+  "pullRecorded": "Pipa tremie tercatat dicabut setelah TM #{seq}.",
   "@pullRecorded": {
     "description": "pullRecorded",
     "placeholders": {
@@ -1123,7 +1123,11 @@
       }
     }
   },
-  "concreteDepthField": "Kedalaman muka beton dari GS (m)",
+  "soundingQuestion": "Dari muka tanah turun ke muka beton, berapa meter?",
+  "@soundingQuestion": {
+    "description": "Plain-words question above the sounding field; 'sounding' alone is a word, not an instruction"
+  },
+  "concreteDepthField": "Dari muka tanah ke muka beton",
   "@concreteDepthField": {
     "description": "concreteDepthField"
   },
@@ -1188,7 +1192,7 @@
   "@tremieNotAtBottom": {
     "description": "tremieNotAtBottom"
   },
-  "tremieTooLongNow": "Terpasang {fitted}, ujung atasnya {stick} di atas GS (paling tinggi {max}). Lubang ini cukup {need}. Hapus segmen yang berlebih dulu.",
+  "tremieTooLongNow": "Terpasang {fitted}, ujung atasnya {stick} di atas GS (paling tinggi {max}). Lubang ini cukup {need}. Hapus pipa yang berlebih dulu.",
   "@tremieTooLongNow": {
     "description": "tremieTooLongNow",
     "placeholders": {
@@ -1206,7 +1210,7 @@
       }
     }
   },
-  "tremieShortBody": "Terpasang {fitted}, perlu {need} (dasar lubang dikurangi celah). Tambah segmen dulu: beton yang jatuh dari atas akan bercampur lumpur.",
+  "tremieShortBody": "Terpasang {fitted}, perlu {need} (dasar lubang dikurangi celah). Tambah pipa tremie dulu: beton yang jatuh dari atas akan bercampur lumpur.",
   "@tremieShortBody": {
     "description": "tremieShortBody",
     "placeholders": {
@@ -1227,7 +1231,7 @@
       }
     }
   },
-  "notifTapToOpen": "{vol} m³ · ketuk untuk membuka log cor",
+  "notifTapToOpen": "{vol} m³ · ketuk untuk membuka catatan cor",
   "@notifTapToOpen": {
     "description": "notifTapToOpen",
     "placeholders": {
@@ -1294,7 +1298,7 @@
       }
     }
   },
-  "notifStillPausedBody": "Sudah lanjut cor? Ketuk Lanjut di log cor",
+  "notifStillPausedBody": "Sudah lanjut cor? Ketuk Lanjut di catatan cor",
   "@notifStillPausedBody": {
     "description": "notifStillPausedBody"
   },
@@ -1355,7 +1359,7 @@
       }
     }
   },
-  "castReopened": "Log cor dibuka lagi. Jangan lupa Selesai cor setelah beres.",
+  "castReopened": "Catatan cor dibuka lagi. Jangan lupa Selesai cor setelah beres.",
   "@castReopened": {
     "description": "castReopened"
   },
@@ -1371,7 +1375,7 @@
   "@cleanWhy": {
     "description": "cleanWhy"
   },
-  "cleanStep1": "Siram/semprot hopper dan tiap segmen tremie sampai bersih dari sisa beton.",
+  "cleanStep1": "Siram/semprot hopper dan tiap pipa tremie sampai bersih dari sisa beton.",
   "@cleanStep1": {
     "description": "cleanStep1"
   },
@@ -1413,7 +1417,7 @@
       }
     }
   },
-  "handedOverBody": "Log cor ini dilanjutkan dari HP {who}. Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.",
+  "handedOverBody": "Catatan cor ini dilanjutkan dari HP {who}. Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.",
   "@handedOverBody": {
     "description": "handedOverBody",
     "placeholders": {
@@ -1439,15 +1443,16 @@
       }
     }
   },
-  "cannotChangeAnymore": "Log cor ini tidak dapat diubah lagi.",
+  "cannotChangeAnymore": "Catatan cor ini tidak dapat diubah lagi.",
   "@cannotChangeAnymore": {
     "description": "cannotChangeAnymore"
   },
-  "gradeMissingTitle": "Mutu beton (fc') belum diisi",
+  "gradeMissingTitle": "Mutu beton belum diisi",
   "@gradeMissingTitle": {
     "description": "gradeMissingTitle"
   },
-  "gradeMissingBody": "Titik dan proyek ini belum punya mutu bawaan. Isi di data cor, atau log cor akan ditolak server.",
+  "gradeMissingBody": "Titik dan proyek ini belum punya mutu bawaan. Isi di data cor, atau catatan cor akan ditolak server.",
+  "finishNeedsGrade": "Isi mutu dulu",
   "@gradeMissingBody": {
     "description": "gradeMissingBody"
   },
@@ -1467,7 +1472,7 @@
   "@tremieSection": {
     "description": "tremieSection"
   },
-  "tremieSectionBody": "Segmen bawah → atas. Ujung bawah {gap} di atas dasar lubang.",
+  "tremieSectionBody": "Pipa bawah → atas. Ujung bawah {gap} di atas dasar lubang.",
   "@tremieSectionBody": {
     "description": "tremieSectionBody",
     "placeholders": {
@@ -1496,7 +1501,7 @@
   "@noTrucksYet": {
     "description": "noTrucksYet"
   },
-  "noTrucksReadOnly": "Log cor ini tidak punya TM.",
+  "noTrucksReadOnly": "Catatan cor ini tidak punya TM.",
   "@noTrucksReadOnly": {
     "description": "noTrucksReadOnly"
   },
@@ -1577,7 +1582,7 @@
       }
     }
   },
-  "planCutLine": "• Setelah ±{vol} m³: cabut {which} → tertanam {before} → {after} m",
+  "planCutLine": "• Setelah ±{vol} m³: cabut {which} → tremie tertanam {before} → {after} m",
   "@planCutLine": {
     "description": "planCutLine",
     "placeholders": {
@@ -1599,7 +1604,7 @@
   "@joinThen": {
     "description": "joinThen"
   },
-  "warnEmbedShort": "⚠ Tertanam sebelum TM ini hanya {emb} m — periksa sounding.",
+  "warnEmbedShort": "⚠ Tremie tertanam sebelum TM ini hanya {emb} m — periksa sounding.",
   "@warnEmbedShort": {
     "description": "warnEmbedShort",
     "placeholders": {
@@ -1608,7 +1613,7 @@
       }
     }
   },
-  "warnNoSafePull": "⚠ Setelah ±{vol} m³ tertanam melewati 6 m dan tidak ada segmen yang aman dicabut.",
+  "warnNoSafePull": "⚠ Setelah ±{vol} m³ tremie tertanam lebih dari 6 m dan tidak ada pipa yang aman dicabut.",
   "@warnNoSafePull": {
     "description": "warnNoSafePull",
     "placeholders": {
@@ -1617,7 +1622,7 @@
       }
     }
   },
-  "planEnd": "Perkiraan akhir TM: muka beton {level}, tertanam {emb}{cut}.",
+  "planEnd": "Perkiraan akhir TM: muka beton {level}, tremie tertanam {emb}{cut}.",
   "@planEnd": {
     "description": "planEnd",
     "placeholders": {
@@ -1636,7 +1641,7 @@
   "@cutOffReachedSuffix": {
     "description": "cutOffReachedSuffix"
   },
-  "usingOverbreak": "Memakai rasio overbreak {ratio} dari sounding TM sebelumnya.",
+  "usingOverbreak": "Memakai angka pelebaran lubang {ratio} dari sounding TM sebelumnya.",
   "@usingOverbreak": {
     "description": "usingOverbreak",
     "placeholders": {
@@ -1645,7 +1650,7 @@
       }
     }
   },
-  "embedTitle": "Tertanam {emb}{est}",
+  "embedTitle": "Tremie tertanam {emb}{est}",
   "@embedTitle": {
     "description": "embedTitle",
     "placeholders": {
@@ -1689,7 +1694,7 @@
   "@tick": {
     "description": "tick"
   },
-  "cellGrade": "Mutu fc'",
+  "cellGrade": "Mutu beton",
   "@cellGrade": {
     "description": "cellGrade"
   },
@@ -1709,7 +1714,7 @@
   "@cellConcreteLevel": {
     "description": "cellConcreteLevel"
   },
-  "cellTheoretical": "Teoritis",
+  "cellTheoretical": "Seharusnya",
   "@cellTheoretical": {
     "description": "cellTheoretical"
   },
@@ -1734,7 +1739,7 @@
       }
     }
   },
-  "tremieOverLong": "Kepanjangan: ujung atas {stick} di atas GS (paling tinggi {max}). Hapus segmen teratas.",
+  "tremieOverLong": "Kepanjangan: ujung atas {stick} di atas GS (paling tinggi {max}). Hapus pipa paling atas.",
   "@tremieOverLong": {
     "description": "tremieOverLong",
     "placeholders": {
@@ -1789,7 +1794,7 @@
   "@pullTremieTitle": {
     "description": "pullTremieTitle"
   },
-  "pullTremieBody": "Tekan \"Cabut\" pada segmen yang dicabut setelah TM ini. Gambar di atas ikut berubah.",
+  "pullTremieBody": "Tekan \"Cabut\" pada pipa yang dicabut setelah TM ini. Gambar di atas ikut berubah.",
   "@pullTremieBody": {
     "description": "pullTremieBody"
   },
@@ -1922,7 +1927,7 @@
   "@soundingAfterRequired": {
     "description": "soundingAfterRequired"
   },
-  "overbreakRatio": "Rasio overbreak",
+  "overbreakRatio": "Lubang lebih besar",
   "@overbreakRatio": {
     "description": "overbreakRatio"
   },
@@ -2023,7 +2028,7 @@
   "@volumeField": {
     "description": "volumeField"
   },
-  "slumpField": "Slump",
+  "slumpField": "Slump hasil uji",
   "@slumpField": {
     "description": "slumpField"
   },
@@ -2052,7 +2057,7 @@
   "@castDataTitle": {
     "description": "castDataTitle"
   },
-  "defaultGrade": "Mutu bawaan fc' {grade} MPa",
+  "defaultGrade": "Mutu bawaan {grade} MPa",
   "@defaultGrade": {
     "description": "defaultGrade",
     "placeholders": {
@@ -2081,7 +2086,7 @@
   "@noPoYetBody": {
     "description": "noPoYetBody"
   },
-  "noteField": "Catatan",
+  "noteField": "Keterangan",
   "@noteField": {
     "description": "noteField"
   },
@@ -2204,7 +2209,7 @@
       }
     }
   },
-  "shortfallLine2": "Sudah tercor {poured} m³ dari ±{theoretical} m³ teoritis{percent}.",
+  "shortfallLine2": "Sudah tercor {poured} m³ dari ±{theoretical} m³ yang seharusnya{percent}.",
   "@shortfallLine2": {
     "description": "shortfallLine2",
     "placeholders": {
@@ -2244,15 +2249,15 @@
   "@detailOptional": {
     "description": "detailOptional"
   },
-  "reasonHint": "mis. tremie mampet di segmen ke-3, beton sudah mengeras",
+  "reasonHint": "mis. tremie mampet di pipa ke-3, beton sudah mengeras",
   "@reasonHint": {
     "description": "reasonHint"
   },
-  "shortABitBody": "Kurang sedikit saja dari cut-off — kelebihan di atas cut-off memang dipotong nanti. Titik ditandai sudah dicor; log cor masih dapat diperbaiki sampai diperiksa kantor.",
+  "shortABitBody": "Kurang sedikit saja dari cut-off — kelebihan di atas cut-off memang dipotong nanti. Titik ditandai sudah dicor; catatan cor masih dapat diperbaiki sampai diperiksa kantor.",
   "@shortABitBody": {
     "description": "shortABitBody"
   },
-  "finishedBody": "Titik ditandai sudah dicor. Log cor masih dapat diperbaiki sampai diperiksa kantor.",
+  "finishedBody": "Titik ditandai sudah dicor. Catatan cor masih dapat diperbaiki sampai diperiksa kantor.",
   "@finishedBody": {
     "description": "finishedBody"
   },
@@ -2268,7 +2273,7 @@
   "@notYet": {
     "description": "notYet"
   },
-  "castLogTitle": "Log cor",
+  "castLogTitle": "Catatan cor",
   "@castLogTitle": {
     "description": "castLogTitle"
   },
@@ -2312,7 +2317,7 @@
   "@reasonBukanMilik": {
     "description": "reasonBukanMilik"
   },
-  "reasonDioper": "Log ini sudah dioper ke rekan — perubahan hanya dari HP pemegangnya",
+  "reasonDioper": "Catatan ini sudah dioper ke rekan — perubahan hanya dari HP pemegangnya",
   "@reasonDioper": {
     "description": "reasonDioper"
   },
@@ -2324,7 +2329,7 @@
   "@reasonSudahDitinjau": {
     "description": "reasonSudahDitinjau"
   },
-  "reasonSudahDiperiksa": "Log cor sudah diperiksa kantor — tidak dapat diubah lagi",
+  "reasonSudahDiperiksa": "Catatan cor sudah diperiksa kantor — tidak dapat diubah lagi",
   "@reasonSudahDiperiksa": {
     "description": "reasonSudahDiperiksa"
   },
@@ -2372,15 +2377,15 @@
   "@reasonTitikTidakAda": {
     "description": "reasonTitikTidakAda"
   },
-  "reasonTitikTetap": "Titik log cor tidak dapat diganti",
+  "reasonTitikTetap": "Titik catatan cor tidak dapat diganti",
   "@reasonTitikTetap": {
     "description": "reasonTitikTetap"
   },
-  "reasonCorSudahAda": "Titik ini sudah punya log cor dari HP lain",
+  "reasonCorSudahAda": "Titik ini sudah punya catatan cor dari HP lain",
   "@reasonCorSudahAda": {
     "description": "reasonCorSudahAda"
   },
-  "reasonMutuKosong": "Mutu beton (fc') belum diisi — isi di log cor, atau minta kantor mengisinya di titik/proyek",
+  "reasonMutuKosong": "Mutu beton belum diisi — isi di catatan cor, atau minta kantor mengisinya di titik/proyek",
   "@reasonMutuKosong": {
     "description": "reasonMutuKosong"
   },
@@ -2396,11 +2401,11 @@
   "@reasonJamTmTerbalik": {
     "description": "reasonJamTmTerbalik"
   },
-  "reasonSegmenGanda": "Posisi segmen tremie ganda",
+  "reasonSegmenGanda": "Posisi pipa tremie ganda",
   "@reasonSegmenGanda": {
     "description": "reasonSegmenGanda"
   },
-  "reasonSegmenTmAsing": "Segmen dicabut setelah TM yang tidak ada",
+  "reasonSegmenTmAsing": "Pipa tremie dicabut setelah TM yang tidak ada",
   "@reasonSegmenTmAsing": {
     "description": "reasonSegmenTmAsing"
   },
@@ -2424,7 +2429,7 @@
   "@reasonSoundingKosong": {
     "description": "reasonSoundingKosong"
   },
-  "reasonLogBorSudahAda": "Titik ini sudah punya log bor dari HP lain",
+  "reasonLogBorSudahAda": "Titik ini sudah punya catatan bor dari HP lain",
   "@reasonLogBorSudahAda": {
     "description": "reasonLogBorSudahAda"
   },
@@ -2432,7 +2437,7 @@
   "@reasonKedalamanMundur": {
     "description": "reasonKedalamanMundur"
   },
-  "reasonBorKosong": "Log bor belum punya satu pun bacaan kedalaman",
+  "reasonBorKosong": "Catatan bor belum punya satu pun bacaan kedalaman",
   "@reasonBorKosong": {
     "description": "reasonBorKosong"
   },
@@ -2468,11 +2473,11 @@
   "@entityDrillMark": {
     "description": "entityDrillMark"
   },
-  "entityDrillLog": "Log bor",
+  "entityDrillLog": "Catatan bor",
   "@entityDrillLog": {
     "description": "entityDrillLog"
   },
-  "entityCasting": "Log cor",
+  "entityCasting": "Catatan cor",
   "@entityCasting": {
     "description": "entityCasting"
   },
@@ -2488,7 +2493,7 @@
   "@pauseKendalaAlat": {
     "description": "pauseKendalaAlat"
   },
-  "drillLogNotOnPhone": "Log bor tidak ditemukan di HP ini.",
+  "drillLogNotOnPhone": "Catatan bor tidak ditemukan di HP ini.",
   "@drillLogNotOnPhone": {
     "description": "drillLogNotOnPhone"
   },
@@ -2496,7 +2501,7 @@
   "@pointNotFoundPull": {
     "description": "pointNotFoundPull"
   },
-  "pointHasDrillLog": "Titik {code} sudah punya log bor{by}. Satu titik hanya boleh satu log bor.",
+  "pointHasDrillLog": "Titik {code} sudah punya catatan bor{by}. Satu titik hanya boleh satu catatan bor.",
   "@pointHasDrillLog": {
     "description": "pointHasDrillLog",
     "placeholders": {
@@ -2517,7 +2522,7 @@
       }
     }
   },
-  "drillHeldByOther": "Log bor ini dipegang {who} — ubah dari HP pemegangnya.",
+  "drillHeldByOther": "Catatan bor ini dipegang {who} — ubah dari HP pemegangnya.",
   "@drillHeldByOther": {
     "description": "drillHeldByOther",
     "placeholders": {
@@ -2562,7 +2567,7 @@
       }
     }
   },
-  "drillReopened": "Log bor dibuka lagi.",
+  "drillReopened": "Catatan bor dibuka lagi.",
   "@drillReopened": {
     "description": "drillReopened"
   },
@@ -2575,7 +2580,7 @@
       }
     }
   },
-  "drillHandedOverBody": "Log bor ini dilanjutkan dari HP {who}. Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.",
+  "drillHandedOverBody": "Catatan bor ini dilanjutkan dari HP {who}. Di HP ini hanya bisa dilihat; perubahan dibuat di HP pemegangnya.",
   "@drillHandedOverBody": {
     "description": "drillHandedOverBody",
     "placeholders": {
@@ -2593,7 +2598,7 @@
       }
     }
   },
-  "drilledBodyOk": "Titik ini sudah ditandai dibor; log cor bisa dimulai.",
+  "drilledBodyOk": "Titik ini sudah ditandai dibor; catatan cor bisa dimulai.",
   "@drilledBodyOk": {
     "description": "drilledBodyOk"
   },
@@ -2785,7 +2790,7 @@
       }
     }
   },
-  "finishDrillBody": "Kedalaman akhir {depth} (bacaan terdalam). Titik ditandai sudah dibor dan log cor bisa dimulai.",
+  "finishDrillBody": "Kedalaman akhir {depth} (bacaan terdalam). Titik ditandai sudah dibor dan catatan cor bisa dimulai.",
   "@finishDrillBody": {
     "description": "finishDrillBody",
     "placeholders": {
@@ -2857,11 +2862,11 @@
   "@noMatchAddNew": {
     "description": "noMatchAddNew"
   },
-  "queueTitle": "Antrean kirim",
+  "queueTitle": "Belum terkirim",
   "@queueTitle": {
     "description": "queueTitle"
   },
-  "queueLoadError": "Antrean gagal dibaca",
+  "queueLoadError": "Daftar yang belum terkirim gagal dibaca",
   "@queueLoadError": {
     "description": "queueLoadError"
   },
@@ -2982,7 +2987,7 @@
   "@discarded": {
     "description": "discarded"
   },
-  "queuedResend": "Masuk antrean, dikirim ulang sekarang.",
+  "queuedResend": "Dicoba kirim ulang sekarang.",
   "@queuedResend": {
     "description": "queuedResend"
   },
@@ -3024,7 +3029,7 @@
   "@oldPhoneKeepsData": {
     "description": "oldPhoneKeepsData"
   },
-  "oldPhoneKeepsDataBody": "HP itu masih dapat mengirim sisa antreannya, hanya tidak boleh mencatat yang baru. Bila HP itu yang sebenarnya Anda pakai, batalkan saja dan masuk dari sana.",
+  "oldPhoneKeepsDataBody": "HP itu masih dapat mengirim sisa catatannya, hanya tidak boleh mencatat yang baru. Bila HP itu yang sebenarnya Anda pakai, batalkan saja dan masuk dari sana.",
   "@oldPhoneKeepsDataBody": {
     "description": "oldPhoneKeepsDataBody"
   },
@@ -3063,7 +3068,7 @@
   "@justNow": {
     "description": "justNow"
   },
-  "loginTagline": "Absensi kru & log pengecoran",
+  "loginTagline": "Absensi kru & catatan pengecoran",
   "@loginTagline": {
     "description": "loginTagline"
   },
@@ -3071,7 +3076,7 @@
   "@dataSafeHere": {
     "description": "dataSafeHere"
   },
-  "signInAgainToSend": "Masuk lagi dengan akun yang sama supaya antreannya terkirim.",
+  "signInAgainToSend": "Masuk lagi dengan akun yang sama supaya sisanya terkirim.",
   "@signInAgainToSend": {
     "description": "signInAgainToSend"
   },
@@ -3099,7 +3104,7 @@
   "@accountUsedElsewhere": {
     "description": "accountUsedElsewhere"
   },
-  "phoneReplacedBody": "Akun Anda dipakai masuk di HP lain, jadi HP ini tidak lagi menerima catatan baru. Sisa antrean tetap terkirim dari sini. Bila HP ini yang Anda pakai, masuk lagi di HP ini.",
+  "phoneReplacedBody": "Akun Anda dipakai masuk di HP lain, jadi HP ini tidak lagi menerima catatan baru. Sisa yang belum terkirim tetap dikirim dari sini. Bila HP ini yang Anda pakai, masuk lagi di HP ini.",
   "@phoneReplacedBody": {
     "description": "phoneReplacedBody"
   },
@@ -3132,7 +3137,7 @@
   "@sessionExpired": {
     "description": "sessionExpired"
   },
-  "sessionExpiredBody": "Data di HP ini AMAN dan tetap dapat diisi. Masuk lagi supaya antreannya dapat dikirim.",
+  "sessionExpiredBody": "Data di HP ini AMAN dan tetap dapat diisi. Masuk lagi supaya sisanya dapat dikirim.",
   "@sessionExpiredBody": {
     "description": "sessionExpiredBody"
   },
@@ -3158,7 +3163,7 @@
       }
     }
   },
-  "rejectedBody": "Buka Antrean untuk melihat sebabnya dan memperbaikinya.",
+  "rejectedBody": "Buka \"Pending\" untuk melihat sebabnya dan memperbaikinya.",
   "@rejectedBody": {
     "description": "rejectedBody"
   },
@@ -3438,7 +3443,7 @@
       }
     }
   },
-  "noLog": "tanpa log",
+  "noLog": "tanpa catatan",
   "@noLog": {
     "description": "noLog"
   },
@@ -3459,7 +3464,7 @@
   "@statusChecked": {
     "description": "statusChecked"
   },
-  "theoreticalOf": "teoritis {vol} m³{over}",
+  "theoreticalOf": "seharusnya {vol} m³{over}",
   "@theoreticalOf": {
     "description": "theoreticalOf",
     "placeholders": {
@@ -3546,7 +3551,7 @@
       }
     }
   },
-  "drillIdleTitle": "Log bor {code} belum diisi",
+  "drillIdleTitle": "Catatan bor {code} belum diisi",
   "@drillIdleTitle": {
     "description": "drillIdleTitle",
     "placeholders": {
@@ -4343,7 +4348,7 @@
   "@volumeSharedHint": {
     "description": "volumeSharedHint"
   },
-  "overuseAheadTitle": "Beton akan lewat {percent}% dari teoritis",
+  "overuseAheadTitle": "Beton akan lewat {percent}% dari seharusnya",
   "@overuseAheadTitle": {
     "description": "overuseAheadTitle",
     "placeholders": {
@@ -4352,7 +4357,7 @@
       }
     }
   },
-  "overuseAheadBody": "Terpakai {used} m³ dari {theoretical} m³ teoritis setelah TM ini. Paling sering sebabnya TM dibagi dengan lubang lain — isi porsinya saja bila begitu.",
+  "overuseAheadBody": "Terpakai {used} m³ dari {theoretical} m³ yang seharusnya setelah TM ini. Paling sering sebabnya TM dibagi dengan lubang lain — isi porsinya saja bila begitu.",
   "@overuseAheadBody": {
     "description": "overuseAheadBody",
     "placeholders": {
@@ -4364,11 +4369,11 @@
       }
     }
   },
-  "overuseAfterTitle": "Beton jauh di atas teoritis",
+  "overuseAfterTitle": "Beton jauh di atas seharusnya",
   "@overuseAfterTitle": {
     "description": "overuseAfterTitle"
   },
-  "overuseAfterBody": "Sampai TM #{seq}, beton terpakai {percent}% di atas teoritis. Sebelum dicatat sebagai lubang membesar, periksa dulu: apakah ada TM yang dibagi dengan lubang lain?",
+  "overuseAfterBody": "Sampai TM #{seq}, beton terpakai {percent}% di atas seharusnya. Sebelum dicatat sebagai lubang membesar, periksa dulu: apakah ada TM yang dibagi dengan lubang lain?",
   "@overuseAfterBody": {
     "description": "overuseAfterBody",
     "placeholders": {
@@ -4566,7 +4571,7 @@
   "@requestSentTitle": {
     "description": "Confirmation that the request reached the server"
   },
-  "requestSentBody": "{name} mendapat pemberitahuan di HP-nya. Begitu disetujui, log ini pindah ke HP Anda — tidak perlu kode.",
+  "requestSentBody": "{name} mendapat pemberitahuan di HP-nya. Begitu disetujui, catatan ini pindah ke HP Anda — tidak perlu kode.",
   "@requestSentBody": {
     "description": "Explains what happens next after asking the holder",
     "placeholders": {
@@ -4575,7 +4580,7 @@
       }
     }
   },
-  "handingOver": "Memindahkan log…",
+  "handingOver": "Memindahkan catatan…",
   "@handingOver": {
     "description": "Progress while the holder approves"
   },
@@ -4583,7 +4588,7 @@
   "@rejectingRequest": {
     "description": "Progress while the holder rejects"
   },
-  "logHandedTo": "Log {code} sudah pindah ke {name}.",
+  "logHandedTo": "Catatan {code} sudah pindah ke {name}.",
   "@logHandedTo": {
     "description": "Snack on the old holder phone once the log has moved",
     "placeholders": {
@@ -4622,7 +4627,7 @@
       }
     }
   },
-  "handoverRequestPrompt": "{name} sedang di titik {code} dan menunggu jawaban. Disetujui berarti log ini langsung pindah ke HP-nya, dan layar ini ditutup.",
+  "handoverRequestPrompt": "{name} sedang di titik {code} dan menunggu jawaban. Disetujui berarti catatan ini langsung pindah ke HP-nya, dan layar ini ditutup.",
   "@handoverRequestPrompt": {
     "description": "Banner body asking the holder to approve or reject",
     "placeholders": {
@@ -4681,11 +4686,11 @@
   "@progressNothingYet": {
     "description": "Shown when the holder has sent no records yet"
   },
-  "logGoneResynced": "Lognya sudah tidak ada di server — kemungkinan dihapus dari kantor. Titik ini baru saja ditarik ulang; silakan buka lagi.",
+  "logGoneResynced": "Catatannya sudah tidak ada di server — kemungkinan dihapus dari kantor. Titik ini baru saja ditarik ulang; silakan buka lagi.",
   "@logGoneResynced": {
     "description": "logGoneResynced"
   },
-  "progressNoSync": "Lognya sudah dibuka, catatan pertama belum masuk",
+  "progressNoSync": "Catatannya sudah dibuka, catatan pertama belum masuk",
   "@progressNoSync": {
     "description": "Shown when there is no timestamp at all"
   },
@@ -4730,7 +4735,7 @@
   "@pointHistoryErrorBody": {
     "description": "Explains the history screen needs connectivity"
   },
-  "pointHistoryNoCasting": "Belum ada log cor di server untuk titik ini.",
+  "pointHistoryNoCasting": "Belum ada catatan cor di server untuk titik ini.",
   "@pointHistoryNoCasting": {
     "description": "Empty state of the point history screen"
   },
@@ -4771,15 +4776,15 @@
   "@castStartEnd": {
     "description": "Label of the casting start and end time"
   },
-  "drillLogNotClosed": "Log belum ditutup",
+  "drillLogNotClosed": "Catatan belum ditutup",
   "@drillLogNotClosed": {
     "description": "Badge on a drilling row whose hole is drilled but whose drill log was reopened and never closed again"
   },
-  "embedBeforeLabel": "Tertanam awal",
+  "embedBeforeLabel": "Tremie tertanam awal",
   "@embedBeforeLabel": {
     "description": "Tremie embedment in fresh concrete before this truck is poured"
   },
-  "embedAfterLabel": "Tertanam akhir",
+  "embedAfterLabel": "Tremie tertanam akhir",
   "@embedAfterLabel": {
     "description": "Tremie embedment in fresh concrete after this truck is poured"
   },
@@ -5099,6 +5104,146 @@
       }
     }
   },
+  "pourStartTitle": "Sebelum TM pertama",
+  "@pourStartTitle": {
+    "description": "Title of the two-question sheet shown before the first truck"
+  },
+  "stickOutQuestion": "Pipa tremie menyembul berapa meter di atas tanah?",
+  "@stickOutQuestion": {
+    "description": "Question 1: what the QS can see, instead of a depth they must work out"
+  },
+  "stickOutField": "Menyembul di atas tanah",
+  "@stickOutField": {
+    "description": "Label of the stick-out field"
+  },
+  "stickOutBasis": "Pipa yang sudah tersusun {panjang}.",
+  "@stickOutBasis": {
+    "description": "Shows the installed tremie length the depth is derived from",
+    "placeholders": {
+      "panjang": {
+        "type": "String"
+      }
+    }
+  },
+  "stickOutResult": "Berarti ujung tremie di {dalam}, yaitu {celah} di atas dasar lubang.",
+  "@stickOutResult": {
+    "description": "What the app worked out from the stick-out, shown back for confirmation",
+    "placeholders": {
+      "dalam": {
+        "type": "String"
+      },
+      "celah": {
+        "type": "String"
+      }
+    }
+  },
+  "stickOutRequired": "Isi dulu berapa meter pipa yang menyembul.",
+  "@stickOutRequired": {
+    "description": "The stick-out field was left empty"
+  },
+  "stickOutTooHigh": "Ujung tremie jadi {celah} di atas dasar lubang. Terlalu tinggi \u2014 periksa lagi.",
+  "@stickOutTooHigh": {
+    "description": "The derived tremie bottom sits implausibly far above the hole bottom",
+    "placeholders": {
+      "celah": {
+        "type": "String"
+      }
+    }
+  },
+  "stickOutTooDeep": "Ujung tremie jadi lebih dalam dari dasar lubang. Periksa lagi.",
+  "@stickOutTooDeep": {
+    "description": "The derived tremie bottom sits below the hole bottom"
+  },
+  "gradeQuestion": "Mutu beton TM hari ini berapa?",
+  "@gradeQuestion": {
+    "description": "Question 2 of the before-first-truck sheet"
+  },
+  "nextStep": "Lanjut",
+  "@nextStep": {
+    "description": "Go to the next question"
+  },
+  "backStep": "Kembali",
+  "@backStep": {
+    "description": "Go back to the previous question"
+  },
+  "ratioOddTitle": "Sounding tidak cocok dengan volume beton",
+  "@ratioOddTitle": {
+    "description": "A truck's overbreak ratio jumped away from this pile's own pattern"
+  },
+  "ratioOddBody": "TM ini keluar {ini}, padahal TM sebelumnya {pola}. Lubangnya sudah selesai dibor sebelum beton pertama masuk, jadi bentuknya tidak berubah di tengah cor — paling sering sebabnya sounding kebaca salah.",
+  "@ratioOddBody": {
+    "description": "Explains the jump by naming this truck and the earlier ones",
+    "placeholders": {
+      "ini": {
+        "type": "String"
+      },
+      "pola": {
+        "type": "String"
+      }
+    }
+  },
+  "ratioOddAlone": "TM ini keluar {ini}, dan belum ada TM sebelumnya sebagai pembanding. Wajarnya antara −20% dan +100%; di luar itu biasanya soundingnya yang kebaca salah.",
+  "@ratioOddAlone": {
+    "description": "Same warning when there is no earlier truck to compare against",
+    "placeholders": {
+      "ini": {
+        "type": "String"
+      }
+    }
+  },
+  "remeasure": "Ukur ulang",
+  "@remeasure": {
+    "description": "Primary action: go back and measure the sounding again"
+  },
+  "saveAnyway": "Tetap simpan",
+  "@saveAnyway": {
+    "description": "Secondary action: keep the number as typed"
+  },
+  "qTruckNo": "TM-nya nomor lambung berapa?",
+  "@qTruckNo": {
+    "description": "Step 1 of the arriving-truck questions"
+  },
+  "qVolume": "Berapa kubik beton di TM ini?",
+  "@qVolume": {
+    "description": "Step 2 of the arriving-truck questions"
+  },
+  "qSupplier": "Beton dari pemasok mana?",
+  "@qSupplier": {
+    "description": "Step 3 of the arriving-truck questions"
+  },
+  "qSlump": "Slump hasil ujinya berapa?",
+  "@qSlump": {
+    "description": "Step 4 — the slump TESTED on site, not the one printed on the delivery note"
+  },
+  "qPhoto": "Foto surat jalannya",
+  "@qPhoto": {
+    "description": "Last step of the arriving-truck questions"
+  },
+  "supplierSameAsBefore": "Masih {nama}, sama seperti TM sebelumnya.",
+  "@supplierSameAsBefore": {
+    "description": "Shown on the last step when the supplier was carried over and not asked again",
+    "placeholders": {
+      "nama": {
+        "type": "String"
+      }
+    }
+  },
+  "changeIt": "Ubah",
+  "@changeIt": {
+    "description": "Reopen a question that was answered from the previous truck"
+  },
+  "lengkapiTitle": "Lengkapi dulu",
+  "@lengkapiTitle": {
+    "description": "Sheet that collects whatever is still missing before a casting log may be closed"
+  },
+  "lengkapiBody": "Catatan cor belum bisa ditutup. Isi yang kurang di bawah ini, lalu lanjut.",
+  "@lengkapiBody": {
+    "description": "One line under the title of the completion sheet"
+  },
+  "qSoundingAwal": "Sebelum TM pertama dituang, dari muka tanah ke muka beton berapa meter?",
+  "@qSoundingAwal": {
+    "description": "The sounding taken before the first truck, asked at closing time when it was skipped"
+  },
   "tremieDepthField": "Kedalaman ujung tremie dari GS",
   "@tremieDepthField": {
     "description": "Measured depth of the tremie bottom end when casting starts"
@@ -5116,7 +5261,7 @@
   "@tremieDepthRequired": {
     "description": "The tremie depth field was left empty"
   },
-  "tremieDepthInvalid": "Ujung tremie harus di antara dasar lubang ({dasar}) dan 1 m di atasnya.",
+  "tremieDepthInvalid": "Ujung tremie harus di antara dasar lubang ({dasar}) dan 5 m di atasnya.",
   "@tremieDepthInvalid": {
     "description": "The typed tremie depth is not plausible",
     "placeholders": {
@@ -5124,10 +5269,6 @@
         "type": "String"
       }
     }
-  },
-  "tremieDepthNeeded": "Kedalaman ujung tremie belum diisi — buka Data cor dan ukur dulu.",
-  "@tremieDepthNeeded": {
-    "description": "Blocks finishing the casting until the tremie depth is recorded"
   },
   "soundingBeforeNeeded": "Sounding sebelum TM #1 belum diisi — tanpa itu tertanam awalnya tidak pernah ada.",
   "@soundingBeforeNeeded": {
@@ -5268,24 +5409,26 @@
       }
     }
   },
-  "notifSoundingDueBody": "Buka log cor di HP dan isi sounding muka beton sesudah tuang. Tertanam tremie dan pemeriksaan volume dihitung dari angka itu.",
+  "notifSoundingDueBody": "Buka catatan cor di HP dan isi sounding muka beton sesudah tuang. Tertanam tremie dan pemeriksaan volume dihitung dari angka itu.",
   "@notifSoundingDueBody": {
     "description": "notifSoundingDueBody"
   },
   "drillLockedConfirmedTitle": "Sudah diperiksa kantor — terkunci",
-  "drillLockedConfirmedBody": "Titik ini sudah diperiksa dan disetujui, jadi log bornya tidak bisa diubah lagi. Kalau ada angka yang salah, minta kantor membuka konfirmasinya dulu.",
+  "drillLockedConfirmedBody": "Titik ini sudah diperiksa dan disetujui, jadi catatan bornya tidak bisa diubah lagi. Kalau ada angka yang salah, minta kantor membuka konfirmasinya dulu.",
   "drillLockedCastTitle": "Sudah dicor — terkunci",
-  "drillLockedCastBody": "Betonnya sudah masuk, jadi log bor ini tertutup untuk selamanya. Tidak ada lagi yang bisa diubah di layar ini.",
+  "drillLockedCastBody": "Betonnya sudah masuk, jadi catatan bor ini tertutup untuk selamanya. Tidak ada lagi yang bisa diubah di layar ini.",
   "drillNeedGsTitle": "Isi ground level dulu",
   "drillNeedGsBody": "Semua kedalaman dihitung turun dari ground level, jadi belum ada yang bisa dicatat sebelum itu terisi. Ketuk baris ground level di atas untuk mengisinya.",
   "blockedNeedGs": "Isi ground level dulu — ketuk baris di atas.",
-  "blockedConfirmed": "Sudah diperiksa kantor; log ini tidak bisa diubah lagi.",
-  "blockedCast": "Sudah dicor; log bor sudah tertutup untuk selamanya.",
+  "blockedConfirmed": "Sudah diperiksa kantor; catatan ini tidak bisa diubah lagi.",
+  "blockedCast": "Sudah dicor; catatan bor sudah tertutup untuk selamanya.",
   "blockedNeedTremie": "Susun pipa tremie dulu, baru tambah TM.",
-  "drillReopenConfirmTitle": "Buka lagi log bor ini?",
-  "drillReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, kedalamannya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
-  "castReopenConfirmTitle": "Buka lagi log cor ini?",
-  "castReopenConfirmBody": "Log ini sudah ditutup. Kalau dibuka lagi, TM dan volumenya bisa ditambah dan diubah, dan kantor akan melihat bahwa log ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
+  "tremieDepthFirst": "Ukur tremie dulu",
+  "blockedNeedTremieDepth": "Ukur kedalaman ujung tremie dulu. Begitu beton masuk, angkanya tidak bisa diukur lagi.",
+  "drillReopenConfirmTitle": "Buka lagi catatan bor ini?",
+  "drillReopenConfirmBody": "Catatan ini sudah ditutup. Kalau dibuka lagi, kedalamannya bisa ditambah dan diubah, dan kantor akan melihat bahwa catatan ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
+  "castReopenConfirmTitle": "Buka lagi catatan cor ini?",
+  "castReopenConfirmBody": "Catatan ini sudah ditutup. Kalau dibuka lagi, TM dan volumenya bisa ditambah dan diubah, dan kantor akan melihat bahwa catatan ini pernah dibuka ulang. Lakukan hanya kalau memang ada angka yang salah.",
   "supplierLocal": "Lokal (site-mix, diaduk di lokasi)",
   "@supplierLocal": {
     "description": "supplierLocal"
@@ -5310,7 +5453,7 @@
   "@supplierLocalConfirmTitle": {
     "description": "supplierLocalConfirmTitle"
   },
-  "supplierLocalConfirmBody": "Artinya betonnya diaduk di lokasi, bukan dikirim batching plant — jadi log ini tidak akan punya pemasok dan tidak akan cocok dengan surat jalan mana pun. Kalau betonnya datang pakai TM, pilih pemasoknya dari daftar.",
+  "supplierLocalConfirmBody": "Artinya betonnya diaduk di lokasi, bukan dikirim batching plant — jadi catatan ini tidak akan punya pemasok dan tidak akan cocok dengan surat jalan mana pun. Kalau betonnya datang pakai TM, pilih pemasoknya dari daftar.",
   "@supplierLocalConfirmBody": {
     "description": "supplierLocalConfirmBody"
   },

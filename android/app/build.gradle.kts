@@ -15,6 +15,35 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // DIDAFTARKAN, TETAPI DITERAPKAN HANYA BILA BERKASNYA ADA — lihat
+    // blok `if` di bawah.
+    id("com.google.gms.google-services") apply false
+}
+
+// FIREBASE DITERAPKAN HANYA BILA `google-services.json` MEMANG ADA.
+//
+// Plugin ini MENGGAGALKAN build kalau berkasnya tidak ada. Diterapkan
+// tanpa syarat, satu repositori yang baru di-klon — mesin baru, mesin
+// orang lain, pemulihan cadangan — tidak dapat membangun APK sama sekali,
+// dengan galat tentang Firebase pada pekerjaan yang tidak ada
+// hubungannya dengan notifikasi.
+//
+// Jadi sifatnya dibuat sama dengan `push_aktif()` dan `fcm_aktif()` di
+// server: tanpa kuncinya, fiturnya DIAM-DIAM MATI dan sisanya jalan
+// seluruhnya. `Firebase.initializeApp()` di `pesan_awan.dart` gagal,
+// kegagalannya ditangkap dan dicatat, dan aplikasinya berjalan tanpa
+// kabar dari server — absensi, log cor, arloji, dan pengingat utuh.
+//
+// `google-services.json` sendiri BUKAN rahasia: ia konfigurasi KLIEN (id
+// proyek, id aplikasi, kunci API ber-pembatas) dan memang ikut di dalam
+// APK yang dibagikan. Yang rahasia kunci akun layanan di SERVER — lihat
+// catatan pada `utils/fcm.py` di repositori Office.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    logger.lifecycle(
+        "google-services.json tidak ada: APK dibangun TANPA notifikasi dari server.",
+    )
 }
 
 // Release signing key: android/key.properties + android/app/terrabot-field-release.jks.

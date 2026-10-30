@@ -27,6 +27,7 @@ class BlockedAction extends StatelessWidget {
     required this.child,
     required this.reason,
     this.icon = Icons.lock_outline,
+    this.onTap,
   });
 
   final Widget child;
@@ -39,6 +40,19 @@ class BlockedAction extends StatelessWidget {
 
   final IconData icon;
 
+  /// Apa yang terjadi saat kendali yang mati ini DITEKAN.
+  ///
+  /// Bawaannya memberi tahu sebabnya lewat snack. Itu cukup selama yang
+  /// kurang ada di layar yang sama — "susun tremie dulu", dan tremienya
+  /// tepat di atas tombolnya.
+  ///
+  /// Tidak cukup kalau yang kurang berada di LAYAR LAIN. Kalimat yang
+  /// menyuruh orang membuka sesuatu adalah kalimat yang dilewati; di
+  /// lapangan, yang dibaca lewat sarung tangan sambil menunggu TM, ia
+  /// dilewati hampir pasti. Untuk hal semacam itu ketukannya dibawa
+  /// LANGSUNG ke tempat isiannya, bukan diberi petunjuk arah.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final r = reason;
@@ -48,7 +62,7 @@ class BlockedAction extends StatelessWidget {
       // no gesture recognisers of its own and therefore claims nothing —
       // still arrives here instead of falling through to the page.
       behavior: HitTestBehavior.opaque,
-      onTap: () => showSnack(context, r, icon: icon),
+      onTap: onTap ?? () => showSnack(context, r, icon: icon),
       child: child,
     );
   }

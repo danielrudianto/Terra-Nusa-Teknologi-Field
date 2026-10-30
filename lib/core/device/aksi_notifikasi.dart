@@ -109,7 +109,7 @@ Future<void> tanganiAksiNotifikasiLatar(NotificationResponse r) async {
       route: '/casting/log/$uuid',
       title: l?.notifSoundingDue('$seqDitutup') ?? 'TM $seqDitutup selesai — sounding belum diisi',
       body: l?.notifSoundingDueBody ??
-          'Buka log cor di HP dan isi sounding muka beton sesudah tuang. '
+          'Buka catatan cor di HP dan isi sounding muka beton sesudah tuang. '
               'Tertanam tremie dan pemeriksaan volume dihitung dari angka itu.',
     );
   } finally {

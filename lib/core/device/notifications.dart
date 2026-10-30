@@ -81,6 +81,31 @@ class Notifications {
 
   static const _soundingId = 7004;
 
+  // ===========================================================================
+  // KANAL KABAR KEJADIAN LAPANGAN — notifikasi yang datang dari SERVER (FCM)
+  // ===========================================================================
+  //
+  // Dipakai pemberitahuan "satu titik mulai dibor / mulai dicor", yang
+  // dikirim server ke HP yang TIDAK sedang mengerjakan titik itu.
+  //
+  // ID-NYA HARUS SAMA PERSIS dengan `KANAL_KABAR` di `utils/kabar.py` pada
+  // server. Server menaruh id ini pada setiap kiriman FCM; kalau tidak
+  // cocok, Android memakai kanal bawaan — notifikasinya tetap muncul,
+  // tetapi tanpa suara dan tingkat kepentingan yang dimaksudkan, dan tidak
+  // ada galat yang memberi tahu. Kalau kelak suaranya diubah, id-nya
+  // dinaikkan DI DUA TEMPAT sekaligus (lihat `_kanalUsang` di atas).
+  static const kanalKabar = 'field_event_v1';
+
+  /// BUKAN nada dering, dan itu disengaja.
+  ///
+  /// Nada dering dipakai PENGINGAT: pekerjaan yang harus dikerjakan orang
+  /// yang memegang HP-nya. Kabar ini kebalikannya — ia memberi tahu
+  /// pekerjaan orang LAIN, belasan kali sehari pada hari yang sibuk. Nada
+  /// dering panjang untuk kabar semacam itu akan dimatikan orangnya dalam
+  /// seminggu, dan pengingat sungguhan ikut mati bersamanya.
+  static const _kabarIdAwal = 7200;
+  static const _kabarIdJumlah = 500;
+
   /// Translations for code with no widget tree.
   ///
   /// Null only before the first build (a cold start in the background
@@ -127,6 +152,32 @@ class Notifications {
         // HP lama, atau kanalnya memang tidak pernah ada. Bukan alasan
         // menggagalkan penyiapan notifikasi seluruhnya.
       }
+    }
+
+    // KANAL KABAR DIBUAT DI SINI, BUKAN DIBIARKAN LAHIR SAAT DIPAKAI.
+    //
+    // Kanal lain di berkas ini lahir sendiri pada `show()` pertama, sebab
+    // yang menampilkannya aplikasi ini. Kabar dari server berbeda: saat
+    // aplikasinya di LATAR atau mati, yang menampilkan notifikasinya
+    // ANDROID — dan Android butuh kanalnya sudah ada saat itu. Kalau
+    // belum, kiriman pertama masuk ke kanal bawaan: tanpa suara, tanpa
+    // galat, dan tanpa cara mengetahuinya selain menyadari bahwa HP tidak
+    // berbunyi padahal notifikasinya terlihat.
+    try {
+      await android?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          kanalKabar,
+          'Kabar lapangan',
+          description:
+              'Pemberitahuan dari server: satu titik mulai dibor atau mulai dicor',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
+        ),
+      );
+    } catch (_) {
+      // Gagal membuat kanal bukan alasan aplikasinya tidak jalan; yang
+      // hilang hanya suara kabarnya.
     }
   }
 
@@ -221,7 +272,7 @@ class Notifications {
               showsUserInterface: false,
               cancelNotification: false,
             ),
-            AndroidNotificationAction(actionFinishTruck, L10n.current?.openCastLog ?? 'Buka log cor', showsUserInterface: true),
+            AndroidNotificationAction(actionFinishTruck, L10n.current?.openCastLog ?? 'Buka catatan cor', showsUserInterface: true),
           ],
         ),
       ),
@@ -257,6 +308,47 @@ class Notifications {
           playSound: true,
           sound: _nadaDering,
           category: AndroidNotificationCategory.reminder,
+          color: _brand,
+          styleInformation: BigTextStyleInformation(body, contentTitle: title),
+        ),
+      ),
+    );
+  }
+
+  /// Kabar dari server, DITAMPILKAN SENDIRI karena aplikasinya di depan.
+  ///
+  /// Saat aplikasi di latar atau mati, Android yang menampilkannya dan
+  /// fungsi ini tidak ikut berjalan. Saat di depan, Android TIDAK
+  /// menampilkan apa pun — tanpa fungsi ini, kabarnya hilang tak berbekas
+  /// justru pada saat orangnya sedang memegang HP-nya.
+  ///
+  /// [kunci] menyatukan kiriman tentang pekerjaan yang SAMA ke satu baris:
+  /// sinkron yang diulang HP lapangan mengirim ulang kabar yang sama, dan
+  /// tanpa ini satu titik dapat meninggalkan belasan baris notifikasi.
+  /// `%` pada int Dart selalu memberi hasil tak negatif untuk pembagi
+  /// positif, jadi `hashCode` yang negatif pun aman di sini.
+  static Future<void> showKabar({
+    required String route,
+    required String title,
+    required String body,
+    String? kunci,
+  }) {
+    return _plugin.show(
+      id: _kabarIdAwal + (kunci == null ? 0 : kunci.hashCode % _kabarIdJumlah),
+      title: title,
+      body: body,
+      payload: route,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          kanalKabar,
+          'Kabar lapangan',
+          channelDescription:
+              'Pemberitahuan dari server: satu titik mulai dibor atau mulai dicor',
+          importance: Importance.high,
+          priority: Priority.high,
+          enableVibration: true,
+          playSound: true,
+          category: AndroidNotificationCategory.status,
           color: _brand,
           styleInformation: BigTextStyleInformation(body, contentTitle: title),
         ),
@@ -510,7 +602,7 @@ class Notifications {
       if (snoozeUntil != null && at.isBefore(snoozeUntil)) continue;
       await _plugin.zonedSchedule(
         id: _drillIdleId(logUuid, i),
-        title: L10n.current?.drillIdleTitle(pointCode) ?? 'Log bor $pointCode belum diisi',
+        title: L10n.current?.drillIdleTitle(pointCode) ?? 'Catatan bor $pointCode belum diisi',
         body: L10n.current?.drillIdleBody(_minutesText(wait), _dayTime(lastReadingAt).split(' ').last) ??
             'Sudah ${_minutesText(wait)} sejak bacaan terakhir (${_dayTime(lastReadingAt).split(' ').last}). '
                 'Catat kedalaman sekarang, atau tekan Selesai bor bila sudah selesai.',

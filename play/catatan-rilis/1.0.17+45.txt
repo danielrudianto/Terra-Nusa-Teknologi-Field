@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.17 (45) — TM datang: satu layar satu isian
+
+<id>
+• "TM datang" kini ditanya satu per satu, bukan satu lembar berisi lima isian sekaligus: nomor lambung, kubikasi, slump, lalu foto surat jalan. Ada bar kemajuan, dan bisa mundur.
+• Tiap pertanyaan disertai gambar kecil yang menunjukkan bagian mana yang diukur.
+• Pemasok tidak ditanya lagi kalau sama dengan TM sebelumnya — tetap terlihat di layar terakhir, dengan tombol Ubah.
+• Slump yang dicatat HASIL UJI di lokasi, bukan angka surat jalan.
+</id>
+<en-US>
+• "Truck arrived" is now asked one question at a time instead of one sheet with five fields: hull number, volume, slump, then the delivery-note photo. There is a progress bar, and you can step back.
+• Each question carries a small drawing showing which part is measured.
+• The supplier is not asked again when it matches the previous truck — it stays visible on the last screen, with a Change button.
+• The slump recorded is the one TESTED on site.
+</en-US>
+<zh-CN>
+• 「罐车到场」改为逐项提问，而非一张含五个字段的表单：车号、方量、坍落度，然后是送货单照片。顶部有进度条，可返回上一项。
+• 每个问题都配有小图，标示所测量的部位。
+• 若与上一车相同，不再询问供应商——仍会在最后一屏显示，并附「更改」按钮。
+• 记录的坍落度为现场实测值，而非送货单上的数字。
+</zh-CN>

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'db/app_database.dart';
 import 'network/api_client.dart';
 import 'network/api_error.dart';
+import 'device/pesan_awan.dart';
 import 'app_context.dart';
 import 'session/session.dart';
 import 'sync/sync_engine.dart';
@@ -84,6 +85,11 @@ class SessionNotifier extends AsyncNotifier<SessionState> {
     }
     state = AsyncData(SessionState(user: user, permissions: permissions));
     unawaited(ref.read(syncProvider.notifier).run());
+    // Token FCM didaftarkan ATAS NAMA ORANG YANG BARU MASUK. Satu HP
+    // lapangan berganti pemegang, dan tokennya melekat pada pemasangan
+    // aplikasi — bukan pada akun; tanpa pendaftaran ulang di sini, kabar
+    // untuk pemegang sebelumnya tetap berbunyi di HP ini.
+    unawaited(PesanAwan.pastikanTerdaftar(api));
   }
 
   /// Called by ApiClient when the refresh token is rejected.
@@ -107,6 +113,11 @@ class SessionNotifier extends AsyncNotifier<SessionState> {
   }
 
   Future<void> logout() async {
+    // DICABUT SEBELUM `logout()`, bukan sesudah: `logout()` mencabut
+    // refresh token, dan sesudah itu pencabutan tokennya tidak punya izin
+    // lagi — gagal diam-diam, dan HP ini tetap menerima kabar untuk orang
+    // yang sudah keluar.
+    await PesanAwan.cabut(ref.read(apiProvider));
     await ref.read(apiProvider).logout();
     await _save.logout();
     state = const AsyncData(SessionState());

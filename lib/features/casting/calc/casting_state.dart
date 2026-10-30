@@ -95,6 +95,28 @@ class CastingState {
     return avg.clamp(0.8, 2.0);
   }
 
+  /// Rasio overbreak TM-TM SEBELUM [seq] di titik ini, yang sudah punya
+  /// sounding sebelum dan sesudah.
+  ///
+  /// Dipakai sebagai PEMBANDING, bukan sebagai kebenaran: lubang boleh
+  /// melebar, boleh menyempit (necking), dan tiap titik punya angkanya
+  /// sendiri. Yang mencurigakan bukan angkanya tinggi atau rendah,
+  /// melainkan angkanya MELOMPAT di tengah cor pada lubang yang sama.
+  List<double> ratiosBefore(int seq) {
+    final hasil = <double>[];
+    for (final t in trucks) {
+      if (t.seq >= seq) continue;
+      final x = overbreakRatio(
+        diameterMm: geometry.diameterMm,
+        volumeM3: t.volumeM3,
+        depthBeforeM: t.concreteBeforeM,
+        depthAfterM: t.concreteAfterM,
+      );
+      if (x != null) hasil.add(x);
+    }
+    return hasil;
+  }
+
   /// Concrete level after truck number [seq]: sounding if available, estimate otherwise.
   /// (seq 0 = hole bottom.) `measured` false = estimate.
   ({double depthM, bool measured}) concreteAfter(int seq) {
@@ -291,6 +313,57 @@ String? soundingProblem(double afterM, {required double before, required double 
     final b = before.toStringAsFixed(2).replaceAll('.', ',');
     return l?.soundDeeperThanBefore(b) ??
         'Lebih dalam dari muka beton sebelum TM ini ($b m). Beton tidak mungkin turun; periksa lagi.';
+  }
+  return null;
+}
+
+/// Sejauh mana rasio satu TM boleh berbeda dari pola titiknya sendiri.
+///
+/// DIMINTA DANIEL, 27 Okt 2026, dari kejadian nyata: satu titik berjalan
+/// 1,04 · 1,04 · 1,05 lalu tiba-tiba 0,50 — dan 0,50 itu ternyata salah
+/// ketik sounding, bukan lubangnya yang berubah.
+///
+/// KENAPA PEMBANDINGNYA POLA TITIK ITU, BUKAN ANGKA TETAP
+///
+/// Lubang boleh melebar, dan boleh juga menyempit — necking memang ada.
+/// Jadi tidak ada satu angka benar yang berlaku untuk semua titik: yang
+/// 1,30 sepanjang cor itu wajar, dan yang 0,90 sepanjang cor juga wajar.
+/// Yang TIDAK wajar adalah angkanya melompat di tengah pengecoran pada
+/// lubang yang sama, sebab lubangnya sudah selesai dibor sebelum beton
+/// pertama masuk — bentuknya tidak berubah lagi di tengah jalan.
+const ratioDeviationMax = 0.20;
+
+/// Batas kewarasan saat belum ada pembanding sama sekali (TM pertama).
+///
+/// Angkanya SAMA dengan clamp di `averageRatio`, dan memang harus sama:
+/// dua definisi "wajar" yang berbeda di satu berkas akan berselisih suatu
+/// saat, dan yang membacanya tidak punya cara tahu mana yang berlaku.
+const ratioFloor = 0.80;
+const ratioCeiling = 2.00;
+
+/// Rasio TM ini mencurigakan atau tidak.
+///
+/// Mengembalikan null bila wajar. Bila tidak, [pembanding] adalah median
+/// rasio TM sebelumnya — median, bukan rata-rata, supaya SATU angka buruk
+/// yang terlanjur tersimpan tidak menggeser pembandingnya dan menutupi
+/// angka berikutnya. Null pada [pembanding] berarti belum ada TM
+/// pembanding dan yang dipakai batas kewarasan di atas.
+({double? pembanding, List<double> sebelumnya})? overbreakOddity({
+  required double ratio,
+  required List<double> sebelumnya,
+}) {
+  if (sebelumnya.isEmpty) {
+    if (ratio < ratioFloor || ratio > ratioCeiling) {
+      return (pembanding: null, sebelumnya: const []);
+    }
+    return null;
+  }
+  final urut = [...sebelumnya]..sort();
+  final t = urut.length ~/ 2;
+  final median = urut.length.isOdd ? urut[t] : (urut[t - 1] + urut[t]) / 2;
+  if (median <= 0) return null;
+  if ((ratio - median).abs() / median > ratioDeviationMax) {
+    return (pembanding: median, sebelumnya: sebelumnya);
   }
   return null;
 }

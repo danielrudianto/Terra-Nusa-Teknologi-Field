@@ -231,7 +231,8 @@
   "addTruckAnyway": "仍然增加罐车",
   "soundingAfter": "第 {seq} 车后测绳",
   "soundingBefore": "第 {seq} 车前测绳",
-  "concreteDepthField": "混凝土面自地面深度（米）",
+  "soundingQuestion": "自地面向下至混凝土面，多少米？",
+  "concreteDepthField": "自地面至混凝土面",
   "soundingHint": "必须实测。按方量估算：{est}。",
   "soundingMissing": "第 {seq} 车的测绳尚未填写。下一车之前必须填写。",
   "truckStartTime": "第 {seq} 车开始时间",
@@ -277,6 +278,7 @@
   "cannotChangeAnymore": "该灌注记录无法再修改。",
   "gradeMissingTitle": "混凝土强度等级（fc′）未填写",
   "gradeMissingBody": "该桩位与项目均无默认强度等级。请在灌注资料中填写，否则服务器将拒收该记录。",
+  "finishNeedsGrade": "请先填写混凝土等级",
   "fill": "填写",
   "drillDepthUnmarked": "钻孔深度未标记",
   "drillDepthUnmarkedBody": "计算采用设计钻孔长度。请在桩位列表标记实际深度，以便截桩建议准确。",
@@ -350,7 +352,7 @@
   "soundingBeforeLabel": "灌注前测绳",
   "soundingAfterLabel": "灌注后测绳",
   "soundingAfterRequired": "灌注后测绳为必填。请点按上方行。",
-  "overbreakRatio": "超灌系数",
+  "overbreakRatio": "孔径大于设计",
   "deliveryNote": "送货单",
   "slumpTest": "坍落度试验",
   "pausedLabel": "已暂停",
@@ -1246,6 +1248,32 @@
       }
     }
   },
+  "pourStartTitle": "首车罐车之前",
+  "stickOutQuestion": "导管露出地面多少米？",
+  "stickOutField": "露出地面",
+  "stickOutBasis": "已组装导管长度 {panjang}。",
+  "stickOutResult": "即导管下端位于 {dalam}，在孔底上方 {celah}。",
+  "stickOutRequired": "请先填写露出地面的米数。",
+  "stickOutTooHigh": "这样导管下端位于孔底上方 {celah}，过高——请再确认。",
+  "stickOutTooDeep": "这样导管下端会低于孔底。请再确认。",
+  "gradeQuestion": "今天的混凝土等级是多少？",
+  "nextStep": "下一步",
+  "backStep": "返回",
+  "ratioOddTitle": "声测与混凝土方量不符",
+  "ratioOddBody": "本车为 {ini}，而此前各车为 {pola}。孔在灌注前已成孔，灌注中途形状不会改变——多数情况是声测读错。",
+  "ratioOddAlone": "本车为 {ini}，且尚无此前罐车可供比较。常见范围为 −20% 至 +100%，超出时通常是声测读错。",
+  "remeasure": "重新测量",
+  "saveAnyway": "仍然保存",
+  "qTruckNo": "罐车的车号是多少？",
+  "qVolume": "本车混凝土多少方？",
+  "qSupplier": "混凝土来自哪家供应商？",
+  "qSlump": "实测坍落度是多少？",
+  "qPhoto": "送货单照片",
+  "supplierSameAsBefore": "仍为 {nama}，与上一车相同。",
+  "changeIt": "更改",
+  "lengkapiTitle": "请先补全",
+  "lengkapiBody": "灌注记录尚不能结束。请先补全下列内容，然后继续。",
+  "qSoundingAwal": "首车灌注之前，自地面至混凝土面是多少米？",
   "tremieDepthField": "导管下端距地面深度",
   "@tremieDepthField": {
     "description": "Measured depth of the tremie bottom end when casting starts"
@@ -1263,7 +1291,7 @@
   "@tremieDepthRequired": {
     "description": "The tremie depth field was left empty"
   },
-  "tremieDepthInvalid": "导管下端必须位于孔底（{dasar}）与其上方 1 米之间。",
+  "tremieDepthInvalid": "导管下端必须位于孔底（{dasar}）与其上方 5 米之间。",
   "@tremieDepthInvalid": {
     "description": "The typed tremie depth is not plausible",
     "placeholders": {
@@ -1271,10 +1299,6 @@
         "type": "String"
       }
     }
-  },
-  "tremieDepthNeeded": "尚未填写导管下端深度——请先打开浇筑资料并测量。",
-  "@tremieDepthNeeded": {
-    "description": "Blocks finishing the casting until the tremie depth is recorded"
   },
   "soundingBeforeNeeded": "第 1 车浇筑前的测深尚未填写——缺少它就永远没有浇筑前埋深。",
   "@soundingBeforeNeeded": {
@@ -1429,6 +1453,8 @@
   "blockedConfirmed": "办公室已复核；此记录不能再修改。",
   "blockedCast": "已浇筑；钻孔记录已永久关闭。",
   "blockedNeedTremie": "请先组好导管，再添加罐车。",
+  "tremieDepthFirst": "请先测量导管深度",
+  "blockedNeedTremieDepth": "请先测量导管下端深度。混凝土一旦灌入，该深度便无法再测量。",
   "drillReopenConfirmTitle": "重新打开这份钻孔记录？",
   "drillReopenConfirmBody": "该记录已关闭。重新打开后可以添加和修改深度数据，办公室也会看到这份记录曾被重新打开。确实有数据错误时才这样做。",
   "castReopenConfirmTitle": "重新打开这份浇筑记录？",
