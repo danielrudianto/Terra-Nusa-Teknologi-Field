@@ -1619,5 +1619,17 @@
   "koordinatKosongkan": "清空此输入框",
   "@koordinatKosongkan": {
     "description": "Tooltip tombol kosongkan pada isian koordinat"
+  },
+  "swipeToFinishDrilling": "滑动以完成钻孔",
+  "@swipeToFinishDrilling": {
+    "description": "swipeToFinishDrilling"
+  },
+  "swipeToFinishCasting": "滑动以完成浇筑",
+  "@swipeToFinishCasting": {
+    "description": "swipeToFinishCasting"
+  },
+  "swipeDone": "已保存",
+  "@swipeDone": {
+    "description": "swipeDone"
   }
 }

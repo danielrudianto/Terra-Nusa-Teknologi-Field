@@ -21,6 +21,7 @@ import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/blocked_action.dart';
 import '../../core/widgets/confirm.dart';
+import '../../core/widgets/swipe_confirm.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/view_states.dart';
 import '../casting/handover.dart';
@@ -1263,13 +1264,19 @@ class _FinishDialogState extends State<_FinishDialog> {
     return gs == null || widget.tipLevel == null ? null : gs - widget.tipLevel!;
   }
 
-  Future<void> _submit() async {
+  /// Answers `true` only when the log was ACTUALLY closed.
+  ///
+  /// `SwipeToConfirm` reads that answer: every refusal below sends the thumb
+  /// back to the start, so whoever left a required field empty can fix it and
+  /// drag again — instead of staring at a control locked inside a dialog that
+  /// is still open.
+  Future<bool> _submit() async {
     double? gs;
     if (widget.gsRequired) {
       gs = parseNumber(_gs.text);
       if (gs == null || gs < -500 || gs > 5000) {
         setState(() => _problem = t(context).gsRequiredMsg);
-        return;
+        return false;
       }
     }
     final salahKoord = koordinatBelumSah(
@@ -1280,7 +1287,7 @@ class _FinishDialogState extends State<_FinishDialog> {
     );
     if (salahKoord != null) {
       setState(() => _problem = salahKoord);
-      return;
+      return false;
     }
     // PERINGATAN KERAS simpangan — sesudah seluruh pemeriksaan lain lulus.
     //
@@ -1295,7 +1302,7 @@ class _FinishDialogState extends State<_FinishDialog> {
       yText: _yInput.text,
       toleranceMm: widget.toleranceMm,
     )) {
-      return;
+      return false;
     }
     // `mounted` MILIK STATE, bukan `context.mounted`.
     //
@@ -1303,12 +1310,13 @@ class _FinishDialogState extends State<_FinishDialog> {
     // dalam `State`: yang menentukan boleh-tidaknya memakai `context`
     // sesudah `await` adalah hidup-matinya State-nya, dan `context.mounted`
     // menjawab pertanyaan yang berbeda.
-    if (!mounted) return;
+    if (!mounted) return false;
     Navigator.pop(context, (
       groundLevel: gs,
       actualX: parseKoordinat(_xInput.text),
       actualY: parseKoordinat(_yInput.text),
     ));
+    return true;
   }
 
   @override
@@ -1368,12 +1376,26 @@ class _FinishDialogState extends State<_FinishDialog> {
               toleranceMm: widget.toleranceMm,
               onChanged: () => setState(() => _problem = null),
             ),
+            // A DRAG, not a button — and inside the content, not in
+            // `actions`.
+            //
+            // Two reasons. Closing a drill log stamps a time that stands as
+            // field evidence, and one stray tap there stores a time that
+            // never happened. And `actions` sits in an `OverflowBar`, which
+            // promises no bounded width, while this control measures its own
+            // track.
+            const SizedBox(height: 16),
+            SwipeToConfirm(
+              label: t(context).swipeToFinishDrilling,
+              doneLabel: t(context).swipeDone,
+              icon: Icons.flag_outlined,
+              onConfirm: _submit,
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
-        FilledButton(onPressed: _submit, child: Text(t(context).finishDrilling)),
       ],
     );
   }

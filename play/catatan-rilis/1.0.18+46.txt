@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.18 (46) — Selesai bor & cor kini digeser
+
+<id>
+• Menutup log bor dan log cor kini lewat GESER, bukan ketukan. Jam penutupan adalah bukti lapangan, dan ketukan yang tersenggol menyimpan jam yang tidak pernah terjadi.
+• Tidak perlu sampai ujung — sekitar tiga perempat sudah cukup, longgar untuk tangan berdebu, basah, atau bersarung.
+• Kalau ada isian wajib yang kosong, gesernya kembali ke pangkal dan dapat diulang setelah dibetulkan. Tidak ada yang terkunci.
+• Tiang yang kurang dalam tidak berubah: di sana yang perlu dipikirkan keputusannya.
+</id>
+<en-US>
+• Closing a drill log or a casting log is now a SWIPE, not a single tap. The closing time stands as field evidence, and a stray tap stores a time that never happened.
+• It need not reach the end — about three quarters of the track is enough, left loose for dusty, wet or gloved hands.
+• If a required field is still empty, the thumb slides back and can be swiped again once fixed. Nothing gets stuck.
+• A pile that is too shallow is unchanged: what needs care there is the decision, not the tap.
+</en-US>
+<zh-CN>
+• 关闭钻孔记录和浇筑记录改为「滑动」，不再是单次点击。关闭时间是现场凭据，误触会存下从未发生过的时间。
+• 无需滑到底——约四分之三即可，为沾灰、潮湿或戴手套的手留出余地。
+• 若有必填项未填，滑块会退回起点，修正后可再次滑动，不会卡住。
+• 关闭「深度不足」的桩保持原样：那里需要斟酌的是决定本身。
+</zh-CN>

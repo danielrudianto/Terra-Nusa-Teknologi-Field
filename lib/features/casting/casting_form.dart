@@ -22,6 +22,7 @@ import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/blocked_action.dart';
 import '../../core/widgets/step_progress.dart';
 import '../../core/widgets/confirm.dart';
+import '../../core/widgets/swipe_confirm.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/list_card.dart';
 import '../../core/widgets/view_states.dart';
@@ -4440,6 +4441,30 @@ class _FinishDialogState extends State<_FinishDialog> {
                 widget.short ? t(context).shortABitBody : t(context).finishedBody,
                 style: TextStyle(color: w.muted, height: 1.4),
               ),
+            // A DRAG, and only on an ordinary close.
+            //
+            // Closing a casting log stamps the time and the volume reported
+            // to the office; one stray tap there records a pour that is not
+            // finished as finished.
+            //
+            // The `_mustExplain` path deliberately does NOT use it. There the
+            // pile is far short, and the buttons are already arranged the
+            // other way round on purpose — the dangerous one made quiet, the
+            // safe one made prominent. A large coloured drag bar would undo
+            // that arrangement, and what is guarded there is not a stray tap
+            // but a wrong decision.
+            if (!_mustExplain) ...[
+              const SizedBox(height: 16),
+              SwipeToConfirm(
+                label: t(context).swipeToFinishCasting,
+                doneLabel: t(context).swipeDone,
+                icon: Icons.flag_outlined,
+                onConfirm: () async {
+                  Navigator.pop(context, const _FinishResult());
+                  return true;
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -4455,10 +4480,6 @@ class _FinishDialogState extends State<_FinishDialog> {
             ]
           : [
               TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).notYet)),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, const _FinishResult()),
-                child: Text(widget.short ? t(context).finishAnyway : t(context).finish),
-              ),
             ],
     );
   }

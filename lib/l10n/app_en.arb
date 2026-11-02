@@ -1254,7 +1254,7 @@
   "stickOutBasis": "Pipe already built: {panjang}.",
   "stickOutResult": "So the tremie bottom sits at {dalam}, which is {celah} above the hole bottom.",
   "stickOutRequired": "Fill in how many metres are sticking out first.",
-  "stickOutTooHigh": "That puts the tremie bottom {celah} above the hole bottom. Too high \u2014 check again.",
+  "stickOutTooHigh": "That puts the tremie bottom {celah} above the hole bottom. Too high — check again.",
   "stickOutTooDeep": "That puts the tremie bottom deeper than the hole bottom. Check again.",
   "gradeQuestion": "What is the concrete grade today?",
   "nextStep": "Next",
@@ -1619,5 +1619,17 @@
   "koordinatKosongkan": "Clear this field",
   "@koordinatKosongkan": {
     "description": "Tooltip tombol kosongkan pada isian koordinat"
+  },
+  "swipeToFinishDrilling": "Swipe to finish drilling",
+  "@swipeToFinishDrilling": {
+    "description": "swipeToFinishDrilling"
+  },
+  "swipeToFinishCasting": "Swipe to finish casting",
+  "@swipeToFinishCasting": {
+    "description": "swipeToFinishCasting"
+  },
+  "swipeDone": "Saved",
+  "@swipeDone": {
+    "description": "swipeDone"
   }
 }

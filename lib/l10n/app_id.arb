@@ -5141,7 +5141,7 @@
   "@stickOutRequired": {
     "description": "The stick-out field was left empty"
   },
-  "stickOutTooHigh": "Ujung tremie jadi {celah} di atas dasar lubang. Terlalu tinggi \u2014 periksa lagi.",
+  "stickOutTooHigh": "Ujung tremie jadi {celah} di atas dasar lubang. Terlalu tinggi — periksa lagi.",
   "@stickOutTooHigh": {
     "description": "The derived tremie bottom sits implausibly far above the hole bottom",
     "placeholders": {
@@ -5676,5 +5676,17 @@
   "koordinatKosongkan": "Kosongkan isian ini",
   "@koordinatKosongkan": {
     "description": "Tooltip tombol kosongkan pada isian koordinat"
+  },
+  "swipeToFinishDrilling": "Geser untuk selesai bor",
+  "@swipeToFinishDrilling": {
+    "description": "swipeToFinishDrilling"
+  },
+  "swipeToFinishCasting": "Geser untuk selesai cor",
+  "@swipeToFinishCasting": {
+    "description": "swipeToFinishCasting"
+  },
+  "swipeDone": "Tersimpan",
+  "@swipeDone": {
+    "description": "swipeDone"
   }
 }

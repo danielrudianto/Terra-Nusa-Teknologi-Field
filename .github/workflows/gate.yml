@@ -1,0 +1,86 @@
+# The gate before code reaches main.
+#
+# This repo had 29 test files and NOTHING that ran them. They only ran when
+# someone remembered to, which means a red suite is discovered at the worst
+# possible moment — while chasing something else, or not at all. The backend
+# has had a gate for a while; the app that runs on a phone at a borehole,
+# offline, whose logs later stand as evidence, had none.
+#
+# Everything here is what CLAUDE.md already asks a human to run:
+#
+#     flutter analyze
+#     flutter test
+#
+# The steps before them exist because this repo does not commit generated
+# code — see the comments on each.
+
+name: Gate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+# One run per ref; older ones are cancelled.
+#
+# The real pattern while chasing a fix is push, see red, fix, push again
+# within two minutes. Without this the first run keeps going to the end,
+# spending minutes on code that no longer exists. The cost worth naming:
+# intermediate commits end up marked "cancelled" rather than green. What
+# gets released is always the tip, and the tip is always checked in full.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  field:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The stable channel, not a pinned version.
+      #
+      # `pubspec.lock` records `flutter: ">=3.47.0"` and SETUP.md says
+      # "stable 3.47 or newer" — a lower bound, not an exact version, so
+      # pinning one here would state something the repo does not.
+      #
+      # The trade: a future stable can break the build on a day nobody
+      # changed any code. If that happens, pin `flutter-version` to the
+      # version that works rather than reverting this file — a gate that is
+      # switched off to make it quiet stops being a gate.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Drift's `.g.dart` files are NOT committed (see .gitignore), so they
+      # do not exist on a fresh checkout. Without this step `flutter analyze`
+      # fails on every file that touches the database, and the errors say
+      # "undefined class" rather than "run build_runner" — which sends
+      # whoever reads them looking in the wrong place entirely.
+      # No `--delete-conflicting-outputs`: build_runner removed that option,
+      # and passing it only prints "These options have been removed and were
+      # ignored". A warning that appears on every green run is worse than no
+      # warning at all — it teaches whoever reads the log to skim past the
+      # warning column, which is where the real one will eventually appear.
+      - run: dart run build_runner build
+
+      # Same reason, for translations: `lib/l10n/app_localizations*.dart` are
+      # generated from the `.arb` files and are not committed. `generate: true`
+      # in pubspec makes `flutter pub get` produce them in recent versions,
+      # but relying on that leaves the gate depending on behaviour that has
+      # moved before. Running it explicitly costs a second and removes the
+      # question.
+      - run: flutter gen-l10n
+
+      # `--fatal-infos`: an info-level lint is still the analyzer saying a
+      # rule in analysis_options.yaml was broken. Left to accumulate they
+      # become background noise, and the warning that matters arrives into a
+      # list nobody reads any more.
+      - run: flutter analyze --fatal-infos
+
+      - run: flutter test
