@@ -3355,6 +3355,17 @@
   "@pickDate": {
     "description": "pickDate"
   },
+  "pickRange": "Pilih rentang",
+  "@pickRange": {
+    "description": "pickRange"
+  },
+  "rangeTooLong": "Rentang paling lama {max} hari.",
+  "@rangeTooLong": {
+    "description": "rangeTooLong",
+    "placeholders": {
+      "max": { "type": "String" }
+    }
+  },
   "dateRange": "{from} – {to}",
   "@dateRange": {
     "description": "dateRange",

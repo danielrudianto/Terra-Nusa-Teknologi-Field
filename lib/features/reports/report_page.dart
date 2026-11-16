@@ -39,7 +39,23 @@ class ReportPage extends ConsumerStatefulWidget {
 class _ReportPageState extends ConsumerState<ReportPage> {
   /// today | yesterday | week | custom
   String _preset = 'today';
-  DateTime _customDay = DateTime.now();
+
+  /// The hand-picked range, both ends included.
+  ///
+  /// A RANGE, not a single day. It used to be one `DateTime`, so the only
+  /// spans this page could show were today, yesterday and the last seven
+  /// days — anything else, such as "the whole of October", had to be read
+  /// one day at a time. Reported by Daniel, 10 November 2026.
+  DateTimeRange? _customRange;
+
+  /// Longest span the server accepts (`REKAP_HARI_MAKS` in
+  /// `controllers/field_controller.py`).
+  ///
+  /// Held here as well so that picking too long a span is answered with a
+  /// sentence that names the limit, instead of a 400 that reads "action
+  /// failed". The server rejects `(to - from).days >= limit`, so the widest
+  /// accepted span is this many days counting both ends.
+  static const int _maxRangeDays = 400;
 
   /// An Excel download is running.
   bool _downloading = false;
@@ -51,23 +67,50 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     return switch (_preset) {
       'yesterday' => (from: today.subtract(const Duration(days: 1)), to: today.subtract(const Duration(days: 1))),
       'week' => (from: today.subtract(const Duration(days: 6)), to: today),
-      'custom' => (from: _day(_customDay), to: _day(_customDay)),
+      'custom' when _customRange != null => (
+        from: _day(_customRange!.start),
+        to: _day(_customRange!.end),
+      ),
       _ => (from: today, to: today),
     };
   }
 
-  Future<void> _pickDay() async {
-    final picked = await showDatePicker(
+  Future<void> _pickRange() async {
+    final today = _day(DateTime.now());
+    final picked = await showDateRangePicker(
       context: context,
-      initialDate: _customDay,
+      initialDateRange: _customRange,
       firstDate: DateTime(2025),
-      lastDate: DateTime.now(),
+      lastDate: today,
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
+
+    // Checked HERE, not left to the server. The figures on screen and the
+    // download both use this range; letting an over-long one through means
+    // the page loads, the numbers appear, and only the download fails — with
+    // a message that does not say which part was wrong.
+    final days = _day(picked.end).difference(_day(picked.start)).inDays + 1;
+    if (days > _maxRangeDays) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t(context).rangeTooLong('$_maxRangeDays'))),
+      );
+      return;
+    }
+
     setState(() {
-      _customDay = picked;
+      _customRange = picked;
       _preset = 'custom';
     });
+  }
+
+  /// Label of the range chip: the chosen span, or the invitation to pick one.
+  String _rangeChipLabel(BuildContext context) {
+    final r = _customRange;
+    if (_preset != 'custom' || r == null) return t(context).pickRange;
+    final f = DateFormat('d MMM', 'id');
+    return _day(r.start) == _day(r.end)
+        ? f.format(r.start)
+        : '${f.format(r.start)} – ${f.format(r.end)}';
   }
 
   /// Download "Rekapitulasi Data Tiang" (.xlsx, same layout as the file AKN
@@ -137,10 +180,12 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 for (final (k, l) in [('today', t(context).presetToday), ('yesterday', t(context).presetYesterday), ('week', t(context).presetWeek)])
                   ChoiceChip(label: Text(l), selected: _preset == k, onSelected: (_) => setState(() => _preset = k)),
                 ChoiceChip(
-                  avatar: const Icon(Icons.event, size: 18),
-                  label: Text(_preset == 'custom' ? DateFormat('d MMM', 'id').format(_customDay) : t(context).pickDate),
+                  avatar: const Icon(Icons.date_range, size: 18),
+                  // The chip carries the chosen span: the chips are what
+                  // people look at when they wonder what they are seeing.
+                  label: Text(_rangeChipLabel(context)),
                   selected: _preset == 'custom',
-                  onSelected: (_) => _pickDay(),
+                  onSelected: (_) => _pickRange(),
                 ),
               ],
             ),

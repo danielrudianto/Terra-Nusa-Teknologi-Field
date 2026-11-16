@@ -608,6 +608,8 @@
   "presetYesterday": "昨天",
   "presetWeek": "7 天",
   "pickDate": "选择日期",
+  "pickRange": "选择日期范围",
+  "rangeTooLong": "日期范围最长 {max} 天。",
   "dateRange": "{from} – {to}",
   "preparingExcel": "正在准备 Excel…",
   "downloadExcel": "下载 Excel（桩基数据汇总）",

@@ -78,6 +78,30 @@ class SwipeToConfirm extends StatefulWidget {
 
 class _SwipeToConfirmState extends State<SwipeToConfirm> {
   static const double _height = 56;
+
+  /// Gap between the track edge and the thumb, on every side.
+  ///
+  /// This is what separates a pill-with-a-knob from a box with a square
+  /// button wedged into its corner. Without it the thumb's own curve lands
+  /// exactly on the track's curve and the two read as one flat-ended slab —
+  /// which is how the control looked until 2 Nov 2026.
+  ///
+  /// It also keeps the travel symmetric: the thumb rests [_thumbInset] from
+  /// the left at the start and the same distance from the right at the end,
+  /// because the track it slides along is still [_height] wide.
+  static const double _thumbInset = 4;
+
+  /// A true pill: the radius follows the height instead of a fixed number.
+  ///
+  /// [Dimens.radiusBanner] is 12 — right for a banner the width of the
+  /// screen, far too small for something only 56 tall. At that size a
+  /// 12 radius reads as "rounded rectangle", and a rounded rectangle with
+  /// a square handle inside it is the house style of cheap app kits.
+  ///
+  /// Derived rather than declared so the shape stays correct if the control
+  /// is ever made taller or shorter.
+  static double get _trackRadius => _height / 2;
+  static double get _thumbRadius => (_height - _thumbInset * 2) / 2;
   static const double _threshold = 0.7;
 
   double _offset = 0;
@@ -138,7 +162,7 @@ class _SwipeToConfirmState extends State<SwipeToConfirm> {
             height: _height,
             decoration: BoxDecoration(
               color: live ? accent.withValues(alpha: 0.10) : w.faint.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(Dimens.radiusBanner),
+              borderRadius: BorderRadius.circular(_trackRadius),
               border: Border.all(
                 color: live ? accent.withValues(alpha: 0.35) : Colors.transparent,
               ),
@@ -180,25 +204,48 @@ class _SwipeToConfirmState extends State<SwipeToConfirm> {
                           })
                         : null,
                     onHorizontalDragEnd: live ? (_) => _settle(track) : null,
-                    child: Container(
+                    // The hit area stays the full [_height] square. Only
+                    // the painted thumb is inset, so the drag target does
+                    // not shrink with the shape — a thumb that looks
+                    // smaller is fine, a thumb that is harder to catch with
+                    // a thumb in a glove at a rig is not.
+                    child: SizedBox(
                       width: _height,
                       height: _height,
-                      decoration: BoxDecoration(
-                        color: live || _done ? accent : w.faint,
-                        borderRadius: BorderRadius.circular(Dimens.radiusBanner),
+                      child: Padding(
+                        padding: const EdgeInsets.all(_thumbInset),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: live || _done ? accent : w.faint,
+                            borderRadius: BorderRadius.circular(_thumbRadius),
+                            // Lifts the thumb off the track just enough to
+                            // read as a separate object. Soft and almost
+                            // free of offset: a hard drop shadow is the
+                            // other half of the look being moved away from.
+                            boxShadow: live || _done
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.18),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: _busy
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Icon(
+                                  _done ? Icons.check : widget.icon,
+                                  color: Colors.white,
+                                ),
+                        ),
                       ),
-                      child: _busy
-                          ? const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Icon(
-                              _done ? Icons.check : widget.icon,
-                              color: Colors.white,
-                            ),
                     ),
                   ),
                 ),

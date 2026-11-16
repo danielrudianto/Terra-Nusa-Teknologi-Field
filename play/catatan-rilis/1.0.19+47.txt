@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.19 (47) — Laporan bisa pilih rentang tanggal
+
+<id>
+• Laporan kini bisa dibuka untuk RENTANG tanggal pilihan sendiri, misalnya seluruh Oktober. Sebelumnya hanya hari ini, kemarin, 7 hari terakhir, atau satu hari.
+• Rentang yang dipilih tertulis di tombolnya, jadi selalu jelas angka di layar milik tanggal berapa.
+• Rentang paling lama 400 hari. Kalau lebih, aplikasi langsung memberi tahu batasnya.
+• Tombol geser Selesai bor & cor kini berbentuk pil dengan kenop bulat. Cara pakainya tidak berubah.
+</id>
+<en-US>
+• Reports can now be opened for a date RANGE of your choice, such as the whole of October. Before, only today, yesterday, the last 7 days or a single day.
+• The chosen range is written on its button, so it is always clear which dates the figures belong to.
+• A range may span at most 400 days. Beyond that, the app names the limit right away.
+• The swipe to close a drill or casting log is now a pill with a round knob. It works the same way.
+</en-US>
+<zh-CN>
+• 报表现在可以按自选的日期「区间」查看，例如整个十月。此前只能看今天、昨天、最近 7 天或某一天。
+• 所选区间会显示在按钮上，屏幕上的数字属于哪些日期一目了然。
+• 区间最长 400 天，超出时应用会立即提示上限。
+• 完成钻孔和浇筑的滑动按钮改为带圆形滑块的胶囊形，用法不变。
+</zh-CN>

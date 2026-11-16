@@ -608,6 +608,8 @@
   "presetYesterday": "Yesterday",
   "presetWeek": "7 days",
   "pickDate": "Pick a date",
+  "pickRange": "Pick a range",
+  "rangeTooLong": "The range may span at most {max} days.",
   "dateRange": "{from} – {to}",
   "preparingExcel": "Preparing the Excel…",
   "downloadExcel": "Download Excel (pile data recap)",
