@@ -1633,5 +1633,28 @@
   "swipeDone": "已保存",
   "@swipeDone": {
     "description": "swipeDone"
-  }
+  },
+  "entityGateTicket": "门岗记录",
+  "gateRecordTruck": "门岗：登记搅拌车",
+  "gateTitle": "搅拌车进门 · {code}",
+  "gateIntroTitle": "请按车身上的编号准确输入",
+  "gateIntroBody": "该编号用于把门岗记录与孔口浇筑的车次配对。",
+  "gateVolume": "送货单方量",
+  "gateGrade": "混凝土强度等级 (fc')",
+  "gateGradeInvalid": "混凝土强度等级超出范围（1–150 MPa）。",
+  "gateRejected": "此车在门岗被拒收",
+  "gateRejectedTitle": "被拒收的车不浇筑",
+  "gateRejectedBody": "记录会保留作为凭证，但其方量不计入该桩位的浇筑记录。",
+  "gateRejectReason": "拒收原因",
+  "gateRejectReasonRequired": "请填写拒收原因。",
+  "gateTruckRequired": "请填写搅拌车编号。",
+  "gatePhotoRequired": "请先拍摄送货单。",
+  "gateSaved": "已登记搅拌车 {truck}。有信号时自动发送。",
+  "startPourOnlyLog": "开始浇筑记录——仅孔口",
+  "pourTruckNoTitle": "车号是配对依据",
+  "pourTruckNoBody": "选择门岗已登记的车号，或按车身上的编号准确输入。方量、坍落度和送货单会通过该车号从门岗记录附上。",
+  "pourTruckNoBodyEmpty": "该桩位的门岗记录尚未同步到本机。请按车身上的编号准确输入车号；方量、坍落度和送货单会通过该车号从门岗记录附上。",
+  "gateQGrade": "混凝土强度等级是多少？",
+  "gateQSummary": "全部正确吗？",
+  "gateRejectAction": "拒收此车"
 }

@@ -1633,5 +1633,28 @@
   "swipeDone": "Saved",
   "@swipeDone": {
     "description": "swipeDone"
-  }
+  },
+  "entityGateTicket": "Gate record",
+  "gateRecordTruck": "Gate: record a truck",
+  "gateTitle": "Truck at gate · {code}",
+  "gateIntroTitle": "Type it exactly as painted on the truck",
+  "gateIntroBody": "This number is what pairs the gate record with the truck poured at the hole.",
+  "gateVolume": "Volume on delivery note",
+  "gateGrade": "Concrete grade (fc')",
+  "gateGradeInvalid": "Concrete grade is out of range (1–150 MPa).",
+  "gateRejected": "This truck is rejected at the gate",
+  "gateRejectedTitle": "A rejected truck is not poured",
+  "gateRejectedBody": "The record is kept as evidence, but its volume does not enter this point's casting log.",
+  "gateRejectReason": "Reason for rejection",
+  "gateRejectReasonRequired": "Enter why this truck is rejected.",
+  "gateTruckRequired": "Enter the truck number.",
+  "gatePhotoRequired": "Take the delivery note photo first.",
+  "gateSaved": "Truck {truck} recorded. Sent automatically when there is signal.",
+  "startPourOnlyLog": "Start casting log — at the hole only",
+  "pourTruckNoTitle": "The truck number is the key",
+  "pourTruckNoBody": "Pick a truck number already recorded at the gate, or type it exactly as painted on the truck. Its volume, slump and delivery note attach from the gate record through this number.",
+  "pourTruckNoBodyEmpty": "Gate records for this point have not reached this phone yet. Type the truck number exactly as painted on the truck; its volume, slump and delivery note attach from the gate record through this number.",
+  "gateQGrade": "What is the concrete grade?",
+  "gateQSummary": "Is everything correct?",
+  "gateRejectAction": "Reject this truck"
 }

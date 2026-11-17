@@ -19,6 +19,7 @@ import 'features/casting/point_history_page.dart';
 import 'features/home/aktivitas_page.dart';
 import 'features/casting/titik_denah_page.dart';
 import 'features/drilling/drill_log_page.dart';
+import 'features/gate/gate_ticket_form.dart';
 import 'features/reports/report_page.dart';
 import 'core/config/features.dart';
 import 'core/providers.dart';
@@ -111,8 +112,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/casting/log/:uuid',
-        builder: (_, s) => CastingForm(uuid: s.pathParameters['uuid']!, pilePointUuid: s.uri.queryParameters['pilePoint']),
+        builder: (_, s) => CastingForm(
+          uuid: s.pathParameters['uuid']!,
+          pilePointUuid: s.uri.queryParameters['pilePoint'],
+          // The person at the hole in the split workflow: no volume, slump
+          // or delivery note on this phone — those come from the gate.
+          pourOnly: s.uri.queryParameters['mode'] == 'pour',
+        ),
       ),
+      // Gate record for one concrete truck. `new` is matched before `:uuid`.
+      GoRoute(
+        path: '/gate/new',
+        builder: (_, s) => GateTicketForm(uuid: null, pilePointUuid: s.uri.queryParameters['pilePoint']),
+      ),
+      GoRoute(path: '/gate/:uuid', builder: (_, s) => GateTicketForm(uuid: s.pathParameters['uuid'])),
       GoRoute(
         path: '/drilling/log/:uuid',
         builder: (_, s) => DrillLogPage(uuid: s.pathParameters['uuid']!, pilePointUuid: s.uri.queryParameters['pilePoint']),

@@ -651,11 +651,49 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     icon: const Icon(Icons.play_arrow),
                     label: Text(t(context).startCastLog),
                   ),
+                // The person at the hole in the split workflow: timer,
+                // tremie and concrete depth only. Volume, slump and the
+                // delivery note come from the gate record.
+                if (pt.casting == null && pt.stage != 'sudah_cor' && !elsewhere) ...[
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: g == null || !drilled
+                        ? null
+                        : () async {
+                            final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
+                                .map((e) => e.code);
+                            final benar = await askCodeConfirm(context, code: pt.code, allCodes: semua);
+                            if (!benar || !mounted || !c.mounted) return;
+                            Navigator.pop(c);
+                            unawaited(
+                              context.push(
+                                '/casting/log/${newUuid()}?pilePoint=${pt.uuid}&mode=pour',
+                              ),
+                            );
+                          },
+                    icon: const Icon(Icons.timer_outlined),
+                    label: Text(t(context).startPourOnlyLog),
+                  ),
+                ],
               ],
               // Riwayat penuh dari server: satu-satunya cara melihat angka
               // log cor yang dibuat HP lain, termasuk titik yang sudah selesai
               // dicor berminggu-minggu lalu dan lognya tidak akan pernah
               // turun ke HP ini.
+              // Gate: record a concrete truck arriving for this pile point.
+              // Its own document, so the person at the gate never opens the
+              // casting log held by the person at the hole.
+              if (bolehCatat && pt.stage != 'sudah_cor') ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(c);
+                    context.push('/gate/new?pilePoint=${pt.uuid}');
+                  },
+                  icon: const Icon(Icons.local_shipping_outlined),
+                  label: Text(t(context).gateRecordTruck),
+                ),
+              ],
               if (pt.serverId != null &&
                   (pt.casting != null ||
                       pt.serverCastingUuid != null ||

@@ -5699,5 +5699,107 @@
   "swipeDone": "Tersimpan",
   "@swipeDone": {
     "description": "swipeDone"
+  },
+  "entityGateTicket": "Catatan gerbang",
+  "@entityGateTicket": {
+    "description": "entityGateTicket"
+  },
+  "gateRecordTruck": "Gerbang: catat TM masuk",
+  "@gateRecordTruck": {
+    "description": "gateRecordTruck"
+  },
+  "gateTitle": "TM masuk gerbang · {code}",
+  "@gateTitle": {
+    "description": "gateTitle",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "gateIntroTitle": "Ketik persis seperti di badan truk",
+  "@gateIntroTitle": {
+    "description": "gateIntroTitle"
+  },
+  "gateIntroBody": "Nomor ini yang memasangkan catatan gerbang dengan TM yang dituang di lubang.",
+  "@gateIntroBody": {
+    "description": "gateIntroBody"
+  },
+  "gateVolume": "Volume di surat jalan",
+  "@gateVolume": {
+    "description": "gateVolume"
+  },
+  "gateGrade": "Mutu beton (fc')",
+  "@gateGrade": {
+    "description": "gateGrade"
+  },
+  "gateGradeInvalid": "Mutu beton tidak masuk akal (1–150 MPa).",
+  "@gateGradeInvalid": {
+    "description": "gateGradeInvalid"
+  },
+  "gateRejected": "TM ini ditolak di gerbang",
+  "@gateRejected": {
+    "description": "gateRejected"
+  },
+  "gateRejectedTitle": "TM yang ditolak tidak dituang",
+  "@gateRejectedTitle": {
+    "description": "gateRejectedTitle"
+  },
+  "gateRejectedBody": "Catatannya tetap tersimpan sebagai bukti, tetapi volumenya tidak masuk ke log cor titik ini.",
+  "@gateRejectedBody": {
+    "description": "gateRejectedBody"
+  },
+  "gateRejectReason": "Alasan ditolak",
+  "@gateRejectReason": {
+    "description": "gateRejectReason"
+  },
+  "gateRejectReasonRequired": "Isi alasan TM ini ditolak.",
+  "@gateRejectReasonRequired": {
+    "description": "gateRejectReasonRequired"
+  },
+  "gateTruckRequired": "Isi nomor lambung TM.",
+  "@gateTruckRequired": {
+    "description": "gateTruckRequired"
+  },
+  "gatePhotoRequired": "Foto surat jalannya dulu.",
+  "@gatePhotoRequired": {
+    "description": "gatePhotoRequired"
+  },
+  "gateSaved": "TM {truck} dicatat. Terkirim otomatis saat ada sinyal.",
+  "@gateSaved": {
+    "description": "gateSaved",
+    "placeholders": {
+      "truck": {
+        "type": "String"
+      }
+    }
+  },
+  "startPourOnlyLog": "Mulai log cor — di lubang saja",
+  "@startPourOnlyLog": {
+    "description": "startPourOnlyLog"
+  },
+  "pourTruckNoTitle": "Nomor TM adalah kuncinya",
+  "@pourTruckNoTitle": {
+    "description": "pourTruckNoTitle"
+  },
+  "pourTruckNoBody": "Pilih nomor TM yang sudah dicatat di gerbang, atau ketik persis seperti di badan truk. Volume, slump, dan surat jalannya menempel dari catatan gerbang lewat nomor ini.",
+  "@pourTruckNoBody": {
+    "description": "pourTruckNoBody"
+  },
+  "pourTruckNoBodyEmpty": "Catatan gerbang untuk titik ini belum sampai ke HP ini. Ketik nomor TM persis seperti di badan truk; volume, slump, dan surat jalannya menempel dari catatan gerbang lewat nomor ini.",
+  "@pourTruckNoBodyEmpty": {
+    "description": "pourTruckNoBodyEmpty"
+  },
+  "gateQGrade": "Mutu betonnya berapa?",
+  "@gateQGrade": {
+    "description": "gateQGrade"
+  },
+  "gateQSummary": "Sudah benar semua?",
+  "@gateQSummary": {
+    "description": "gateQSummary"
+  },
+  "gateRejectAction": "Tolak TM ini",
+  "@gateRejectAction": {
+    "description": "gateRejectAction"
   }
 }

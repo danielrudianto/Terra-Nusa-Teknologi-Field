@@ -1,0 +1,24 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.20 (48) — Catatan gerbang untuk TM
+
+<id>
+• Baru: "Gerbang: catat TM masuk" di tiap titik — nomor TM, foto surat jalan, volume, slump, dan mutu, tanpa membuka log cor.
+• Baru: "Mulai log cor — di lubang saja" — cukup nomor TM, timer, tremie, dan kedalaman beton. Volume dan slump datang dari gerbang lewat nomor TM.
+• TM yang ditolak di gerbang bisa ditandai dengan alasannya.
+• Semua bisa diisi tanpa sinyal.
+• Laporan bisa dibuka untuk rentang tanggal pilihan sendiri.
+</id>
+<en-US>
+• New: "Gate: record a truck" on every pile point — truck number, delivery note photo, volume, slump and grade, without opening the casting log.
+• New: "Start casting log — at the hole only" — just truck number, timer, tremie and concrete depth. Volume and slump come from the gate by truck number.
+• A truck rejected at the gate can be marked with its reason.
+• Everything works without signal.
+• Reports can be opened for a date range of your choice.
+</en-US>
+<zh-CN>
+• 新增：每个桩位的“门岗：登记搅拌车”——车号、送货单照片、方量、坍落度和强度等级，无需打开浇筑记录。
+• 新增：“开始浇筑记录——仅孔口”——只需车号、计时、导管和混凝土深度。方量和坍落度按车号来自门岗。
+• 在门岗被拒收的搅拌车可以标记并注明原因。
+• 全部可在无信号时填写。
+• 报表可按自选日期区间查看。
+</zh-CN>

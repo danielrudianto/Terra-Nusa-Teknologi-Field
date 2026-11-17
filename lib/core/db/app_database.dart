@@ -113,7 +113,15 @@ class LocalMeta extends Table {
 
 /// Send order: workers first (referenced by attendance), drill marks before casting.
 /// A drill log goes before the drill marks: a mark sent later corrects it.
-const entityOrder = {'worker': 0, 'drill_log': 1, 'drill_mark': 2, 'attendance': 3, 'casting': 4};
+const entityOrder = {
+  'worker': 0,
+  'drill_log': 1,
+  'drill_mark': 2,
+  'attendance': 3,
+  'casting': 4,
+  // Gate records pair with truck rows on the server in either order.
+  'gate_ticket': 5,
+};
 
 @DriftDatabase(tables: [MasterRecords, Documents, Photos, LocalMeta])
 class AppDatabase extends _$AppDatabase {

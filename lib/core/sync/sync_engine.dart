@@ -348,6 +348,13 @@ class SyncEngine {
             deletedDrillLogs.add('${m['uuid']}');
           }
         }
+        // Gate records of everyone on the site: the person at the hole picks
+        // a truck number from them instead of typing it. Phones that pulled
+        // before this key existed simply never see it.
+        for (final g in (d['gateTickets'] as List?) ?? const []) {
+          final m = (g as Map).cast<String, Object?>();
+          await db.upsertMaster('gate_ticket', '${m['uuid']}', m, deleted: m['isDelete'] == true);
+        }
         final suppliers = d['concreteSuppliers'];
         if (suppliers is List) {
           await db.replaceAllMasters('supplier', [for (final s in suppliers) (s as Map).cast<String, Object?>()]);

@@ -39,6 +39,7 @@ import 'concrete_suppliers.dart';
 import 'handover.dart';
 import 'pile_section_view.dart';
 import 'tremie_string_view.dart';
+import '../gate/truck_key.dart';
 import '../../core/i18n.dart';
 
 /// Casting log for one pile point.
@@ -66,12 +67,19 @@ import '../../core/i18n.dart';
 ///
 /// Every step is saved immediately (and goes into the send queue).
 class CastingForm extends ConsumerStatefulWidget {
-  const CastingForm({super.key, required this.uuid, this.pilePointUuid});
+  const CastingForm({super.key, required this.uuid, this.pilePointUuid, this.pourOnly = false});
 
   final String uuid;
 
   /// Filled in when a NEW casting log is created from the point list.
   final String? pilePointUuid;
+
+  /// Opened by the person AT THE HOLE in the split workflow (17 Nov 2026):
+  /// they record the timer, the tremie and the concrete depth; volume,
+  /// slump, supplier and the delivery note belong to the person at the
+  /// gate (`GateTicketForm`). Only meaningful when the log is first
+  /// created — afterwards the choice is read back from local meta.
+  final bool pourOnly;
 
   @override
   ConsumerState<CastingForm> createState() => _CastingFormState();
@@ -91,6 +99,14 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   String? _error;
   Timer? _ticker;
 
+  /// This log is kept by the person at the hole only: trucks carry a number
+  /// and nothing a gate record supplies. See [CastingForm.pourOnly].
+  bool _pourOnly = false;
+
+  /// Local meta key remembering [_pourOnly] for this log. Kept outside the
+  /// document: its body must be exactly `DataCor`.
+  String get _pourOnlyKey => 'pour_only:${widget.uuid}';
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +125,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _load() async {
     final db = ref.read(dbProvider);
     final rows = await db.getDocument(widget.uuid);
+    // A log that already exists keeps the mode it was created with.
+    final pourOnly = rows == null ? widget.pourOnly : await db.readMeta(_pourOnlyKey) == '1';
     Map<String, Object?>? doc;
     String? pilePointUuid = widget.pilePointUuid;
     if (rows != null) {
@@ -182,6 +200,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
     if (doc == null) {
       _isNew = true;
+      if (pourOnly) await db.writeMeta(_pourOnlyKey, '1');
       doc = {
         'pilePointUuid': pilePointUuid,
         'date': isoDate(DateTime.now()),
@@ -204,12 +223,32 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       _project = project;
       _localDrillDepth = localDrillDepth;
       _groundLevel = groundLevel;
+      _pourOnly = pourOnly;
     });
   }
 
   // -------------------------------------------------------------------------
   // Derived
   // -------------------------------------------------------------------------
+
+  /// Truck numbers the gate has recorded for this pile point and that this
+  /// log has not used yet — offered so the number is picked, not retyped.
+  /// Empty when the gate's records have not reached this phone; the number
+  /// is then typed by hand.
+  Future<List<String>> _gateTruckNumbers() async {
+    final pileUuid = '${_pilePoint!['uuid']}';
+    final used = {for (final x in _trucks) truckKey(x['truckNo']?.toString())};
+    final numbers = <String>[];
+    for (final g in await ref.read(dbProvider).listMaster('gate_ticket')) {
+      if ('${g['pilePointUuid']}' != pileUuid || g['rejected'] == true) continue;
+      final number = '${g['truckNo'] ?? ''}'.trim();
+      final key = truckKey(number);
+      if (key.isEmpty || used.contains(key)) continue;
+      used.add(key);
+      numbers.add(number);
+    }
+    return numbers;
+  }
 
   PileGeometry get _geometry => PileGeometry(
         diameterMm: toIntOrNull(_pilePoint!['diameterMm']) ?? 0,
@@ -552,6 +591,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       toIntOrNull(_pilePoint!['projectID']),
       keepId: defaultSupplierId,
     );
+    final gateTrucks = _pourOnly ? await _gateTruckNumbers() : const <String>[];
     if (!mounted) return;
     final result = await showModalBottomSheet<Map<String, Object?>>(
       context: context,
@@ -559,6 +599,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       showDragHandle: true,
       builder: (c) => _TruckSheet(
         seq: seq,
+        pourOnly: _pourOnly,
+        gateTrucks: gateTrucks,
         estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
         theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
         pouredSoFarM3: k.totalVolumeM3,
@@ -621,6 +663,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       // reopening an old TM would silently change who delivered it.
       keepId: supplierId,
     );
+    final gateTrucks = _pourOnly ? await _gateTruckNumbers() : const <String>[];
     if (!mounted) return;
     final result = await showModalBottomSheet<Map<String, Object?>>(
       context: context,
@@ -628,6 +671,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       showDragHandle: true,
       builder: (c) => _TruckSheet(
         seq: seq,
+        pourOnly: _pourOnly,
+        gateTrucks: gateTrucks,
         initial: truck,
         estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
         theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
@@ -940,6 +985,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// dibagi dua lubang lalu diketik penuh di dua log — jadi itu yang
   /// ditawarkan lebih dulu.
   Future<void> _checkOveruseAfter(int seq) async {
+    // No volume on this phone in the split workflow: it comes from the gate.
+    if (_pourOnly) return;
     final k = _castingState;
     final over = k.overuseSoFarPercent(seq);
     if (over == null || over <= volumeLoudPercent) return;
@@ -1102,6 +1149,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     required double before,
     required double after,
   }) async {
+    // A ratio needs the truck's volume, which the gate holds — not this log.
+    if (_pourOnly) return true;
     final k = _castingState;
     final ratio = overbreakRatio(
       diameterMm: k.geometry.diameterMm,
@@ -2701,6 +2750,8 @@ class _TruckSheet extends ConsumerStatefulWidget {
   const _TruckSheet({
     required this.seq,
     this.initial,
+    this.pourOnly = false,
+    this.gateTrucks = const [],
     required this.estimatedConcreteBefore,
     required this.theoreticalM3,
     required this.pouredSoFarM3,
@@ -2716,6 +2767,14 @@ class _TruckSheet extends ConsumerStatefulWidget {
   /// The TM being corrected, or null when a new one is arriving. Set = the
   /// fields start filled and the sheet saves back into that same TM.
   final Map<String, Object?>? initial;
+
+  /// The person at the hole: only the truck number and the sounding are
+  /// asked. Volume, supplier, slump and the delivery note come from the
+  /// gate record of the same truck number.
+  final bool pourOnly;
+
+  /// Truck numbers the gate already recorded for this pile point.
+  final List<String> gateTrucks;
 
   final double estimatedConcreteBefore;
 
@@ -2973,6 +3032,19 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   }
 
   void _submit() {
+    if (widget.pourOnly) {
+      // The number is the ONLY link to the gate record: it may not be empty.
+      if (_truck.text.trim().isEmpty) {
+        setState(() => _error = t(context).gateTruckRequired);
+        return;
+      }
+      final depth = _sounding.text.trim().isEmpty ? null : parseNumber(_sounding.text);
+      Navigator.pop(context, <String, Object?>{
+        'truckNo': _truck.text.trim(),
+        'concreteDepthBeforeM': depth == null ? null : decimalText(depth),
+      });
+      return;
+    }
     final volume = parseNumber(_volume.text);
     if (volume == null || volume <= 0 || volume > truckVolumeMaxM3) {
       setState(() => _error = t(context).volumeInvalid(decimalText(truckVolumeMaxM3, decimals: 0)));
@@ -3072,7 +3144,14 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   /// di Dart, tetapi kalau suatu saat tidak, gejalanya bukan galat
   /// melainkan pemeriksaan yang diam-diam tidak pernah jalan — dan itu
   /// jenis kegagalan yang paling mahal di berkas ini.
-  List<({String tanda, List<Widget> Function() isi})> get _urutan => [
+  List<({String tanda, List<Widget> Function() isi})> get _urutan => widget.pourOnly
+      ? [
+          (tanda: 'lambung', isi: _qLambung),
+          (tanda: 'sounding', isi: _isianSounding),
+        ]
+      : _fullSteps;
+
+  List<({String tanda, List<Widget> Function() isi})> get _fullSteps => [
         (tanda: 'lambung', isi: _qLambung),
         (tanda: 'volume', isi: _qVolume),
         if (_pemasokPerluDitanya) (tanda: 'pemasok', isi: _qPemasok),
@@ -3234,7 +3313,37 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
 
   // ── Pertanyaan ─────────────────────────────────────────────────────────
 
-  List<Widget> _qLambung() => [_tanya(t(context).qTruckNo), ..._isianLambung()];
+  List<Widget> _qLambung() => [
+        _tanya(t(context).qTruckNo),
+        ..._isianLambung(),
+        if (widget.pourOnly) ..._gateChoices(),
+      ];
+
+  /// Truck numbers from the gate, to tap instead of type. A mistyped number
+  /// is the usual reason a truck and its gate record never pair.
+  List<Widget> _gateChoices() => [
+        const SizedBox(height: 12),
+        TerraBanner(
+          kind: BannerKind.info,
+          icon: Icons.local_shipping_outlined,
+          title: t(context).pourTruckNoTitle,
+          body: widget.gateTrucks.isEmpty ? t(context).pourTruckNoBodyEmpty : t(context).pourTruckNoBody,
+        ),
+        if (widget.gateTrucks.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final number in widget.gateTrucks)
+                ActionChip(
+                  label: Text(number),
+                  onPressed: () => setState(() => _truck.text = number),
+                ),
+            ],
+          ),
+        ],
+      ];
 
   List<Widget> _qVolume() => [_tanya(t(context).qVolume), ..._isianVolume()];
 
@@ -3291,15 +3400,20 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
               if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
-              ..._isianFoto(),
-              const SizedBox(height: 12),
-              ..._isianLambung(),
-              const SizedBox(height: 12),
-              ..._isianPemasok(),
-              const SizedBox(height: 12),
-              ..._isianVolume(),
-              const SizedBox(height: 12),
-              ..._isianSlump(),
+              if (widget.pourOnly) ...[
+                ..._isianLambung(),
+                ..._gateChoices(),
+              ] else ...[
+                ..._isianFoto(),
+                const SizedBox(height: 12),
+                ..._isianLambung(),
+                const SizedBox(height: 12),
+                ..._isianPemasok(),
+                const SizedBox(height: 12),
+                ..._isianVolume(),
+                const SizedBox(height: 12),
+                ..._isianSlump(),
+              ],
               const SizedBox(height: 12),
               ..._isianSounding(),
               const SizedBox(height: 18),
@@ -3404,6 +3518,10 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   /// pesan "volume belum diisi" yang tampil di layar foto tidak memberi
   /// tahu siapa pun harus kembali ke mana.
   void _maju(int i) {
+    if (widget.pourOnly && _urutan[i].tanda == 'lambung' && _truck.text.trim().isEmpty) {
+      setState(() => _error = t(context).gateTruckRequired);
+      return;
+    }
     if (_urutan[i].tanda == 'volume') {
       // Kalimatnya SAMA PERSIS dengan yang dipakai `_submit` untuk aturan
       // yang sama. Dua kalimat berbeda untuk satu aturan membuat orangnya
