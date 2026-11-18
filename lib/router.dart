@@ -123,7 +123,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Gate record for one concrete truck. `new` is matched before `:uuid`.
       GoRoute(
         path: '/gate/new',
-        builder: (_, s) => GateTicketForm(uuid: null, pilePointUuid: s.uri.queryParameters['pilePoint']),
+        builder: (_, s) => GateTicketForm(
+          uuid: null,
+          pilePointUuid: s.uri.queryParameters['pilePoint'],
+          // The same truck, continued from another pile point's record.
+          copyFromUuid: s.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(path: '/gate/:uuid', builder: (_, s) => GateTicketForm(uuid: s.pathParameters['uuid'])),
       GoRoute(

@@ -1656,5 +1656,12 @@
   "pourTruckNoBodyEmpty": "Gate records for this point have not reached this phone yet. Type the truck number exactly as painted on the truck; its volume, slump and delivery note attach from the gate record through this number.",
   "gateQGrade": "What is the concrete grade?",
   "gateQSummary": "Is everything correct?",
-  "gateRejectAction": "Reject this truck"
+  "gateRejectAction": "Reject this truck",
+  "gateOtherPileTitle": "Does truck {truck} also pour into another hole?",
+  "gateOtherPileBody": "If one truck is split between two holes, record it on the next hole too. The truck number, delivery note photo, slump and grade are copied — only the volume is left to fill in.",
+  "gateOtherPileNo": "No, done",
+  "gateOtherPilePick": "Yes — tap the next hole:",
+  "gateOtherPileSearch": "Search pile code",
+  "gateCopiedTitle": "Truck {truck} continues to this point",
+  "gateCopiedBody": "Enter only the volume poured AT THIS POINT, not the whole truck load."
 }

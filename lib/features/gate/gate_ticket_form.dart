@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -18,6 +19,7 @@ import '../../core/widgets/terra_banner.dart';
 import '../casting/calc/casting_state.dart';
 import '../casting/concrete_suppliers.dart';
 import '../casting/measure_diagram.dart';
+import 'next_pile.dart';
 
 /// Gate record for ONE concrete truck heading to one pile point.
 ///
@@ -39,13 +41,20 @@ import '../casting/measure_diagram.dart';
 /// is where fields get skipped. An existing record opens as one sheet, for
 /// correcting a single value.
 class GateTicketForm extends ConsumerStatefulWidget {
-  const GateTicketForm({super.key, required this.uuid, this.pilePointUuid});
+  const GateTicketForm({super.key, required this.uuid, this.pilePointUuid, this.copyFromUuid});
 
   /// `null` for a new record.
   final String? uuid;
 
   /// Required for a new record; an existing one carries it in its body.
   final String? pilePointUuid;
+
+  /// For a new record only: the gate record of the SAME truck on another
+  /// pile point. One truck is sometimes split between two holes, and the
+  /// truck number, delivery note photo, supplier, slump and grade are then
+  /// the same on both — only the volume differs. They are copied from that
+  /// record so the person at the gate does not fill them in twice.
+  final String? copyFromUuid;
 
   @override
   ConsumerState<GateTicketForm> createState() => _GateTicketFormState();
@@ -71,6 +80,10 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
   String? _photoUuid;
   String? _photoPath;
   bool _rejected = false;
+
+  /// This new record continues a truck already recorded on another pile
+  /// point: only the volume is asked.
+  bool _copied = false;
   bool _loading = true;
   bool _saving = false;
 
@@ -142,6 +155,27 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
     // gate corrects it if the delivery note says otherwise.
     if (widget.uuid == null) {
       _grade.text = _asTyped(_pilePoint?['concreteGrade']);
+    }
+    // The same truck, already recorded on another pile point: everything
+    // read off the delivery note is copied. The volume is NOT — it is the
+    // part poured into this hole, and copying it would count the same
+    // concrete twice.
+    final sourceUuid = widget.copyFromUuid;
+    if (widget.uuid == null && sourceUuid != null) {
+      final source = await db.getDocument(sourceUuid);
+      if (source != null) {
+        final body = (jsonDecode(source.body) as Map).cast<String, Object?>();
+        _truck.text = '${body['truckNo'] ?? ''}';
+        _slump.text = _asTyped(body['slumpCm']);
+        _grade.text = _asTyped(body['concreteGrade']);
+        _supplierId = toIntOrNull(body['supplierID']);
+        _photoUuid = body['ticketPhotoUuid']?.toString();
+        final arrived = body['arrivedAt']?.toString();
+        if (arrived != null && arrived.isNotEmpty) _arrivedAt = arrived;
+        final photo = _photoUuid;
+        if (photo != null) _photoPath = (await db.getPhoto(photo))?.path;
+        _copied = true;
+      }
     }
     _suppliers = suppliersForProject(
       await db.listMaster('supplier'),
@@ -254,7 +288,36 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
         ),
       ),
     );
+    // A truck just recorded may be split between two holes: ask once, here,
+    // while the delivery note is still in hand. Not asked for a rejected
+    // truck (nothing is poured) nor when an existing record is corrected.
+    if (widget.uuid == null && !_rejected) {
+      final nextPile = await _pickNextPile(truck);
+      if (!mounted) return;
+      if (nextPile != null) {
+        unawaited(context.pushReplacement('/gate/new?pilePoint=$nextPile&from=$_uuid'));
+        return;
+      }
+    }
     context.pop();
+  }
+
+  /// Ask whether this truck also pours into another pile point; the rule
+  /// for which ones are offered lives in `pilesForSameTruck`. `null` when
+  /// the answer is no, or there is none to offer.
+  Future<String?> _pickNextPile(String truck) async {
+    final piles = pilesForSameTruck(
+      await ref.read(dbProvider).listMaster('pile_point'),
+      projectId: _pilePoint?['projectID'],
+      currentUuid: _pilePointUuid,
+    );
+    if (piles.isEmpty || !mounted) return null;
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _NextPileSheet(truck: truck, piles: piles),
+    );
   }
 
   Widget _photoField(bool canEdit) {
@@ -315,7 +378,17 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
 
   /// The questions, in the order the delivery note is read. The supplier is
   /// only asked when there is a list to pick from.
-  List<({String key, List<Widget> Function() body})> get _steps => [
+  ///
+  /// A record that continues a truck from another pile point asks ONE
+  /// thing — the volume — then shows everything for a last look.
+  List<({String key, List<Widget> Function() body})> get _steps => _copied
+      ? [
+          (key: 'volume', body: _stepVolume),
+          (key: 'summary', body: _stepSummary),
+        ]
+      : _newSteps;
+
+  List<({String key, List<Widget> Function() body})> get _newSteps => [
         (key: 'truck', body: _stepTruck),
         (key: 'photo', body: _stepPhoto),
         (key: 'volume', body: _stepVolume),
@@ -360,6 +433,17 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
 
   List<Widget> _stepVolume() => [
         _question(t(context).qVolume),
+        // The one mistake this screen invites on a split truck: typing the
+        // whole load again. Said before the number is typed.
+        if (_copied) ...[
+          TerraBanner(
+            kind: BannerKind.info,
+            icon: Icons.call_split,
+            title: t(context).gateCopiedTitle(_truck.text.trim()),
+            body: t(context).gateCopiedBody,
+          ),
+          const SizedBox(height: 12),
+        ],
         TextField(
           controller: _volume,
           autofocus: true,
@@ -733,6 +817,96 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
           : widget.uuid == null && canEdit
               ? _guided(context)
               : _sheet(context, canEdit),
+    );
+  }
+}
+
+/// Asked right after a gate record is saved: does the same truck also pour
+/// into another pile point?
+///
+/// "No" is the large button on top — it is the answer nine times out of
+/// ten, and it must not be hunted for. The pile points below are the
+/// "yes": tapping one opens its gate record with the delivery note already
+/// copied in.
+class _NextPileSheet extends StatefulWidget {
+  const _NextPileSheet({required this.truck, required this.piles});
+
+  final String truck;
+  final List<Map<String, Object?>> piles;
+
+  @override
+  State<_NextPileSheet> createState() => _NextPileSheetState();
+}
+
+class _NextPileSheetState extends State<_NextPileSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = t(context);
+    final w = context.colors;
+    final query = _query.trim().toLowerCase();
+    final shown = [
+      for (final p in widget.piles)
+        if (query.isEmpty || '${p['code']}'.toLowerCase().contains(query)) p,
+    ];
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.gateOtherPileTitle(widget.truck),
+              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, height: 1.3),
+            ),
+            const SizedBox(height: 10),
+            TerraBanner(kind: BannerKind.info, icon: Icons.call_split, title: l.gateOtherPileBody),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: Dimens.minTouch + 4,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l.gateOtherPileNo),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(l.gateOtherPilePick, style: TextStyle(fontWeight: FontWeight.w700, color: w.muted)),
+            const SizedBox(height: 8),
+            TextField(
+              onChanged: (v) => setState(() => _query = v),
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                labelText: l.gateOtherPileSearch,
+                prefixIcon: const Icon(Icons.search),
+              ),
+            ),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.36),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: shown.length,
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    onTap: () => Navigator.pop(context, '${shown[i]['uuid']}'),
+                    tileColor: w.surface2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Dimens.radiusBanner),
+                      side: BorderSide(color: w.line),
+                    ),
+                    leading: Icon(Icons.add_circle_outline, color: w.brand),
+                    title: Text('${shown[i]['code']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.21 (49) — Satu TM untuk beberapa lubang
+
+<id>
+• Baru: sesudah mencatat TM di gerbang, app bertanya apakah TM itu juga dituang ke lubang lain. Pilih lubangnya — nomor TM, foto surat jalan, slump, dan mutu langsung disalin, tinggal isi volumenya.
+• Volume diisi per lubang, jadi beton yang sama tidak terhitung dua kali.
+</id>
+<en-US>
+• New: after recording a truck at the gate, the app asks whether it also pours into another hole. Pick the hole — truck number, delivery note photo, slump and grade are copied; only the volume is left to fill in.
+• Volume is entered per hole, so the same concrete is never counted twice.
+</en-US>
+<zh-CN>
+• 新增：在门岗登记搅拌车后，应用会询问该车是否还要浇到别的孔。选择孔位后，车号、送货单照片、坍落度和强度等级会自动复制，只需填写方量。
+• 方量按孔填写，同一车混凝土不会被重复计算。
+</zh-CN>

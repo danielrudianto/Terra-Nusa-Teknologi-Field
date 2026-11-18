@@ -1656,5 +1656,12 @@
   "pourTruckNoBodyEmpty": "该桩位的门岗记录尚未同步到本机。请按车身上的编号准确输入车号；方量、坍落度和送货单会通过该车号从门岗记录附上。",
   "gateQGrade": "混凝土强度等级是多少？",
   "gateQSummary": "全部正确吗？",
-  "gateRejectAction": "拒收此车"
+  "gateRejectAction": "拒收此车",
+  "gateOtherPileTitle": "搅拌车 {truck} 还要浇到别的孔吗？",
+  "gateOtherPileBody": "如果一车混凝土分浇两个孔，也要在下一个孔登记。车号、送货单照片、坍落度和强度等级会自动复制，只需填写方量。",
+  "gateOtherPileNo": "不用，完成",
+  "gateOtherPilePick": "是 — 点选下一个孔：",
+  "gateOtherPileSearch": "搜索桩号",
+  "gateCopiedTitle": "搅拌车 {truck} 继续浇到本桩位",
+  "gateCopiedBody": "只填写浇到本桩位的方量，不是整车方量。"
 }

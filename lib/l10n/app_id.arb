@@ -5801,5 +5801,43 @@
   "gateRejectAction": "Tolak TM ini",
   "@gateRejectAction": {
     "description": "gateRejectAction"
+  },
+  "gateOtherPileTitle": "TM {truck} juga dituang ke lubang lain?",
+  "@gateOtherPileTitle": {
+    "description": "gateOtherPileTitle",
+    "placeholders": {
+      "truck": {
+        "type": "String"
+      }
+    }
+  },
+  "gateOtherPileBody": "Kalau satu TM dibagi ke dua lubang, catat juga di lubang berikutnya. Nomor TM, foto surat jalan, slump, dan mutunya disalin — tinggal isi volumenya.",
+  "@gateOtherPileBody": {
+    "description": "gateOtherPileBody"
+  },
+  "gateOtherPileNo": "Tidak, selesai",
+  "@gateOtherPileNo": {
+    "description": "gateOtherPileNo"
+  },
+  "gateOtherPilePick": "Ya — ketuk lubang berikutnya:",
+  "@gateOtherPilePick": {
+    "description": "gateOtherPilePick"
+  },
+  "gateOtherPileSearch": "Cari kode titik",
+  "@gateOtherPileSearch": {
+    "description": "gateOtherPileSearch"
+  },
+  "gateCopiedTitle": "TM {truck} lanjut ke titik ini",
+  "@gateCopiedTitle": {
+    "description": "gateCopiedTitle",
+    "placeholders": {
+      "truck": {
+        "type": "String"
+      }
+    }
+  },
+  "gateCopiedBody": "Isi volume yang dituang DI TITIK INI saja, bukan seluruh isi TM.",
+  "@gateCopiedBody": {
+    "description": "gateCopiedBody"
   }
 }
