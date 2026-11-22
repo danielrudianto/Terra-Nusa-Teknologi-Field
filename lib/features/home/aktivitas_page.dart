@@ -345,7 +345,9 @@ class _Ringkas extends StatelessWidget {
   Widget build(BuildContext context) {
     final w = context.colors;
     final bor = daftar.where((k) => k.bor).length;
-    final cor = daftar.where((k) => !k.bor).length;
+    // A pile still in preparation has not been poured: counting it here
+    // would claim a pour that has not happened.
+    final cor = daftar.where((k) => !k.bor && !k.preparing).length;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),

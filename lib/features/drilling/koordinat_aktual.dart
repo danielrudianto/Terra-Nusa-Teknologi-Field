@@ -107,6 +107,8 @@ class KoordinatAktualFields extends StatelessWidget {
     required this.designY,
     required this.toleranceMm,
     required this.onChanged,
+    this.notMeasured = false,
+    this.onNotMeasuredChanged,
   });
 
   final TextEditingController xInput;
@@ -122,9 +124,51 @@ class KoordinatAktualFields extends StatelessWidget {
 
   final VoidCallback onChanged;
 
+  /// "Actual X/Y not measured yet" is on: both fields are hidden.
+  final bool notMeasured;
+
+  /// Set only when the point really has NO actual coordinates (see the
+  /// callers). `null` = no switch shown.
+  ///
+  /// ASKED BY DANIEL, 22 Nov 2026: "harus dikasih pilihan, titik belum dapet
+  /// x dan Y". The surveyor is not always there when drilling ends, and a
+  /// dialog that demands coordinates holds back closing a hole that is
+  /// genuinely finished.
+  ///
+  /// WHAT IS STORED STAYS EMPTY, NEVER A COPY OF THE DESIGN. Design
+  /// coordinates written into the actual columns give a 0 mm deviation —
+  /// the point reads as the most accurate on site and passes tolerance
+  /// without ever being measured, and afterwards nothing tells a
+  /// measurement from a copy. The design is only SHOWN as a stand-in.
+  final ValueChanged<bool>? onNotMeasuredChanged;
+
   @override
   Widget build(BuildContext context) {
     final l = t(context);
+    final toggle = onNotMeasuredChanged;
+    if (toggle != null && notMeasured) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: true,
+            onChanged: toggle,
+            title: Text(l.xyNotMeasuredToggle),
+          ),
+          TerraBanner(
+            kind: BannerKind.info,
+            icon: Icons.my_location,
+            title: l.xyNotMeasuredTitle,
+            body: designX != null && designY != null
+                ? l.xyNotMeasuredBody(formatKoordinat(designX), formatKoordinat(designY))
+                : l.xyNotMeasuredBodyNoDesign,
+          ),
+        ],
+      );
+    }
     final simpangan = simpanganMm(
       designX: designX,
       designY: designY,
@@ -137,6 +181,16 @@ class KoordinatAktualFields extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (toggle != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: false,
+              onChanged: toggle,
+              title: Text(l.xyNotMeasuredToggle),
+            ),
+          ),
         const SizedBox(height: 16),
         // BERTUMPUK, bukan berdampingan.
         //

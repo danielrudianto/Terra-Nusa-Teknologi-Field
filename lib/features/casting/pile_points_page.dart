@@ -399,6 +399,19 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   title: t(context).gsMissingTitle,
                   body: t(context).gsMissingBody,
                 ),
+              // Actual X/Y not measured on a drilled point (the "not
+              // measured yet" switch, 22 Nov 2026). Said here so it is not
+              // forgotten: nothing is stored, and reports use the design
+              // coordinates meanwhile.
+              if (drilled && (pt.actualX == null || pt.actualY == null))
+                TerraBanner(
+                  kind: BannerKind.info,
+                  icon: Icons.my_location,
+                  title: t(context).xyNotMeasuredTitle,
+                  body: pt.designX != null && pt.designY != null
+                      ? t(context).xyNotMeasuredBody(formatKoordinat(pt.designX!), formatKoordinat(pt.designY!))
+                      : t(context).xyNotMeasuredBodyNoDesign,
+                ),
               if (pt.isChecked)
                 TerraBanner(
                   kind: BannerKind.ok,
@@ -596,8 +609,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       Navigator.pop(c);
                       _markDrilled(pt);
                     },
-                    icon: const Icon(Icons.straighten),
-                    label: Text(t(context).correctDrillGs),
+                    icon: Icon(pt.actualX == null || pt.actualY == null ? Icons.my_location : Icons.straighten),
+                    label: Text(pt.actualX == null || pt.actualY == null
+                        ? t(context).fillActualXY
+                        : t(context).correctDrillGs),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -642,39 +657,27 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                             // `analysis_options.yaml` menyalakan
                             // `unawaited_futures`. Lihat pemakaian yang sama
                             // di bawah pada _bukaLog.
-                            unawaited(
-                              context.push(
-                                '/casting/log/${newUuid()}?pilePoint=${pt.uuid}',
-                              ),
-                            );
-                          },
-                    icon: const Icon(Icons.play_arrow),
-                    label: Text(t(context).startCastLog),
-                  ),
-                // The person at the hole in the split workflow: timer,
-                // tremie and concrete depth only. Volume, slump and the
-                // delivery note come from the gate record.
-                if (pt.casting == null && pt.stage != 'sudah_cor' && !elsewhere) ...[
-                  const SizedBox(height: 10),
-                  OutlinedButton.icon(
-                    onPressed: g == null || !drilled
-                        ? null
-                        : () async {
-                            final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
-                                .map((e) => e.code);
-                            final benar = await askCodeConfirm(context, code: pt.code, allCodes: semua);
-                            if (!benar || !mounted || !c.mounted) return;
-                            Navigator.pop(c);
+                            // ONE casting log at the hole, always the short one:
+                            // truck number, sounding, tremie. Volume, supplier,
+                            // slump and the delivery note come ONLY from the
+                            // gate record of the same truck number.
+                            //
+                            // The one-person log (the hole typing everything)
+                            // was removed on 22 Nov 2026. Daniel: "Data gerbang
+                            // suka ga masuk ke orang lubang cor. Terus tiap
+                            // kali ga masuk orang di lubang isiin dari awal ...
+                            // jadi orang di lubang tinggal isi nomor TM sama
+                            // sounding dan tremie". A person who runs both ends
+                            // records the truck with "Gerbang: catat TM masuk".
                             unawaited(
                               context.push(
                                 '/casting/log/${newUuid()}?pilePoint=${pt.uuid}&mode=pour',
                               ),
                             );
                           },
-                    icon: const Icon(Icons.timer_outlined),
-                    label: Text(t(context).startPourOnlyLog),
+                    icon: const Icon(Icons.play_arrow),
+                    label: Text(t(context).startCastLog),
                   ),
-                ],
               ],
               // Riwayat penuh dari server: satu-satunya cara melihat angka
               // log cor yang dibuat HP lain, termasuk titik yang sudah selesai
@@ -902,6 +905,10 @@ class _DrillDialogState extends State<_DrillDialog> {
   late final _yInput = TextEditingController(text: widget.initialY);
   String? _problem;
 
+  /// "Actual X/Y not measured yet" — only possible when the point has no
+  /// actual coordinates. See `KoordinatAktualFields.onNotMeasuredChanged`.
+  bool _xyNotMeasured = false;
+
   double? _plannedFor(double? gs) => gs == null ? null : gs - widget.tipLevel;
 
   @override
@@ -944,12 +951,14 @@ class _DrillDialogState extends State<_DrillDialog> {
     // Diperiksa lebih dulu, yang kedalamannya salah ketik diberi tahu soal
     // koordinat — lalu memperbaiki koordinatnya dan ditolak lagi karena
     // kedalamannya, yang sejak awal yang salah.
-    final salahKoord = koordinatBelumSah(
-      context,
-      _xInput.text,
-      _yInput.text,
-      wajib: widget.xyRequired,
-    );
+    final salahKoord = _xyNotMeasured
+        ? null
+        : koordinatBelumSah(
+            context,
+            _xInput.text,
+            _yInput.text,
+            wajib: widget.xyRequired,
+          );
     if (salahKoord != null) {
       setState(() => _problem = salahKoord);
       return;
@@ -959,7 +968,8 @@ class _DrillDialogState extends State<_DrillDialog> {
     // Ditanya lebih awal, yang kedalamannya masih salah ketik sudah
     // terlanjur menjawab pertanyaan berat soal simpangan, lalu harus
     // menjawabnya lagi sesudah membetulkan hal lain.
-    if (!await lanjutkanMeskiSimpang(
+    if (!_xyNotMeasured &&
+        !await lanjutkanMeskiSimpang(
       context,
       designX: widget.designX,
       designY: widget.designY,
@@ -979,8 +989,9 @@ class _DrillDialogState extends State<_DrillDialog> {
     Navigator.pop(context, (
       depth: depth,
       groundLevel: gs,
-      actualX: parseKoordinat(_xInput.text),
-      actualY: parseKoordinat(_yInput.text),
+      // Not measured = EMPTY, never the design coordinates.
+      actualX: _xyNotMeasured ? null : parseKoordinat(_xInput.text),
+      actualY: _xyNotMeasured ? null : parseKoordinat(_yInput.text),
     ));
   }
 
@@ -1060,6 +1071,13 @@ class _DrillDialogState extends State<_DrillDialog> {
               designY: widget.designY,
               toleranceMm: widget.toleranceMm,
               onChanged: () => setState(() => _problem = null),
+              notMeasured: _xyNotMeasured,
+              onNotMeasuredChanged: widget.xyRequired
+                  ? (v) => setState(() {
+                        _xyNotMeasured = v;
+                        _problem = null;
+                      })
+                  : null,
             ),
           ],
         ),

@@ -18,6 +18,7 @@ import '../device/camera.dart';
 import '../device/device_lock.dart';
 import '../device/update_available.dart';
 import '../util/error_reporter.dart';
+import 'office_notice.dart';
 
 /// Summary of one sync round — for the banner on Home and the background log.
 class SyncResult {
@@ -335,15 +336,26 @@ class SyncEngine {
         for (final c in (d['castingStatus'] as List?) ?? const []) {
           final m = (c as Map).cast<String, Object?>();
           if (m['isDelete'] == true) {
-            // Deleted by the office: drop the phone's copy so the point opens again.
+            // Deleted by the office: drop the phone's copy so the point opens again
+            // — and remember who, when and why, so the log screen can SAY so
+            // instead of just going blank. See `office_notice.dart`.
+            await recordOfficeNotice(db, officeDeletedKey('${m['uuid']}'), m,
+                atKey: 'deletedAt', byKey: 'deletedByName', noteKey: 'deleteNote');
             await db.deleteDocument('${m['uuid']}');
           } else {
             await db.recordServerStatus('${m['uuid']}', '${m['status']}', m['note']?.toString());
+            // Corrected by the office: the phone's copy keeps the old numbers.
+            if (m['officeEditedAt'] != null) {
+              await recordOfficeNotice(db, officeEditedKey('${m['uuid']}'), m,
+                  atKey: 'officeEditedAt', byKey: 'officeEditedByName');
+            }
           }
         }
         for (final c in (d['drillLogStatus'] as List?) ?? const []) {
           final m = (c as Map).cast<String, Object?>();
           if (m['isDelete'] == true) {
+            await recordOfficeNotice(db, officeDeletedKey('${m['uuid']}'), m,
+                atKey: 'deletedAt', byKey: 'deletedByName', noteKey: 'deleteNote');
             await db.deleteDocument('${m['uuid']}');
             deletedDrillLogs.add('${m['uuid']}');
           }

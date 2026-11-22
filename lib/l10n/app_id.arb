@@ -594,7 +594,7 @@
   "@openCastLog": {
     "description": "openCastLog"
   },
-  "startCastLog": "Mulai catatan cor",
+  "startCastLog": "Lubang: mulai catatan cor",
   "@startCastLog": {
     "description": "startCastLog"
   },
@@ -1451,7 +1451,7 @@
   "@gradeMissingTitle": {
     "description": "gradeMissingTitle"
   },
-  "gradeMissingBody": "Titik dan proyek ini belum punya mutu bawaan. Isi di data cor, atau catatan cor akan ditolak server.",
+  "gradeMissingBody": "Titik, proyek, dan TM-nya belum punya mutu beton. Minta kantor mengisi mutu titik atau proyek — orang di lubang tidak perlu mengisinya.",
   "finishNeedsGrade": "Isi mutu dulu",
   "@gradeMissingBody": {
     "description": "gradeMissingBody"
@@ -1493,6 +1493,94 @@
         "type": "int"
       },
       "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "truckHeadingNoVol": "TM #{seq}",
+  "@truckHeadingNoVol": {
+    "description": "truckHeadingNoVol",
+    "placeholders": {
+      "seq": {
+        "type": "int"
+      }
+    }
+  },
+  "trucksSectionCount": "{n} TM",
+  "@trucksSectionCount": {
+    "description": "trucksSectionCount",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "notifTapToOpenNoVol": "Ketuk untuk membuka catatan cor",
+  "@notifTapToOpenNoVol": {
+    "description": "notifTapToOpenNoVol"
+  },
+  "xyNotMeasuredToggle": "X/Y aktual belum diukur",
+  "@xyNotMeasuredToggle": {
+    "description": "xyNotMeasuredToggle"
+  },
+  "xyNotMeasuredTitle": "X/Y aktual belum diukur",
+  "@xyNotMeasuredTitle": {
+    "description": "xyNotMeasuredTitle"
+  },
+  "xyNotMeasuredBody": "Sementara memakai koordinat rencana X {x} · Y {y}. Isi X/Y aktual setelah diukur surveyor.",
+  "@xyNotMeasuredBody": {
+    "description": "xyNotMeasuredBody",
+    "placeholders": {
+      "x": {
+        "type": "String"
+      },
+      "y": {
+        "type": "String"
+      }
+    }
+  },
+  "xyNotMeasuredBodyNoDesign": "Titik ini juga belum punya koordinat rencana. Isi X/Y aktual setelah diukur surveyor.",
+  "@xyNotMeasuredBodyNoDesign": {
+    "description": "xyNotMeasuredBodyNoDesign"
+  },
+  "fillActualXY": "Isi X/Y aktual",
+  "@fillActualXY": {
+    "description": "fillActualXY"
+  },
+  "castDeletedTitle": "Catatan cor ini dihapus kantor",
+  "@castDeletedTitle": {
+    "description": "castDeletedTitle"
+  },
+  "castDeletedNext": "Titiknya bisa dicor ulang dari daftar titik. Isian di catatan ini tidak tersimpan lagi.",
+  "@castDeletedNext": {
+    "description": "castDeletedNext"
+  },
+  "drillDeletedTitle": "Catatan bor ini dihapus kantor",
+  "@drillDeletedTitle": {
+    "description": "drillDeletedTitle"
+  },
+  "drillDeletedNext": "Titiknya kembali belum dibor dan bisa dicatat ulang dari daftar titik.",
+  "@drillDeletedNext": {
+    "description": "drillDeletedNext"
+  },
+  "officeActionBy": "Oleh {who}",
+  "@officeActionBy": {
+    "description": "officeActionBy",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "officeEditedTitle": "Catatan ini dibetulkan kantor",
+  "@officeEditedTitle": {
+    "description": "officeEditedTitle"
+  },
+  "officeEditedBody": "{who}. Angka di HP ini bisa berbeda dari yang tersimpan di kantor — yang berlaku angka kantor.",
+  "@officeEditedBody": {
+    "description": "officeEditedBody",
+    "placeholders": {
+      "who": {
         "type": "String"
       }
     }
@@ -3556,6 +3644,15 @@
   "activityTodayRunning": "masih jalan · terakhir {jam}",
   "@activityTodayRunning": {
     "description": "activityTodayRunning",
+    "placeholders": {
+      "jam": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTodayPreparing": "persiapan cor · sejak {jam}",
+  "@activityTodayPreparing": {
+    "description": "activityTodayPreparing",
     "placeholders": {
       "jam": {
         "type": "String"
@@ -5778,6 +5875,14 @@
   "@startPourOnlyLog": {
     "description": "startPourOnlyLog"
   },
+  "gateDataWaiting": "Data gerbang belum masuk — tidak perlu diisi di sini, nanti menempel sendiri.",
+  "@gateDataWaiting": {
+    "description": "gateDataWaiting"
+  },
+  "gateDataArrived": "Volume, slump, dan pemasok dari catatan gerbang.",
+  "@gateDataArrived": {
+    "description": "gateDataArrived"
+  },
   "pourTruckNoTitle": "Nomor TM adalah kuncinya",
   "@pourTruckNoTitle": {
     "description": "pourTruckNoTitle"
@@ -5786,7 +5891,7 @@
   "@pourTruckNoBody": {
     "description": "pourTruckNoBody"
   },
-  "pourTruckNoBodyEmpty": "Catatan gerbang untuk titik ini belum sampai ke HP ini. Ketik nomor TM persis seperti di badan truk; volume, slump, dan surat jalannya menempel dari catatan gerbang lewat nomor ini.",
+  "pourTruckNoBodyEmpty": "Catatan gerbang TM ini belum sampai ke HP ini — tidak apa-apa. Ketik nomor TM persis seperti di badan truk. Volume, slump, dan surat jalannya menempel sendiri begitu catatan gerbang masuk; tidak perlu diisi di sini.",
   "@pourTruckNoBodyEmpty": {
     "description": "pourTruckNoBodyEmpty"
   },

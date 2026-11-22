@@ -29,6 +29,7 @@ import '../casting/level_reference.dart';
 import 'drill_readings.dart';
 import 'koordinat_aktual.dart';
 import 'operator_picker.dart';
+import '../../core/sync/office_notice.dart';
 import '../../core/i18n.dart';
 
 /// Drill log of one pile point: "at this time the hole was this deep".
@@ -57,6 +58,12 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   void initState() {
     super.initState();
     _load();
+    // Pull NOW, as the screen opens: an office deletion arrives without
+    // waiting for the timer. See `office_notice.dart`. After the first
+    // frame — Riverpod refuses a provider change while the tree builds.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(ref.read(syncProvider.notifier).run());
+    });
   }
 
   Future<void> _load() async {
@@ -467,6 +474,21 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Deleted by the office — also while the screen IS open: the notice is
+    // watched, so the screen changes the moment the pull lands. Ahead of
+    // `_error`: a deleted log is also "not on this phone", and that sentence
+    // explains nothing.
+    final deleted = ref.watch(officeDeletedProvider(widget.uuid)).value;
+    if (deleted != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(t(context).entityDrillLog)),
+        body: DeletedByOfficeView(
+          notice: deleted,
+          title: t(context).drillDeletedTitle,
+          next: t(context).drillDeletedNext,
+        ),
+      );
+    }
     if (_error != null) {
       return Scaffold(appBar: AppBar(title: Text(t(context).entityDrillLog)), body: ErrorState(title: _error!));
     }
@@ -1250,6 +1272,10 @@ class _FinishDialogState extends State<_FinishDialog> {
   late final _yInput = TextEditingController(text: widget.initialY);
   String? _problem;
 
+  /// "Actual X/Y not measured yet" — only possible when the point has no
+  /// actual coordinates. See `KoordinatAktualFields.onNotMeasuredChanged`.
+  bool _xyNotMeasured = false;
+
   @override
   void dispose() {
     _gs.dispose();
@@ -1279,12 +1305,14 @@ class _FinishDialogState extends State<_FinishDialog> {
         return false;
       }
     }
-    final salahKoord = koordinatBelumSah(
-      context,
-      _xInput.text,
-      _yInput.text,
-      wajib: widget.xyRequired,
-    );
+    final salahKoord = _xyNotMeasured
+        ? null
+        : koordinatBelumSah(
+            context,
+            _xInput.text,
+            _yInput.text,
+            wajib: widget.xyRequired,
+          );
     if (salahKoord != null) {
       setState(() => _problem = salahKoord);
       return false;
@@ -1294,7 +1322,8 @@ class _FinishDialogState extends State<_FinishDialog> {
     // Ditanya lebih awal, yang GS-nya masih salah ketik sudah terlanjur
     // menjawab pertanyaan berat soal simpangan, lalu harus menjawabnya
     // lagi sesudah membetulkan hal lain.
-    if (!await lanjutkanMeskiSimpang(
+    if (!_xyNotMeasured &&
+        !await lanjutkanMeskiSimpang(
       context,
       designX: widget.designX,
       designY: widget.designY,
@@ -1313,8 +1342,9 @@ class _FinishDialogState extends State<_FinishDialog> {
     if (!mounted) return false;
     Navigator.pop(context, (
       groundLevel: gs,
-      actualX: parseKoordinat(_xInput.text),
-      actualY: parseKoordinat(_yInput.text),
+      // Not measured = EMPTY, never the design coordinates.
+      actualX: _xyNotMeasured ? null : parseKoordinat(_xInput.text),
+      actualY: _xyNotMeasured ? null : parseKoordinat(_yInput.text),
     ));
     return true;
   }
@@ -1375,6 +1405,13 @@ class _FinishDialogState extends State<_FinishDialog> {
               designY: widget.designY,
               toleranceMm: widget.toleranceMm,
               onChanged: () => setState(() => _problem = null),
+              notMeasured: _xyNotMeasured,
+              onNotMeasuredChanged: widget.xyRequired
+                  ? (v) => setState(() {
+                        _xyNotMeasured = v;
+                        _problem = null;
+                      })
+                  : null,
             ),
             // A DRAG, not a button — and inside the content, not in
             // `actions`.

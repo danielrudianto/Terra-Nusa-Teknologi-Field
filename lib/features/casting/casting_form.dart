@@ -39,7 +39,9 @@ import 'concrete_suppliers.dart';
 import 'handover.dart';
 import 'pile_section_view.dart';
 import 'tremie_string_view.dart';
+import '../gate/gate_records.dart';
 import '../gate/truck_key.dart';
+import '../../core/sync/office_notice.dart';
 import '../../core/i18n.dart';
 
 /// Casting log for one pile point.
@@ -100,17 +102,22 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Timer? _ticker;
 
   /// This log is kept by the person at the hole only: trucks carry a number
-  /// and nothing a gate record supplies. See [CastingForm.pourOnly].
-  bool _pourOnly = false;
+  /// and nothing a gate record supplies. Always true since 22 Nov 2026 —
+  /// see `_load`. Kept as a field so the checks that depend on it still
+  /// read as what they mean.
+  bool _pourOnly = true;
 
-  /// Local meta key remembering [_pourOnly] for this log. Kept outside the
-  /// document: its body must be exactly `DataCor`.
-  String get _pourOnlyKey => 'pour_only:${widget.uuid}';
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Pull NOW, as the screen opens: office changes (log deleted or
+    // corrected) arrive without waiting for the timer. After the first
+    // frame — Riverpod refuses a provider change while the tree builds.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(ref.read(syncProvider.notifier).run());
+    });
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted && _runningTruck != null) setState(() {});
     });
@@ -125,8 +132,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   Future<void> _load() async {
     final db = ref.read(dbProvider);
     final rows = await db.getDocument(widget.uuid);
-    // A log that already exists keeps the mode it was created with.
-    final pourOnly = rows == null ? widget.pourOnly : await db.readMeta(_pourOnlyKey) == '1';
+    // EVERY log at the hole is the short one (22 Nov 2026): truck number,
+    // sounding, tremie. Volume, supplier, slump and the delivery note come
+    // only from the gate record. Older logs started in the one-person mode
+    // follow too — what they already hold is kept and still shown.
+    //
+    // No longer read from local meta: a log taken over from another phone
+    // never had that meta, and opened in the long mode it asked the hole
+    // for everything again.
+    const pourOnly = true;
     Map<String, Object?>? doc;
     String? pilePointUuid = widget.pilePointUuid;
     if (rows != null) {
@@ -200,7 +214,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
     if (doc == null) {
       _isNew = true;
-      if (pourOnly) await db.writeMeta(_pourOnlyKey, '1');
       doc = {
         'pilePointUuid': pilePointUuid,
         'date': isoDate(DateTime.now()),
@@ -231,24 +244,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   // Derived
   // -------------------------------------------------------------------------
 
-  /// Truck numbers the gate has recorded for this pile point and that this
-  /// log has not used yet — offered so the number is picked, not retyped.
-  /// Empty when the gate's records have not reached this phone; the number
-  /// is then typed by hand.
-  Future<List<String>> _gateTruckNumbers() async {
-    final pileUuid = '${_pilePoint!['uuid']}';
-    final used = {for (final x in _trucks) truckKey(x['truckNo']?.toString())};
-    final numbers = <String>[];
-    for (final g in await ref.read(dbProvider).listMaster('gate_ticket')) {
-      if ('${g['pilePointUuid']}' != pileUuid || g['rejected'] == true) continue;
-      final number = '${g['truckNo'] ?? ''}'.trim();
-      final key = truckKey(number);
-      if (key.isEmpty || used.contains(key)) continue;
-      used.add(key);
-      numbers.add(number);
-    }
-    return numbers;
-  }
+  /// The pile point's uuid, for its gate records.
+  String get _pileUuid => '${_pilePoint!['uuid']}';
+
+  /// Truck keys already used by this log, except [skip] (the TM being
+  /// corrected keeps its own number on offer).
+  Set<String> _usedTruckKeys({String? skip}) => {
+        for (final x in _trucks)
+          if ('${x['uuid']}' != skip) truckKey(x['truckNo']?.toString()),
+      }..remove('');
 
   PileGeometry get _geometry => PileGeometry(
         diameterMm: toIntOrNull(_pilePoint!['diameterMm']) ?? 0,
@@ -591,7 +595,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       toIntOrNull(_pilePoint!['projectID']),
       keepId: defaultSupplierId,
     );
-    final gateTrucks = _pourOnly ? await _gateTruckNumbers() : const <String>[];
     if (!mounted) return;
     final result = await showModalBottomSheet<Map<String, Object?>>(
       context: context,
@@ -600,8 +603,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       builder: (c) => _TruckSheet(
         seq: seq,
         pourOnly: _pourOnly,
-        gateTrucks: gateTrucks,
-        estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
+        pileUuid: _pileUuid,
+        usedTruckKeys: _usedTruckKeys(),
         theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
         pouredSoFarM3: k.totalVolumeM3,
         takeTicketPhoto: _takeTicketPhoto,
@@ -631,7 +634,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // Tremie length installed when this TM starts — derived from the
         // segments, not retyped.
         'tremieLengthM': decimalText(k.installedLengthAfter(seq - 1)),
-        'concreteDepthBeforeM': result['concreteDepthBeforeM'],
+        // Sounding BEFORE is never asked (22 Nov 2026): the concrete level
+        // before TM 1 is the hole bottom, before TM n the sounding after n-1.
+        'concreteDepthBeforeM': null,
         'concreteDepthAfterM': null,
         'ticketPhotoUuid': result['ticketPhotoUuid'],
         'slumpPhotoUuid': result['slumpPhotoUuid'],
@@ -663,7 +668,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       // reopening an old TM would silently change who delivered it.
       keepId: supplierId,
     );
-    final gateTrucks = _pourOnly ? await _gateTruckNumbers() : const <String>[];
     if (!mounted) return;
     final result = await showModalBottomSheet<Map<String, Object?>>(
       context: context,
@@ -672,9 +676,9 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       builder: (c) => _TruckSheet(
         seq: seq,
         pourOnly: _pourOnly,
-        gateTrucks: gateTrucks,
+        pileUuid: _pileUuid,
+        usedTruckKeys: _usedTruckKeys(skip: '${truck['uuid']}'),
         initial: truck,
-        estimatedConcreteBefore: k.concreteAfter(seq - 1).depthM,
         theoreticalM3: k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3,
         // TANPA truk yang sedang dikoreksi: angkanya sedang diketik ulang,
         // jadi menghitungnya dua kali akan menuduh mandor berlebihan.
@@ -687,15 +691,21 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       ),
     );
     if (result == null) return;
+    // Only what the sheet ASKED is written back. The short sheet returns
+    // the truck number alone; writing the other keys as null would erase
+    // the volume and supplier an older one-person log typed itself.
     final saved = await _updateTruck('${truck['uuid']}', (t) {
-      t['truckNo'] = result['truckNo'];
-      t['supplierID'] = result['supplierID'];
-      t['supplierName'] = result['supplierName'];
-      t['slumpCm'] = result['slumpCm'];
-      t['volumeM3'] = result['volumeM3'];
-      t['concreteDepthBeforeM'] = result['concreteDepthBeforeM'];
-      t['ticketPhotoUuid'] = result['ticketPhotoUuid'];
-      t['slumpPhotoUuid'] = result['slumpPhotoUuid'];
+      for (final key in const [
+        'truckNo',
+        'supplierID',
+        'supplierName',
+        'slumpCm',
+        'volumeM3',
+        'ticketPhotoUuid',
+        'slumpPhotoUuid',
+      ]) {
+        if (result.containsKey(key)) t[key] = result[key];
+      }
     });
     if (saved && mounted) showSnack(context, t(context).truckUpdated(seq), icon: Icons.edit_outlined);
   }
@@ -812,8 +822,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   String _notifDetail(Map<String, Object?> truck) {
     final k = _castingState;
     final level = k.concreteAfter(k.lastSeq);
+    // No `context`: called after an `await`. Volume and "used" only when
+    // actually known — the person at the hole does not have them, and
+    // "0 m³ of 9 m³" reads as concrete that went missing.
+    final allVolumesKnown = _trucks.every((x) => toDoubleOrNull(x['volumeM3']) != null);
     return [
-      'TM #${truck['seq']} · ${_decimal(truck['volumeM3'])} m³',
+      toDoubleOrNull(truck['volumeM3']) == null
+          ? 'TM #${truck['seq']}'
+          : 'TM #${truck['seq']} · ${_decimal(truck['volumeM3'])} m³',
+      if (allVolumesKnown)
       'Terpakai ${_decimal(k.totalVolumeM3)} m³ dari ${_decimal(k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3)} m³ teoritis',
       'Muka beton ${formatMeters(level.depthM)}${level.measured ? '' : ' (perkiraan)'} · cut-off ${formatMeters(k.geometry.cutOffDepthM)}',
     ].join('\n');
@@ -847,7 +864,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
       title: l.notifPouring('${truck['seq']}'),
-      body: l.notifTapToOpen(_decimal(truck['volumeM3'])),
+      body: truck['volumeM3'] == null ? l.notifTapToOpenNoVol : l.notifTapToOpen(_decimal(truck['volumeM3'])),
       start: start,
       subText: _notifSubText,
       detail: _notifDetail(truck),
@@ -934,7 +951,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     await Notifications.showStopwatch(
       route: '/casting/log/${widget.uuid}',
       title: l.notifPouring('$seq'),
-      body: l.notifTapToOpen(_decimal(truck['volumeM3'])),
+      body: truck['volumeM3'] == null ? l.notifTapToOpenNoVol : l.notifTapToOpen(_decimal(truck['volumeM3'])),
       start: now.subtract(poured),
       subText: _notifSubText,
       detail: _notifDetail(truck),
@@ -1289,7 +1306,11 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (mounted) showSnack(context, t(context).castDataSaved);
   }
 
-  /// Dua pertanyaan sebelum TM pertama, satu layar satu pertanyaan.
+  /// One question before the first TM: how far the pipe sticks out.
+  ///
+  /// It used to be two — the second was the concrete grade, removed on
+  /// 22 Nov 2026 (nobody at the hole knows the fc; see the grade note
+  /// below).
   ///
   /// Bukan `_editHeader`: lembar Data cor memuat enam isian sekaligus dan
   /// meminta kedalaman yang harus dihitung sendiri. Di sini yang ditanya
@@ -1307,9 +1328,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // Panjang SEBELUM TM pertama: belum ada satu segmen pun yang
         // dicabut, jadi ini seluruh rangkaian yang turun ke lubang.
         tremieLengthM: k.installedLengthAfter(0),
-        grade: toDoubleOrNull(_doc!['concreteGrade']),
-        defaultGrade: toDoubleOrNull(_pilePoint!['concreteGrade']) ??
-            toDoubleOrNull(_project?['defaultConcreteGrade']),
       ),
     );
     if (hasil == null) return;
@@ -1317,8 +1335,13 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     if (mounted) showSnack(context, t(context).castDataSaved);
   }
 
-  /// Mutu beton belum terisi — log cor tidak boleh ditutup.
-  bool get _mutuKosong => toDoubleOrNull(_doc?['concreteGrade']) == null;
+  // THE CONCRETE GRADE IS NOT ASKED ON THE PHONE (22 Nov 2026).
+  //
+  // Daniel: "orang cor di lubang jujur ga akan tau sih ini fc berapa".
+  // The grade comes from whoever does know: the point's design grade, the
+  // project default, or the truck's grade from the delivery note — the
+  // server takes them in that order. Nobody is made to guess any more, and
+  // no guess ends up in the concrete-quality recap.
 
   /// Kedalaman ujung tremie belum diukur, DAN belum ada satu TM pun.
   ///
@@ -1344,13 +1367,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   bool get _ukurTremieDulu =>
       _trucks.isEmpty && toDoubleOrNull(_doc?['tremieDepthStartM']) == null;
 
-  /// TM dengan nomor terkecil — yang sounding sebelumnya dicari.
-  Map<String, Object?>? get _tmPertama => _trucks.isEmpty
-      ? null
-      : _trucks.reduce(
-          (a, b) => (toIntOrNull(a['seq']) ?? 0) <= (toIntOrNull(b['seq']) ?? 0) ? a : b,
-        );
-
   /// Apa saja yang masih kurang sebelum catatan cor boleh ditutup.
   ///
   /// SATU DAFTAR, SATU TEMPAT. Sebelumnya ketiganya berupa tiga penjagaan
@@ -1362,10 +1378,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // menyerah di tengah, yang sempat terisi adalah yang paling tidak
         // dapat diisi ulang nanti.
         if (toDoubleOrNull(_doc?['tremieDepthStartM']) == null) _Kurang.tremie,
-        if (_mutuKosong) _Kurang.mutu,
-        if (_tmPertama != null &&
-            toDoubleOrNull(_tmPertama!['concreteDepthBeforeM']) == null)
-          _Kurang.soundingAwal,
+        // Grade and the sounding before the first TM are NO LONGER asked
+        // (22 Nov 2026). See the grade note above and `_TruckCard`.
       ];
 
   /// Tanyakan yang kurang SEKARANG, di tempat orangnya berdiri.
@@ -1399,23 +1413,11 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // Panjang SELURUH rangkaian, termasuk pipa yang sudah dicabut:
         // yang ditanya kembali ke keadaan SEBELUM TM pertama.
         tremieLengthM: k.installedLengthAfter(0),
-        grade: toDoubleOrNull(_doc!['concreteGrade']),
-        defaultGrade: toDoubleOrNull(_pilePoint!['concreteGrade']) ??
-            toDoubleOrNull(_project?['defaultConcreteGrade']),
       ),
     );
     if (hasil == null) return false;
     if (hasil.doc.isNotEmpty && !await _update((d) => d.addAll(hasil.doc))) {
       return false;
-    }
-    final awal = hasil.soundingAwal;
-    final tm = _tmPertama;
-    if (awal != null && tm != null) {
-      final ok = await _updateTruck(
-        '${tm['uuid']}',
-        (t) => t['concreteDepthBeforeM'] = decimalText(awal),
-      );
-      if (!ok) return false;
     }
     // Diperiksa ULANG dari keadaan terbaru, bukan dianggap beres karena
     // lembarnya ditutup: penyimpanan dapat gagal diam-diam, dan menutup
@@ -1601,6 +1603,20 @@ class _CastingFormState extends ConsumerState<CastingForm> {
 
   @override
   Widget build(BuildContext context) {
+    // Deleted by the office — also while the screen IS open. See
+    // `office_notice.dart`. Ahead of `_error`: "not on this phone" explains
+    // nothing to someone whose log was just deleted.
+    final deleted = ref.watch(officeDeletedProvider(widget.uuid)).value;
+    if (deleted != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(t(context).castLogTitle)),
+        body: DeletedByOfficeView(
+          notice: deleted,
+          title: t(context).castDeletedTitle,
+          next: t(context).castDeletedNext,
+        ),
+      );
+    }
     if (_error != null) {
       return Scaffold(appBar: AppBar(title: Text(t(context).castLogTitle)), body: ErrorState(title: _error!));
     }
@@ -1615,6 +1631,13 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     final lastTruck = _lastTruck;
     final running = _runningTruck;
     final seq = k.lastSeq;
+    // What the gate recorded for this pile, live: a record pulled while the
+    // screen is open shows on its truck at once.
+    final gates = gateByTruckKey(ref.watch(gateTicketsOfPileProvider(_pileUuid)).value ?? const []);
+    Map<String, Object?>? gateOf(Map<String, Object?> truck) => gates[truckKey(truck['truckNo']?.toString())];
+    // A truck's volume: its own (an older one-person log), else the gate's.
+    double? volumeOf(Map<String, Object?> truck) =>
+        toDoubleOrNull(truck['volumeM3']) ?? toDoubleOrNull(gateOf(truck)?['volumeM3']);
 
     return Scaffold(
       appBar: AppBar(
@@ -1635,6 +1658,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // ends above: no extra room needed under the last card.
         padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, Dimens.pagePadding, Dimens.pagePadding, 8),
         children: [
+          EditedByOfficeBanner(uuid: widget.uuid),
           if (_peminta != null)
             TerraBanner(
               kind: BannerKind.warning,
@@ -1668,12 +1692,13 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                 t(context).cannotChangeAnymore,
               ].join('\n'),
             ),
-          if (_grade == null)
+          // Only when there is NO grade source at all: point, project, or a
+          // truck's delivery note. The office fills it, not the hole.
+          if (_grade == null && !_trucks.any((x) => toDoubleOrNull(x['concreteGrade']) != null))
             TerraBanner(
               kind: BannerKind.warning,
               title: t(context).gradeMissingTitle,
               body: t(context).gradeMissingBody,
-              action: TextButton(onPressed: _editHeader, child: Text(t(context).fill)),
             ),
           if (g.drilledDepthM == null)
             TerraBanner(
@@ -1707,10 +1732,23 @@ class _CastingFormState extends ConsumerState<CastingForm> {
           if (seq > 0 && !_finished) _suggestionCard(k, seq),
 
           // --- TM ---------------------------------------------------------
-          _SectionTitle(t(context).trucksSection, t(context).trucksSectionBody(_trucks.length, _decimal(k.totalVolumeM3))),
+          // The person at the hole does not know volumes (they belong to
+          // the gate): while any truck has none — not its own, not from the
+          // gate — only the count is shown. "0 m³" reads as concrete that
+          // is not there.
+          _SectionTitle(
+            t(context).trucksSection,
+            _trucks.any((x) => volumeOf(x) == null)
+                ? t(context).trucksSectionCount(_trucks.length)
+                : t(context).trucksSectionBody(
+                    _trucks.length,
+                    _decimal(_trucks.fold<double>(0, (sum, x) => sum + (volumeOf(x) ?? 0))),
+                  ),
+          ),
           for (final truck in _trucks..sort((a, b) => (toIntOrNull(a['seq']) ?? 0).compareTo(toIntOrNull(b['seq']) ?? 0)))
             _TruckCard(
               truck: truck,
+              gate: gateOf(truck),
               castingState: k,
               locked: _readOnly,
               onEdit: () => _editTruck(truck),
@@ -1718,7 +1756,6 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               onFinish: () => _finishTruck(truck),
               onEditStart: () => _editTime(truck, start: true),
               onEditEnd: () => _editTime(truck, start: false),
-              onSoundingBefore: () => _editSounding(truck, after: false),
               onSoundingAfter: () => _editSounding(truck, after: true),
               pauses: pausesOf(_pauses, toIntOrNull(truck['seq']) ?? 0),
             ),
@@ -1774,12 +1811,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                         // ditekan, dan alasannya ada tepat di tempat jari
                         // mendarat.
                         child: OutlinedButton(
-                          onPressed: _mutuKosong ? null : _finishCasting,
-                          child: Text(
-                            _mutuKosong
-                                ? t(context).finishNeedsGrade
-                                : t(context).finishCasting,
-                          ),
+                          onPressed: _finishCasting,
+                          child: Text(t(context).finishCasting),
                         ),
                       ),
                     if (!_finished && running == null && _trucks.isNotEmpty) const SizedBox(width: 10),
@@ -1819,37 +1852,33 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                                       icon: const Icon(Icons.play_arrow),
                                       label: Text(t(context).startTruck('${lastTruck['seq']}')),
                                     )
-                                  // Labelnya sudah berganti jadi "Susun
-                                  // tremie dulu", jadi yang kurang bukan APA
-                                  // melainkan DI MANA — dan itu yang dijawab
-                                  // kalau tombolnya tetap ditekan.
-                                  : BlockedAction(
-                                      reason: _tremie.isEmpty
-                                          ? t(context).blockedNeedTremie
-                                          : _ukurTremieDulu
-                                              ? t(context).blockedNeedTremieDepth
-                                              : null,
-                                      icon: _tremie.isEmpty ? Icons.plumbing : Icons.straighten,
-                                      // Ketukannya MEMBUKA pertanyaannya,
-                                      // bukan menyuruh orang mencarinya
-                                      // sendiri: isiannya ada di layar lain,
-                                      // dan petunjuk arah di snack adalah hal
-                                      // yang paling mudah dilewati.
-                                      onTap: _tremie.isNotEmpty && _ukurTremieDulu
-                                          ? () {
-                                              _mulaiCor();
-                                            }
-                                          : null,
-                                      child: FilledButton.icon(
-                                        onPressed: _tremie.isEmpty || _ukurTremieDulu ? null : _newTruck,
-                                        icon: const Icon(Icons.local_shipping_outlined),
-                                        label: Text(_tremie.isEmpty
-                                            ? t(context).tremieFirst
-                                            : _ukurTremieDulu
-                                                ? t(context).tremieDepthFirst
+                                  // Before the first TM, an assembled
+                                  // tremie only needs measuring: the
+                                  // button is LIVE and opens the question.
+                                  // It used to look disabled while its tap
+                                  // opened the question — crews saw a grey
+                                  // button and stopped there (Daniel,
+                                  // 22 Nov 2026: "dia disabled terus
+                                  // kenapa dah").
+                                  : _tremie.isNotEmpty && _ukurTremieDulu
+                                      ? FilledButton.icon(
+                                          onPressed: _mulaiCor,
+                                          icon: const Icon(Icons.straighten),
+                                          label: Text(t(context).tremieDepthFirst),
+                                        )
+                                      // No tremie yet: the button is dead,
+                                      // and a tap on it answers "why".
+                                      : BlockedAction(
+                                          reason: _tremie.isEmpty ? t(context).blockedNeedTremie : null,
+                                          icon: Icons.plumbing,
+                                          child: FilledButton.icon(
+                                            onPressed: _tremie.isEmpty ? null : _newTruck,
+                                            icon: const Icon(Icons.local_shipping_outlined),
+                                            label: Text(_tremie.isEmpty
+                                                ? t(context).tremieFirst
                                                 : t(context).truckArrived(seq + 1)),
-                                      ),
-                                    ),
+                                          ),
+                                        ),
                         ),
                       ),
                     if (_finished)
@@ -2014,6 +2043,19 @@ String _decimal(Object? v, {int d = 2}) {
   var t = x.toStringAsFixed(d);
   if (t.contains('.')) t = t.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
   return t.replaceAll('.', ',');
+}
+
+/// "TM #3 · 6 m³", or just "TM #3" while the volume is unknown.
+///
+/// The person at the hole does not know volumes; they belong to the gate
+/// and attach through its record. "– m³" on every truck only said that
+/// something was missing that nobody there could fill in (Daniel,
+/// 22 Nov 2026: "orang di lubang actually gatau bang ini berapa m3").
+String _truckTitle(BuildContext context, Map<String, Object?> truck) {
+  final seq = toIntOrNull(truck['seq']) ?? 0;
+  return toDoubleOrNull(truck['volumeM3']) == null
+      ? t(context).truckHeadingNoVol(seq)
+      : t(context).truckHeading(seq, _decimal(truck['volumeM3']));
 }
 
 class _SectionTitle extends StatelessWidget {
@@ -2285,6 +2327,7 @@ class _TremieCard extends StatelessWidget {
 class _TruckCard extends StatelessWidget {
   const _TruckCard({
     required this.truck,
+    this.gate,
     required this.castingState,
     required this.locked,
     required this.onEdit,
@@ -2292,12 +2335,17 @@ class _TruckCard extends StatelessWidget {
     required this.onFinish,
     required this.onEditStart,
     required this.onEditEnd,
-    required this.onSoundingBefore,
     required this.onSoundingAfter,
     required this.pauses,
   });
 
   final Map<String, Object?> truck;
+
+  /// The gate record of the same truck number on this pile, when it has
+  /// reached this phone. Its volume, supplier and slump are SHOWN here —
+  /// the hole never types them (22 Nov 2026).
+  final Map<String, Object?>? gate;
+
   final CastingState castingState;
   final bool locked;
   final VoidCallback onEdit;
@@ -2305,7 +2353,6 @@ class _TruckCard extends StatelessWidget {
   final VoidCallback onFinish;
   final VoidCallback onEditStart;
   final VoidCallback onEditEnd;
-  final VoidCallback onSoundingBefore;
   final VoidCallback onSoundingAfter;
 
   /// This truck's pauses, oldest first.
@@ -2323,12 +2370,24 @@ class _TruckCard extends StatelessWidget {
     final elapsed = pouringTime(truck, pauses, now);
     final paused = running && openPause(pauses, seq) != null;
     final pausedTotal = pausedTime(pauses, seq, end ?? now);
-    final ratio = overbreakRatio(
-      diameterMm: castingState.geometry.diameterMm,
-      volumeM3: toDoubleOrNull(truck['volumeM3']) ?? 0,
-      depthBeforeM: toDoubleOrNull(truck['concreteDepthBeforeM']) ?? castingState.concreteAfter(seq - 1).depthM,
-      depthAfterM: toDoubleOrNull(truck['concreteDepthAfterM']),
-    );
+    // A volume the gate has NOT SENT yet is not zero. Counted as zero, the
+    // "Lubang lebih besar" row read −100% on every hole-side truck
+    // (reported by Daniel, 22 Nov 2026). No volume, no row.
+    final truckVolume = toDoubleOrNull(truck['volumeM3']) ?? toDoubleOrNull(gate?['volumeM3']);
+    // Supplier and slump: the truck's own (an older one-person log), else
+    // the gate's.
+    final supplier = truck['supplierName'] ?? gate?['supplierName'];
+    final slump = truck['slumpCm'] ?? gate?['slumpCm'];
+    // Nothing from the gate yet, and nothing typed here either.
+    final waitingGate = gate == null && toDoubleOrNull(truck['volumeM3']) == null;
+    final ratio = truckVolume == null
+        ? null
+        : overbreakRatio(
+            diameterMm: castingState.geometry.diameterMm,
+            volumeM3: truckVolume,
+            depthBeforeM: toDoubleOrNull(truck['concreteDepthBeforeM']) ?? castingState.concreteAfter(seq - 1).depthM,
+            depthAfterM: toDoubleOrNull(truck['concreteDepthAfterM']),
+          );
 
     // Tertanamnya ujung bawah tremie di beton segar, sebelum dan sesudah TM
     // ini. Ujung tremie SELAMA TM ini memakai cabutan sampai TM sebelumnya:
@@ -2353,9 +2412,17 @@ class _TruckCard extends StatelessWidget {
     // bila tidak — taksiran itu DITANDAI "(perkiraan)", seperti di seluruh
     // layar ini. TM #1 tidak punya tertanam awal sama sekali: belum ada beton.
     final mukaSebelum = seq > 1 ? castingState.concreteAfter(seq - 1) : null;
-    final tertanamAwal = soundingSebelum != null
-        ? tremieBottom - soundingSebelum
-        : (mukaSebelum == null ? null : tremieBottom - mukaSebelum.depthM);
+    // TM #1 NEVER has a starting embedment — not even when an old log has a
+    // typed sounding. Before the first concrete the tremie tip hangs above
+    // the hole bottom and the figure is negative: physically right, but it
+    // showed RED on a perfectly normal state (SP.B82, 22 Nov 2026:
+    // "−1,50 m"). Same rule as the server (`ada_beton` in
+    // `utils/field_calc.py`).
+    final tertanamAwal = seq <= 1
+        ? null
+        : soundingSebelum != null
+            ? tremieBottom - soundingSebelum
+            : (mukaSebelum == null ? null : tremieBottom - mukaSebelum.depthM);
     final awalPerkiraan = soundingSebelum == null && mukaSebelum != null && !mukaSebelum.measured;
     final tertanamAkhir = soundingSesudah == null ? null : tremieBottom - soundingSesudah;
     Color? warnaTanam(double? v) {
@@ -2397,7 +2464,7 @@ class _TruckCard extends StatelessWidget {
                     child: Row(
                       children: [
                         Flexible(
-                          child: Text(t(context).truckHeading(seq, _decimal(truck['volumeM3'])),
+                          child: Text(_truckTitle(context, truck),
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
                         ),
@@ -2424,10 +2491,38 @@ class _TruckCard extends StatelessWidget {
             [
               if (truck['truckNo'] != null) t(context).hullNo('${truck['truckNo']}'),
               if (truck['ticketNo'] != null) t(context).ticketNo('${truck['ticketNo']}'),
-              if (truck['supplierName'] != null) '${truck['supplierName']}',
-              if (truck['slumpCm'] != null) t(context).slumpOf(_decimal(truck['slumpCm'], d: 1)),
+              if (supplier != null) '$supplier',
+              if (slump != null) t(context).slumpOf(_decimal(slump, d: 1)),
+              if (truckVolume != null) '${_decimal(truckVolume)} m³',
             ].join(' · '),
             style: TextStyle(color: w.muted, fontSize: 13),
+          ),
+          // Where this truck's data stands. Said in one line so the person
+          // at the hole never wonders whether to type it in themselves. An
+          // older one-person truck that typed its own volume has no line.
+          if (waitingGate || gate != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Row(
+              children: [
+                Icon(
+                  waitingGate ? Icons.hourglass_top : Icons.verified_outlined,
+                  size: 15,
+                  color: waitingGate ? w.warnFg : w.okFg,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    waitingGate ? t(context).gateDataWaiting : t(context).gateDataArrived,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: waitingGate ? w.warnFg : w.okFg,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 6),
           value(t(context).tremieFitted, '${_decimal(truck['tremieLengthM'])} m'),
@@ -2453,8 +2548,11 @@ class _TruckCard extends StatelessWidget {
                 ),
               ),
           ],
-          value(t(context).soundingBeforeLabel, truck['concreteDepthBeforeM'] == null ? '–' : formatMeters(toDoubleOrNull(truck['concreteDepthBeforeM'])),
-              onTap: onSoundingBefore),
+          // "Sounding sebelum" is NOT shown and cannot be entered
+          // (22 Nov 2026, Daniel: "sounding sebelum TM2 gausah di isikan,
+          // karena itu sounding TM1 akhir"). The level before this truck is
+          // derived: the hole bottom for TM 1, the previous truck's sounding
+          // after for the rest.
           value(t(context).soundingAfterLabel, truck['concreteDepthAfterM'] == null ? '–' : formatMeters(toDoubleOrNull(truck['concreteDepthAfterM'])),
               onTap: end == null ? null : onSoundingAfter),
           if (end != null && truck['concreteDepthAfterM'] == null && !locked)
@@ -2751,8 +2849,8 @@ class _TruckSheet extends ConsumerStatefulWidget {
     required this.seq,
     this.initial,
     this.pourOnly = false,
-    this.gateTrucks = const [],
-    required this.estimatedConcreteBefore,
+    required this.pileUuid,
+    this.usedTruckKeys = const {},
     required this.theoreticalM3,
     required this.pouredSoFarM3,
     required this.takeTicketPhoto,
@@ -2773,10 +2871,12 @@ class _TruckSheet extends ConsumerStatefulWidget {
   /// gate record of the same truck number.
   final bool pourOnly;
 
-  /// Truck numbers the gate already recorded for this pile point.
-  final List<String> gateTrucks;
+  /// The pile point, for its gate records — watched LIVE by the sheet, so a
+  /// record pulled while the sheet is open shows up as a chip at once.
+  final String pileUuid;
 
-  final double estimatedConcreteBefore;
+  /// Truck keys this log already uses; their numbers are not offered again.
+  final Set<String> usedTruckKeys;
 
   /// What this pile should take, and what the OTHER trucks have already put
   /// in, so the sheet can say where this truck lands before it is poured.
@@ -2827,7 +2927,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   late final _truck = TextEditingController(text: widget.initial?['truckNo']?.toString() ?? '');
   late final _volume = TextEditingController(text: _asTyped(widget.initial?['volumeM3']));
   late final _slump = TextEditingController(text: _asTyped(widget.initial?['slumpCm']));
-  late final _sounding = TextEditingController(text: _asTyped(widget.initial?['concreteDepthBeforeM']));
   late final _supplier = TextEditingController(text: widget.supplierName ?? '');
   late String? _photo = widget.initial?['ticketPhotoUuid']?.toString();
   /// Foto slump yang SUDAH ada pada TM ini; tidak pernah bertambah lagi.
@@ -2862,6 +2961,16 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   void initState() {
     super.initState();
     _awal.addAll(_isianSekarang());
+    // Pull NOW: the truck standing at the hole was usually recorded at the
+    // gate a minute ago, and waiting for the next scheduled pull is what
+    // made its number "not there". The chips below update by themselves
+    // when the pull lands. After the first frame — Riverpod refuses a
+    // provider change while the tree builds.
+    if (widget.pourOnly) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(ref.read(syncProvider.notifier).run());
+      });
+    }
   }
 
   bool get _adaPerubahan {
@@ -2908,7 +3017,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
         'truckNo': _truck.text,
         'volumeM3': _volume.text,
         'slumpCm': _slump.text,
-        'sounding': _sounding.text,
         'supplier': _supplier.text,
         'photo': _photo,
         'slumpPhoto': _slumpPhoto,
@@ -2993,7 +3101,7 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
 
   @override
   void dispose() {
-    for (final c in [_truck, _volume, _slump, _sounding, _supplier]) {
+    for (final c in [_truck, _volume, _slump, _supplier]) {
       c.dispose();
     }
     super.dispose();
@@ -3038,11 +3146,7 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
         setState(() => _error = t(context).gateTruckRequired);
         return;
       }
-      final depth = _sounding.text.trim().isEmpty ? null : parseNumber(_sounding.text);
-      Navigator.pop(context, <String, Object?>{
-        'truckNo': _truck.text.trim(),
-        'concreteDepthBeforeM': depth == null ? null : decimalText(depth),
-      });
+      Navigator.pop(context, <String, Object?>{'truckNo': _truck.text.trim()});
       return;
     }
     final volume = parseNumber(_volume.text);
@@ -3062,7 +3166,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
       setState(() => _error = t(context).slumpInvalid);
       return;
     }
-    final sounding = _sounding.text.trim().isEmpty ? null : parseNumber(_sounding.text);
     String? orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
     final picked = widget.suppliers.where((s) => toIntOrNull(s['id']) == _supplierChoice).firstOrNull;
     // With a list on hand, a supplier must be picked from it. Held HERE and
@@ -3086,7 +3189,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
           : (lokal ? _namaLokal : orNull(_supplier)),
       'volumeM3': decimalText(volume),
       'slumpCm': slump == null ? null : decimalText(slump, decimals: 1),
-      'concreteDepthBeforeM': sounding == null ? null : decimalText(sounding),
       'ticketPhotoUuid': _photo,
       'slumpPhotoUuid': _slumpPhoto,
     });
@@ -3144,11 +3246,10 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   /// di Dart, tetapi kalau suatu saat tidak, gejalanya bukan galat
   /// melainkan pemeriksaan yang diam-diam tidak pernah jalan — dan itu
   /// jenis kegagalan yang paling mahal di berkas ini.
+  // The hole is asked the TRUCK NUMBER ONLY. The sounding before was
+  // removed on 22 Nov 2026 — the level before a truck is derived, not typed.
   List<({String tanda, List<Widget> Function() isi})> get _urutan => widget.pourOnly
-      ? [
-          (tanda: 'lambung', isi: _qLambung),
-          (tanda: 'sounding', isi: _isianSounding),
-        ]
+      ? [(tanda: 'lambung', isi: _qLambung)]
       : _fullSteps;
 
   List<({String tanda, List<Widget> Function() isi})> get _fullSteps => [
@@ -3292,25 +3393,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
         ),
       ];
 
-  List<Widget> _isianSounding() => [
-        TextField(
-          controller: _sounding,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: decimalInput(maxIntDigits: 3),
-          decoration: InputDecoration(
-            labelText: t(context).soundingBeforeOptional,
-            suffixText: 'm',
-            hintText: t(context)
-                .estimateHint(widget.estimatedConcreteBefore.toStringAsFixed(2).replaceAll('.', ',')),
-            // Kalimatnya sama persis dengan yang muncul di dialog sounding
-            // sesudah. Dua penjelasan berbeda untuk satu pengukuran yang
-            // sama membuat orang mengira keduanya mengukur hal berbeda.
-            helperText: t(context).soundingQuestion,
-            helperMaxLines: 2,
-          ),
-        ),
-      ];
-
   // ── Pertanyaan ─────────────────────────────────────────────────────────
 
   List<Widget> _qLambung() => [
@@ -3321,21 +3403,26 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
 
   /// Truck numbers from the gate, to tap instead of type. A mistyped number
   /// is the usual reason a truck and its gate record never pair.
-  List<Widget> _gateChoices() => [
+  List<Widget> _gateChoices() {
+    final gateTrucks = unusedGateNumbers(
+      ref.watch(gateTicketsOfPileProvider(widget.pileUuid)).value ?? const [],
+      widget.usedTruckKeys,
+    );
+    return [
         const SizedBox(height: 12),
         TerraBanner(
           kind: BannerKind.info,
           icon: Icons.local_shipping_outlined,
           title: t(context).pourTruckNoTitle,
-          body: widget.gateTrucks.isEmpty ? t(context).pourTruckNoBodyEmpty : t(context).pourTruckNoBody,
+          body: gateTrucks.isEmpty ? t(context).pourTruckNoBodyEmpty : t(context).pourTruckNoBody,
         ),
-        if (widget.gateTrucks.isNotEmpty) ...[
+        if (gateTrucks.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final number in widget.gateTrucks)
+              for (final number in gateTrucks)
                 ActionChip(
                   label: Text(number),
                   onPressed: () => setState(() => _truck.text = number),
@@ -3344,6 +3431,7 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
           ),
         ],
       ];
+  }
 
   List<Widget> _qVolume() => [_tanya(t(context).qVolume), ..._isianVolume()];
 
@@ -3381,8 +3469,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
             ),
           ),
         ],
-        const SizedBox(height: 12),
-        ..._isianSounding(),
       ];
 
   // ── Tata letak ─────────────────────────────────────────────────────────
@@ -3414,8 +3500,6 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
                 const SizedBox(height: 12),
                 ..._isianSlump(),
               ],
-              const SizedBox(height: 12),
-              ..._isianSounding(),
               const SizedBox(height: 18),
               SizedBox(
                 height: Dimens.minTouch + 4,
@@ -3562,26 +3646,21 @@ class _TruckSheetState extends ConsumerState<_TruckSheet> {
   }
 }
 
-/// Apa yang masih kurang sebelum catatan cor boleh ditutup.
+/// What is still missing before the casting log may be closed.
+///
+/// Down to one since 22 Nov 2026: the concrete grade and the sounding before
+/// the first TM are no longer asked at the hole. Kept as a list so the next
+/// missing item is a one-line addition.
 enum _Kurang {
   /// Kedalaman ujung tremie saat mulai — ditanya lewat yang menyembul.
   tremie,
-  mutu,
-
-  /// Sounding sebelum TM PERTAMA, yang boleh dilewati saat TM itu dicatat.
-  soundingAwal,
 }
 
-/// Jawaban lembar "Lengkapi dulu".
-///
-/// Dipisah karena tujuannya memang dua tempat: [doc] masuk ke kepala
-/// catatan cor, [soundingAwal] masuk ke BARIS TM pertama. Dijadikan satu
-/// peta, pemanggilnya harus menebak kunci mana milik siapa.
+/// The "Lengkapi dulu" sheet's answer: values for the casting log header.
 class _LengkapiHasil {
-  const _LengkapiHasil({required this.doc, this.soundingAwal});
+  const _LengkapiHasil({required this.doc});
 
   final Map<String, Object?> doc;
-  final double? soundingAwal;
 }
 
 /// Lembar "Lengkapi dulu" — menanyakan HANYA yang kurang, satu per layar.
@@ -3599,15 +3678,11 @@ class _LengkapiSheet extends StatefulWidget {
     required this.kurang,
     required this.bottomDepthM,
     required this.tremieLengthM,
-    required this.grade,
-    required this.defaultGrade,
   });
 
   final List<_Kurang> kurang;
   final double bottomDepthM;
   final double tremieLengthM;
-  final double? grade;
-  final double? defaultGrade;
 
   @override
   State<_LengkapiSheet> createState() => _LengkapiSheetState();
@@ -3616,19 +3691,11 @@ class _LengkapiSheet extends StatefulWidget {
 class _LengkapiSheetState extends State<_LengkapiSheet> {
   int _step = 0;
   final _stickOut = TextEditingController();
-  final _sounding = TextEditingController();
-  late final _grade = TextEditingController(
-    text: (widget.grade ?? widget.defaultGrade) == null
-        ? ''
-        : _decimal(widget.grade ?? widget.defaultGrade, d: 1),
-  );
   String? _error;
 
   @override
   void dispose() {
     _stickOut.dispose();
-    _sounding.dispose();
-    _grade.dispose();
     super.dispose();
   }
 
@@ -3652,23 +3719,6 @@ class _LengkapiSheetState extends State<_LengkapiSheet> {
         if (gap < -0.005) return t(context).stickOutTooDeep;
         if (gap > 5.005) return t(context).stickOutTooHigh(formatMeters(gap));
         return null;
-      case _Kurang.mutu:
-        final g = parseNumber(_grade.text);
-        if (g == null || g <= 0 || g > 150) return 'Mutu beton tidak masuk akal.';
-        return null;
-      case _Kurang.soundingAwal:
-        final v = parseNumber(_sounding.text);
-        if (v == null) return t(context).soundingBeforeNeeded;
-        // Muka beton tidak mungkin lebih dalam daripada dasar lubangnya.
-        //
-        // Angkanya dikirim TANPA satuan: kalimatnya sudah menuliskan " m"
-        // sendiri, dan `formatMeters` akan membuatnya "29,50 m m".
-        if (v > widget.bottomDepthM + 0.05) {
-          return t(context).soundDeeperThanBottom(
-            widget.bottomDepthM.toStringAsFixed(2).replaceAll('.', ','),
-          );
-        }
-        return null;
     }
   }
 
@@ -3690,7 +3740,6 @@ class _LengkapiSheetState extends State<_LengkapiSheet> {
 
   void _simpan() {
     final doc = <String, Object?>{};
-    double? soundingAwal;
     for (final k in widget.kurang) {
       switch (k) {
         case _Kurang.tremie:
@@ -3698,13 +3747,9 @@ class _LengkapiSheetState extends State<_LengkapiSheet> {
           final gap = widget.bottomDepthM - d;
           doc['tremieDepthStartM'] = decimalText(d);
           doc['tremieBottomGapM'] = decimalText(gap < 0 ? 0 : gap);
-        case _Kurang.mutu:
-          doc['concreteGrade'] = decimalText(parseNumber(_grade.text)!, decimals: 1);
-        case _Kurang.soundingAwal:
-          soundingAwal = parseNumber(_sounding.text);
       }
     }
-    Navigator.pop(context, _LengkapiHasil(doc: doc, soundingAwal: soundingAwal));
+    Navigator.pop(context, _LengkapiHasil(doc: doc));
   }
 
   List<Widget> _isi(_Kurang k) {
@@ -3737,45 +3782,6 @@ class _LengkapiSheetState extends State<_LengkapiSheet> {
               title: t(context).stickOutResult(formatMeters(dalam), formatMeters(gap)),
             ),
           ],
-        ];
-      case _Kurang.mutu:
-        return [
-          Text(t(context).gradeQuestion, style: _tanya),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _grade,
-            autofocus: true,
-            keyboardType: _numerik,
-            inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1),
-            decoration: InputDecoration(labelText: t(context).cellGrade, suffixText: 'MPa'),
-          ),
-          if (widget.defaultGrade != null) ...[
-            const SizedBox(height: 12),
-            TerraBanner(
-              kind: BannerKind.info,
-              title: t(context).defaultGrade(_decimal(widget.defaultGrade, d: 1)),
-              body: t(context).defaultGradeBody,
-            ),
-          ],
-        ];
-      case _Kurang.soundingAwal:
-        return [
-          Text(t(context).qSoundingAwal, style: _tanya),
-          const SizedBox(height: 10),
-          const SoundingDiagram(),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _sounding,
-            autofocus: true,
-            keyboardType: _numerik,
-            inputFormatters: decimalInput(maxIntDigits: 3),
-            decoration: InputDecoration(
-              labelText: t(context).concreteDepthField,
-              suffixText: 'm',
-              helperText: t(context).soundingQuestion,
-              helperMaxLines: 2,
-            ),
-          ),
         ];
     }
   }
@@ -3861,7 +3867,7 @@ class _LengkapiSheetState extends State<_LengkapiSheet> {
   }
 }
 
-/// Dua pertanyaan sebelum TM pertama — satu layar satu pertanyaan.
+/// The question before the first TM: how far the tremie sticks out.
 ///
 /// KENAPA YANG DITANYA BUKAN KEDALAMANNYA
 ///
@@ -3885,8 +3891,6 @@ class _PourStartSheet extends StatefulWidget {
   const _PourStartSheet({
     required this.bottomDepthM,
     required this.tremieLengthM,
-    required this.grade,
-    required this.defaultGrade,
   });
 
   /// Dasar lubang dari GS; celahnya dihitung terhadap ini.
@@ -3895,27 +3899,17 @@ class _PourStartSheet extends StatefulWidget {
   /// Panjang pipa tremie yang SUDAH tersusun — dasar pengurangannya.
   final double tremieLengthM;
 
-  final double? grade;
-  final double? defaultGrade;
-
   @override
   State<_PourStartSheet> createState() => _PourStartSheetState();
 }
 
 class _PourStartSheetState extends State<_PourStartSheet> {
-  int _step = 0;
   final _stickOut = TextEditingController();
-  late final _grade = TextEditingController(
-    text: (widget.grade ?? widget.defaultGrade) == null
-        ? ''
-        : _decimal(widget.grade ?? widget.defaultGrade, d: 1),
-  );
   String? _error;
 
   @override
   void dispose() {
     _stickOut.dispose();
-    _grade.dispose();
     super.dispose();
   }
 
@@ -3931,7 +3925,12 @@ class _PourStartSheetState extends State<_PourStartSheet> {
     return d == null ? null : widget.bottomDepthM - d;
   }
 
-  void _next() {
+  /// The only question: saved straight away.
+  ///
+  /// The second step (concrete grade) was removed on 22 Nov 2026 — nobody at
+  /// the hole knows the fc. The server takes the grade from the point, the
+  /// project, or the trucks.
+  void _save() {
     final gap = _gapM;
     if (gap == null) {
       setState(() => _error = t(context).stickOutRequired);
@@ -3949,22 +3948,8 @@ class _PourStartSheetState extends State<_PourStartSheet> {
       setState(() => _error = t(context).stickOutTooHigh(formatMeters(gap)));
       return;
     }
-    setState(() {
-      _error = null;
-      _step = 1;
-    });
-  }
-
-  void _save() {
-    final grade = _grade.text.trim().isEmpty ? null : parseNumber(_grade.text);
-    if (grade == null || grade <= 0 || grade > 150) {
-      setState(() => _error = 'Mutu beton tidak masuk akal.');
-      return;
-    }
     final dalam = _depthM!;
-    final gap = widget.bottomDepthM - dalam;
     Navigator.pop(context, {
-      'concreteGrade': decimalText(grade, decimals: 1),
       'tremieDepthStartM': decimalText(dalam),
       // Celahnya ikut dikirim, sama seperti `_HeaderSheet`: server lama
       // tidak mengenal kolom terukurnya dan hitungannya mundur ke sini.
@@ -3972,8 +3957,14 @@ class _PourStartSheetState extends State<_PourStartSheet> {
     });
   }
 
+  static const _tanya =
+      TextStyle(fontSize: 18, fontWeight: FontWeight.w700, height: 1.3);
+  static const _numerik = TextInputType.numberWithOptions(decimal: true);
+
   @override
   Widget build(BuildContext context) {
+    final dalam = _depthM;
+    final gap = _gapM;
     return Padding(
       padding: sheetPadding(context),
       child: SingleChildScrollView(
@@ -3983,138 +3974,59 @@ class _PourStartSheetState extends State<_PourStartSheet> {
           children: [
             Text(t(context).pourStartTitle,
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
-            StepProgress(step: _step + 1, total: 2),
             const SizedBox(height: 14),
-            if (_error != null) TerraBanner(kind: BannerKind.danger, title: _error!),
-            // Pertanyaannya berganti dengan BERGERAK — kosakata yang sama
-            // dengan lembar TM dan dengan `AnimatedFigure`.
+            if (_error != null) ...[
+              TerraBanner(kind: BannerKind.danger, title: _error!),
+              const SizedBox(height: 12),
+            ],
+            Text(t(context).stickOutQuestion, style: _tanya),
+            const SizedBox(height: 10),
+            const StickOutDiagram(),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _stickOut,
+              autofocus: true,
+              keyboardType: _numerik,
+              inputFormatters: decimalInput(maxIntDigits: 3),
+              // The result follows the typing: that is what makes a typo
+              // visible before it is saved.
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                labelText: t(context).stickOutField,
+                suffixText: 'm',
+                helperText: t(context).stickOutBasis(formatMeters(widget.tremieLengthM)),
+                helperMaxLines: 2,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // THE RESULT MOVES WHEN IT CHANGES: this sentence is the only
+            // place a "10" typed for "1" shows, and a sentence that changes
+            // silently is not read.
             AnimatedSwitcher(
               duration: Dimens.motionMedium,
               switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
-                      .animate(animation),
-                  child: child,
-                ),
+                child: SizeTransition(sizeFactor: animation, child: child),
               ),
-              child: Column(
-                key: ValueKey(_step),
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _step == 0 ? _langkahTremie() : _langkahMutu(),
-              ),
+              child: dalam == null || gap == null
+                  ? const SizedBox.shrink()
+                  : TerraBanner(
+                      key: ValueKey('${formatMeters(dalam)}|${formatMeters(gap)}'),
+                      kind: gap < -0.005 || gap > 5.005 ? BannerKind.warning : BannerKind.info,
+                      title: t(context).stickOutResult(formatMeters(dalam), formatMeters(gap)),
+                    ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              height: Dimens.minTouch + 4,
+              child: FilledButton(onPressed: _save, child: Text(t(context).save)),
             ),
           ],
         ),
       ),
     );
   }
-
-  static const _tanya =
-      TextStyle(fontSize: 18, fontWeight: FontWeight.w700, height: 1.3);
-  static const _numerik = TextInputType.numberWithOptions(decimal: true);
-
-  List<Widget> _langkahTremie() {
-    final dalam = _depthM;
-    final gap = _gapM;
-    return [
-      Text(t(context).stickOutQuestion, style: _tanya),
-      const SizedBox(height: 10),
-      const StickOutDiagram(),
-      const SizedBox(height: 12),
-      TextField(
-        controller: _stickOut,
-        autofocus: true,
-        keyboardType: _numerik,
-        inputFormatters: decimalInput(maxIntDigits: 3),
-        // Hitungannya ikut berubah sambil diketik: itulah yang membuat
-        // salah ketik terlihat sebelum disimpan.
-        onChanged: (_) => setState(() {}),
-        decoration: InputDecoration(
-          labelText: t(context).stickOutField,
-          suffixText: 'm',
-          helperText: t(context).stickOutBasis(formatMeters(widget.tremieLengthM)),
-          helperMaxLines: 2,
-        ),
-      ),
-      const SizedBox(height: 12),
-      // HASIL HITUNGANNYA IKUT BERGERAK SAAT ANGKANYA BERUBAH.
-      //
-      // Alasannya sama dengan `AnimatedFigure`: angka yang berganti harus
-      // TERLIHAT berganti. Di sini itu bukan hiasan — kalimat ini satu-
-      // satunya tempat salah ketik "10" yang dimaksud "1" kelihatan, dan
-      // kalimat yang berganti diam-diam adalah kalimat yang tidak dibaca.
-      AnimatedSwitcher(
-        duration: Dimens.motionMedium,
-        switchInCurve: Curves.easeOutCubic,
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: SizeTransition(sizeFactor: animation, child: child),
-        ),
-        child: dalam == null || gap == null
-            ? const SizedBox.shrink()
-            : TerraBanner(
-                key: ValueKey('${formatMeters(dalam)}|${formatMeters(gap)}'),
-                kind: gap < -0.005 || gap > 5.005 ? BannerKind.warning : BannerKind.info,
-                title: t(context).stickOutResult(formatMeters(dalam), formatMeters(gap)),
-              ),
-      ),
-      const SizedBox(height: 18),
-      SizedBox(
-        height: Dimens.minTouch + 4,
-        child: FilledButton(onPressed: _next, child: Text(t(context).nextStep)),
-      ),
-    ];
-  }
-
-  List<Widget> _langkahMutu() => [
-        Text(t(context).gradeQuestion, style: _tanya),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _grade,
-          autofocus: true,
-          keyboardType: _numerik,
-          inputFormatters: decimalInput(maxIntDigits: 3, decimals: 1),
-          decoration: InputDecoration(labelText: t(context).cellGrade, suffixText: 'MPa'),
-        ),
-        if (widget.defaultGrade != null) ...[
-          const SizedBox(height: 12),
-          TerraBanner(
-            kind: BannerKind.info,
-            title: t(context).defaultGrade(_decimal(widget.defaultGrade, d: 1)),
-            body: t(context).defaultGradeBody,
-          ),
-        ],
-        const SizedBox(height: 18),
-        Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: Dimens.minTouch + 4,
-                child: OutlinedButton(
-                  onPressed: () => setState(() {
-                    _error = null;
-                    _step = 0;
-                  }),
-                  child: Text(t(context).backStep),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 2,
-              child: SizedBox(
-                height: Dimens.minTouch + 4,
-                child: FilledButton(onPressed: _save, child: Text(t(context).save)),
-              ),
-            ),
-          ],
-        ),
-      ];
 }
 
 /// Data cor: mutu beton, kedalaman tremie, catatan.

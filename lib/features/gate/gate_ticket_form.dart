@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -295,7 +294,7 @@ class _GateTicketFormState extends ConsumerState<GateTicketForm> {
       final nextPile = await _pickNextPile(truck);
       if (!mounted) return;
       if (nextPile != null) {
-        unawaited(context.pushReplacement('/gate/new?pilePoint=$nextPile&from=$_uuid'));
+        context.pushReplacement('/gate/new?pilePoint=$nextPile&from=$_uuid');
         return;
       }
     }

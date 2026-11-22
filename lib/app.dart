@@ -22,16 +22,41 @@ class FieldApp extends ConsumerStatefulWidget {
 }
 
 class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver {
+  /// Pull on a timer WHILE THE APP IS OPEN.
+  ///
+  /// Reported by Daniel, 22 Nov 2026: "Dari kantor delete log, dari hp ga ke
+  /// refresh harus manual". The background worker only runs every 15
+  /// minutes — Android's lower bound — and otherwise the phone only pulls
+  /// when something is saved or the app comes back to the front. Someone
+  /// standing at the hole with the screen open, waiting for a truck, does
+  /// neither.
+  ///
+  /// One minute: office changes arrive while the person is still holding
+  /// the phone, without loading the site's signal. Never in the background
+  /// (see [_pullWhileOpen]); the 15-minute worker keeps that job.
+  static const _pullEvery = Duration(minutes: 1);
+  Timer? _pullTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _pullTimer = Timer.periodic(_pullEvery, (_) => _pullWhileOpen());
   }
 
   @override
   void dispose() {
+    _pullTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  /// Only when the screen is actually visible and someone is signed in. A
+  /// sync already running is not doubled (`SyncNotifier.run`).
+  void _pullWhileOpen() {
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) return;
+    if (!(ref.read(sessionProvider).value?.isLoggedIn ?? false)) return;
+    unawaited(ref.read(syncProvider.notifier).run());
   }
 
   /// Returning to the app = a good moment to push: the foreman has just

@@ -26,6 +26,7 @@ Map<String, Object?> cor({
   String status = 'selesai',
   int trucks = 6,
   Object? volumeM3 = 21.71,
+  String? createdAt,
 }) =>
     {
       'pilePointCode': kode,
@@ -35,6 +36,7 @@ Map<String, Object?> cor({
       'volumeM3': volumeM3,
       'startAt': startAt,
       'endAt': endAt,
+      'createdAt': createdAt,
       'byName': 'Alif',
     };
 
@@ -134,5 +136,39 @@ void main() {
       expect(k.utama, isNot(contains('m m')));
       expect(RegExp(r'm.*m\u00B3').hasMatch(k.utama), isFalse);
     }
+  });
+
+  test('an open casting with no truck poured yet shows as preparing', () {
+    // Daniel, 22 Nov 2026: "ini kan orang lagi persiapan cor, kenapa di
+    // activity belum muncul ya?" — it had no time at all and was skipped.
+    final h = susunKegiatan({
+      'drilling': const [],
+      'casting': [
+        cor(kode: 'SP.B84', status: 'berjalan', trucks: 1, volumeM3: 0, createdAt: '2026-10-19T10:05:00'),
+      ],
+    }, kini);
+    expect(h.single.preparing, isTrue);
+    expect(h.single.selesai, isFalse);
+    expect(h.single.kapan, DateTime(2026, 10, 19, 10, 5));
+    expect(h.single.utama, '');
+  });
+
+  test('once a truck starts pouring it is no longer preparing', () {
+    final h = susunKegiatan({
+      'drilling': const [],
+      'casting': [
+        cor(kode: 'A', status: 'berjalan', startAt: '2026-10-19T10:30:00', createdAt: '2026-10-19T10:05:00'),
+      ],
+    }, kini);
+    expect(h.single.preparing, isFalse);
+    expect(h.single.kapan, DateTime(2026, 10, 19, 10, 30));
+  });
+
+  test('a closed casting without any pour time is still skipped', () {
+    final h = susunKegiatan({
+      'drilling': const [],
+      'casting': [cor(kode: 'A', status: 'selesai', createdAt: '2026-10-19T10:05:00')],
+    }, kini);
+    expect(h, isEmpty);
   });
 }

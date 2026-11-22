@@ -32,11 +32,12 @@ class HomePage extends ConsumerWidget {
     final canAttend = canRecord && Features.attendance && (session?.allows('field_attendance', 'create') ?? false);
     final canCast = canRecord && (session?.allows('field_casting', 'create') ?? false);
     final canViewWorkers = Features.attendance && (session?.allows('field_worker', 'read') ?? false);
-    // What was drilled and cast across projects: directors (level 5+) and
-    // Engineering from level 3 — the same rule as GET /field/reports.
+    // What was drilled and cast across projects: level 4 and up, and the
+    // Engineering division at any level — the same rule as GET /field/reports
+    // and as TerraBot Engineering (22 Nov 2026).
     final level = session?.permissions.level ?? 0;
     final engineering = session?.permissions.departments.contains('engineering') ?? false;
-    final canReport = (level >= 5 || (level >= 3 && engineering)) && (session?.allows('field_casting', 'read') ?? false);
+    final canReport = (level >= 4 || engineering) && (session?.allows('field_casting', 'read') ?? false);
 
     return Scaffold(
       appBar: AppBar(

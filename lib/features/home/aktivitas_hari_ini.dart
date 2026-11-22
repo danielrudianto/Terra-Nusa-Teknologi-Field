@@ -21,6 +21,7 @@ class Kegiatan {
     required this.selesai,
     required this.utama,
     required this.ket,
+    this.preparing = false,
   });
 
   /// Pengeboran (true) atau pengecoran (false).
@@ -54,6 +55,15 @@ class Kegiatan {
 
   /// Baris kecil di bawahnya — nama pencatat, proyek.
   final String ket;
+
+  /// A casting log that is open but no truck has started pouring yet:
+  /// the crew is assembling the tremie, or the trucks are on their way.
+  ///
+  /// Requested by Daniel, 22 Nov 2026: "ini kan orang lagi persiapan cor,
+  /// kenapa di activity belum muncul ya? pengen ada dong 'Preparation'".
+  /// Such a log had no time at all — no truck start, no truck end — so it
+  /// was skipped. Its time is now when the log was opened (`createdAt`).
+  final bool preparing;
 }
 
 /// Sama hari kalender dengan [acuan]?
@@ -104,18 +114,27 @@ List<Kegiatan> susunKegiatan(Map<String, Object?> jawaban, DateTime sekarang) {
 
   for (final x in (jawaban['casting'] as List? ?? const [])) {
     final m = (x as Map).cast<String, Object?>();
-    final kapan = _jam(m['endAt']) ?? _jam(m['startAt']);
+    final open = '${m['status']}' == 'berjalan';
+    // Still open with no truck started: preparing. Only an OPEN log counts —
+    // a closed log without a single pour time is a broken one, and it stays
+    // skipped like any other row without a time.
+    final preparing = open && _jam(m['startAt']) == null;
+    final kapan = _jam(m['endAt']) ??
+        _jam(m['startAt']) ??
+        (preparing ? _jam(m['createdAt']) : null);
     if (kapan == null || !_hariYangSama(kapan, sekarang)) continue;
     final tm = toIntOrNull(m['trucks']) ?? 0;
     final vol = _d(m['volumeM3']) ?? 0;
     hasil.add(Kegiatan(
+      preparing: preparing,
       bor: false,
       kode: '${m['pilePointCode']}',
       pilePointID: toIntOrNull(m['pilePointID']),
       projectID: toIntOrNull(m['projectID']),
       kapan: kapan,
       selesai: '${m['status']}' != 'berjalan',
-      utama: '$tm TM · ${formatVolume(vol)}',
+      // Nothing poured yet: "0 TM · 0 m³" would read as a failed pour.
+      utama: preparing ? '' : '$tm TM · ${formatVolume(vol)}',
       ket: '${m['byName'] ?? ''}',
     ));
   }
@@ -396,7 +415,9 @@ class BarisKegiatan extends StatelessWidget {
                 // pekerjaannya masih jalan dan angkanya belum akhir.
                 k.selesai
                     ? t(context).activityTodayDone(formatTime(k.kapan))
-                    : t(context).activityTodayRunning(formatTime(k.kapan)),
+                    : k.preparing
+                        ? t(context).activityTodayPreparing(formatTime(k.kapan))
+                        : t(context).activityTodayRunning(formatTime(k.kapan)),
                 style: TextStyle(fontSize: 12, color: k.selesai ? w.muted : w.warnFg),
               ),
               if (k.ket.trim().isNotEmpty)
