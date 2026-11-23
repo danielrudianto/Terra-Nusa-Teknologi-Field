@@ -30,3 +30,8 @@ android/key.properties
 # ini turunan, bukan sumber. `flutter pub get` membangkitkannya lagi (pubspec
 # memakai `generate: true`); kalau belum ada, jalankan `flutter gen-l10n`.
 lib/l10n/app_localizations*.dart
+
+# Sisa kerja lama dan arsip sinkron — tidak pernah masuk repo.
+_sisa-lama/
+.sinkron-*.tar.gz
+*.tgz

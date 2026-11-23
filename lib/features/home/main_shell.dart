@@ -34,10 +34,15 @@ class MainShell extends ConsumerWidget {
   /// no decision yet (Daniel, 15 Okt 2026), an inert tab was answering a
   /// question nobody was asking while taking a quarter of the bar; flipping
   /// [Features.attendance] back to `true` puts it back in place.
-  static List<int> _branches() => [
+  ///
+  /// Cor is absent for someone who cannot read casting at all — the
+  /// Surveyor (23 Nov 2026), whose only job is the IPL on Beranda. Before
+  /// the session is known it stays, so the bar does not jump for everyone
+  /// else while the app starts.
+  static List<int> _branches({required bool casting}) => [
         0,
         if (Features.attendance) 1,
-        2,
+        if (casting) 2,
         3,
         4,
       ];
@@ -46,7 +51,8 @@ class MainShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pending = (ref.watch(pendingCountProvider).value ?? 0) +
         (ref.watch(pendingPhotoCountProvider).value ?? 0);
-    final branches = _branches();
+    final session = ref.watch(sessionProvider).value;
+    final branches = _branches(casting: session == null || session.allows('field_casting', 'read'));
     final onHome = shell.currentIndex == 0;
     // A branch the bar does not show (Absensi while it is off) leaves nothing
     // to highlight; Beranda is the honest fallback rather than a wrong tab

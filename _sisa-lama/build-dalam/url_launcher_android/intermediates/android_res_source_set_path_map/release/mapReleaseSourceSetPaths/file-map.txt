@@ -1,8 +1,0 @@
-io.flutter.plugins.urllauncher.url_launcher_android-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.33\android\src\main\res
-io.flutter.plugins.urllauncher.url_launcher_android-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.33\android\src\release\res
-io.flutter.plugins.urllauncher.url_launcher_android-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\generated\res\pngs\release
-io.flutter.plugins.urllauncher.url_launcher_android-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\generated\updated_navigation_xml\release
-io.flutter.plugins.urllauncher.url_launcher_android-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\incremental\release\mergeReleaseResources\merged.dir
-io.flutter.plugins.urllauncher.url_launcher_android-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-io.flutter.plugins.urllauncher.url_launcher_android-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\merged_res\release\mergeReleaseResources
-io.flutter.plugins.urllauncher.url_launcher_android-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\packaged_res\release\packageReleaseResources

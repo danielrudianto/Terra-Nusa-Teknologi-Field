@@ -1,8 +1,0 @@
-com.github.dart_lang.jni_flutter-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.4+1\android\src\main\res
-com.github.dart_lang.jni_flutter-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.4+1\android\src\release\res
-com.github.dart_lang.jni_flutter-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni_flutter\generated\res\pngs\release
-com.github.dart_lang.jni_flutter-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni_flutter\generated\updated_navigation_xml\release
-com.github.dart_lang.jni_flutter-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni_flutter\intermediates\incremental\release\mergeReleaseResources\merged.dir
-com.github.dart_lang.jni_flutter-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni_flutter\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-com.github.dart_lang.jni_flutter-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni_flutter\intermediates\merged_res\release\mergeReleaseResources
-com.github.dart_lang.jni_flutter-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni_flutter\intermediates\packaged_res\release\packageReleaseResources

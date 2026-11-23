@@ -1115,6 +1115,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         initial: awal,
         question: t(context).soundingQuestion,
         diagram: const SoundingDiagram(),
+        allowZero: true,
         hint: t(context).soundingHint(formatMeters(k.concreteAfter(seq).depthM)),
         validate: (v) => soundingProblem(v, before: before, bottom: k.geometry.bottomDepthM),
       );
@@ -1239,6 +1240,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       initial: toDoubleOrNull(truck[key]),
       question: t(context).soundingQuestion,
       diagram: const SoundingDiagram(),
+      allowZero: true,
       // Before is optional; after is required and can only be corrected.
       allowEmpty: !after,
       validate: after
@@ -1580,6 +1582,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     Widget? diagram,
     String? hint,
     bool allowEmpty = false,
+    bool allowZero = false,
     String? Function(double value)? validate,
   }) =>
       showNumberDialog(
@@ -1594,6 +1597,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         diagram: diagram,
         hint: hint,
         allowEmpty: allowEmpty,
+        allowZero: allowZero,
         validate: validate,
       );
 

@@ -1,8 +1,0 @@
-studio.midoridesign.gal-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\gal-2.3.3\android\src\main\res
-studio.midoridesign.gal-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\gal-2.3.3\android\src\release\res
-studio.midoridesign.gal-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\gal\generated\res\pngs\release
-studio.midoridesign.gal-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\gal\generated\updated_navigation_xml\release
-studio.midoridesign.gal-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\gal\intermediates\incremental\release\mergeReleaseResources\merged.dir
-studio.midoridesign.gal-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\gal\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-studio.midoridesign.gal-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\gal\intermediates\merged_res\release\mergeReleaseResources
-studio.midoridesign.gal-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\gal\intermediates\packaged_res\release\packageReleaseResources

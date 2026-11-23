@@ -6,16 +6,19 @@
 • Mulai log bor hanya bisa untuk titik yang punya IPL hari ini, dengan keterangannya.
 • Gerbang: catat TM mati untuk titik yang belum dibor. TM yang terlanjur dicatat ditahan dan terkirim sendiri begitu log bornya masuk.
 • Pantau cor dan bor lebih hemat kuota.
+• Sounding 0 m (beton sampai muka tanah) sekarang bisa diisi.
 </id>
 <en-US>
 • New IPL: the surveyor picks the points ready to drill tomorrow and fills in their actual GS. Once the office confirms, the rig crew no longer fills in GS.
 • A drill log can only start on a point with an IPL for today, with the reason shown.
 • Gate: recording a truck is off for undrilled piles. A truck already recorded is held and sent once the drill log arrives.
 • Watching pours and drilling uses less data.
+• A sounding of 0 m (concrete up to ground) can now be entered.
 </en-US>
 <zh-CN>
 • 新增 IPL：测量员选择明天可钻孔的桩点并填写实际地面标高。办公室确认后，钻孔班组无需再填写地面标高。
 • 只有当天有 IPL 的桩点才能开始钻孔记录，并显示原因。
 • 进场：未钻孔的桩点无法登记搅拌车。已登记的会暂存，钻孔记录到达后自动提交。
 • 监控浇筑和钻孔更省流量。
+• 现在可以填写 0 m 的测深（混凝土到达地面）。
 </zh-CN>

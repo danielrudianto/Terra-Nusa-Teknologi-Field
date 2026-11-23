@@ -1,8 +1,0 @@
-dev.fluttercommunity.plus.share.share_plus-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-13.3.1\android\src\main\res
-dev.fluttercommunity.plus.share.share_plus-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-13.3.1\android\src\release\res
-dev.fluttercommunity.plus.share.share_plus-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\share_plus\generated\res\pngs\release
-dev.fluttercommunity.plus.share.share_plus-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\share_plus\generated\updated_navigation_xml\release
-dev.fluttercommunity.plus.share.share_plus-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\share_plus\intermediates\incremental\release\mergeReleaseResources\merged.dir
-dev.fluttercommunity.plus.share.share_plus-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\share_plus\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-dev.fluttercommunity.plus.share.share_plus-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\share_plus\intermediates\merged_res\release\mergeReleaseResources
-dev.fluttercommunity.plus.share.share_plus-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\share_plus\intermediates\packaged_res\release\packageReleaseResources

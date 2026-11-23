@@ -1,8 +1,0 @@
-dev.fluttercommunity.plus.packageinfo.package_info_plus-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-10.2.2\android\src\main\res
-dev.fluttercommunity.plus.packageinfo.package_info_plus-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\package_info_plus-10.2.2\android\src\release\res
-dev.fluttercommunity.plus.packageinfo.package_info_plus-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\package_info_plus\generated\res\pngs\release
-dev.fluttercommunity.plus.packageinfo.package_info_plus-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\package_info_plus\generated\updated_navigation_xml\release
-dev.fluttercommunity.plus.packageinfo.package_info_plus-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\package_info_plus\intermediates\incremental\release\mergeReleaseResources\merged.dir
-dev.fluttercommunity.plus.packageinfo.package_info_plus-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\package_info_plus\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-dev.fluttercommunity.plus.packageinfo.package_info_plus-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\package_info_plus\intermediates\merged_res\release\mergeReleaseResources
-dev.fluttercommunity.plus.packageinfo.package_info_plus-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\package_info_plus\intermediates\packaged_res\release\packageReleaseResources

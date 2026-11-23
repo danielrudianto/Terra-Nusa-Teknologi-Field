@@ -1,8 +1,0 @@
-id.co.alphakonstruksi.monotonic_clock-pngs-0 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\monotonic_clock\generated\res\pngs\release
-id.co.alphakonstruksi.monotonic_clock-updated_navigation_xml-1 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\monotonic_clock\generated\updated_navigation_xml\release
-id.co.alphakonstruksi.monotonic_clock-mergeReleaseResources-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\monotonic_clock\intermediates\incremental\release\mergeReleaseResources\merged.dir
-id.co.alphakonstruksi.monotonic_clock-mergeReleaseResources-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\monotonic_clock\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-id.co.alphakonstruksi.monotonic_clock-release-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\monotonic_clock\intermediates\merged_res\release\mergeReleaseResources
-id.co.alphakonstruksi.monotonic_clock-release-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\monotonic_clock\intermediates\packaged_res\release\packageReleaseResources
-id.co.alphakonstruksi.monotonic_clock-main-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\res
-id.co.alphakonstruksi.monotonic_clock-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\release\res

@@ -1,8 +1,0 @@
-com.baseflow.geolocator.geolocator_android-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-5.1.1+1\android\src\main\res
-com.baseflow.geolocator.geolocator_android-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-5.1.1+1\android\src\release\res
-com.baseflow.geolocator.geolocator_android-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geolocator_android\generated\res\pngs\release
-com.baseflow.geolocator.geolocator_android-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geolocator_android\generated\updated_navigation_xml\release
-com.baseflow.geolocator.geolocator_android-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geolocator_android\intermediates\incremental\release\mergeReleaseResources\merged.dir
-com.baseflow.geolocator.geolocator_android-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geolocator_android\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-com.baseflow.geolocator.geolocator_android-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geolocator_android\intermediates\merged_res\release\mergeReleaseResources
-com.baseflow.geolocator.geolocator_android-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geolocator_android\intermediates\packaged_res\release\packageReleaseResources

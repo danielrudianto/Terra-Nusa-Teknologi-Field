@@ -1,8 +1,0 @@
-com.google_mlkit_face_detection-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_face_detection-0.15.1\android\src\main\res
-com.google_mlkit_face_detection-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_face_detection-0.15.1\android\src\release\res
-com.google_mlkit_face_detection-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_face_detection\generated\res\pngs\release
-com.google_mlkit_face_detection-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_face_detection\generated\updated_navigation_xml\release
-com.google_mlkit_face_detection-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_face_detection\intermediates\incremental\release\mergeReleaseResources\merged.dir
-com.google_mlkit_face_detection-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_face_detection\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-com.google_mlkit_face_detection-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_face_detection\intermediates\merged_res\release\mergeReleaseResources
-com.google_mlkit_face_detection-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_face_detection\intermediates\packaged_res\release\packageReleaseResources

@@ -1,5 +1,0 @@
-ninja: Entering directory `C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.1.0\android\.cxx\RelWithDebInfo\3u86g52i\arm64-v8a'
-[1/4] Building C object CMakeFiles/jni.dir/include/dart_api_dl.c.o
-[2/4] Building C object CMakeFiles/jni.dir/dartjni.c.o
-[3/4] Building C object CMakeFiles/jni.dir/third_party/global_jni_env.c.o
-[4/4] Linking C shared library D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\intermediates\cxx\RelWithDebInfo\3u86g52i\obj\arm64-v8a\libdartjni.so

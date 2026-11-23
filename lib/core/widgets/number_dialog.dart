@@ -26,6 +26,7 @@ Future<(double?,)?> showNumberDialog(
   Widget? diagram,
   String? hint,
   bool allowEmpty = false,
+  bool allowZero = false,
   String? Function(double value)? validate,
 }) {
   return showDialog<(double?,)>(
@@ -41,6 +42,7 @@ Future<(double?,)?> showNumberDialog(
       initial: initial,
       hint: hint,
       allowEmpty: allowEmpty,
+      allowZero: allowZero,
       validate: validate,
     ),
   );
@@ -58,6 +60,7 @@ class _NumberDialog extends StatefulWidget {
     required this.diagram,
     required this.hint,
     required this.allowEmpty,
+    required this.allowZero,
     required this.validate,
   });
 
@@ -92,6 +95,10 @@ class _NumberDialog extends StatefulWidget {
   final String? hint;
   final bool allowEmpty;
 
+  /// 0 is a real answer, not an empty one. A sounding of 0 m means the
+  /// concrete reached ground level (23 Nov 2026: "sounding akhir 0 gabisa").
+  final bool allowZero;
+
   /// Extra check on a number in range; returns the sentence to show, or null.
   final String? Function(double value)? validate;
 
@@ -118,7 +125,7 @@ class _NumberDialogState extends State<_NumberDialog> {
       return;
     }
     final v = parseNumber(typed);
-    if (v == null || v <= 0 || v > widget.maxValue) {
+    if (v == null || v < 0 || (v == 0 && !widget.allowZero) || v > widget.maxValue) {
       setState(() => _problem = t(context).numberInvalid(decimalText(widget.maxValue, decimals: 0)));
       return;
     }
