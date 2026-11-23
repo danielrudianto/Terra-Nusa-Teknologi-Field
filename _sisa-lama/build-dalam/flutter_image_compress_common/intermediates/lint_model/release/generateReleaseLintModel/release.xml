@@ -1,0 +1,30 @@
+<variant
+    name="release"
+    package="com.fluttercandies.flutter_image_compress"
+    minSdkVersion="21"
+    targetSdkVersion="34"
+    mergedManifest="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml"
+    manifestMergeReport="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\outputs\logs\manifest-merger-release-report.txt"
+    proguardFiles="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\intermediates\default_proguard_files\global\proguard-android-optimize.txt-9.1.0"
+    partialResultsDir="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\intermediates\lint_partial_results\release\lintAnalyzeRelease\out">
+  <buildFeatures/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\main\kotlin;src\release\java;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"
+        keepRulesDirectories="src\main\keepRules;src\release\keepRules"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\intermediates\javac\release\compileReleaseJavaWithJavac\classes;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\tmp\kotlin-classes\release;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\intermediates\compile_r_class_jar\release\generateReleaseRFile\R.jar"
+      type="MAIN"
+      applicationId="com.fluttercandies.flutter_image_compress"
+      generatedSourceFolders="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_image_compress_common\generated\ap_generated_sources\release\out"
+      desugaredMethodsFiles="C:\Users\danie\.gradle\caches\9.3.1\transforms\95f00489df135d8d356317c284b3efba\workspace\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

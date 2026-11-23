@@ -1,0 +1,16 @@
+-- Merging decision tree log ---
+manifest
+ADDED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml:1:1-72
+INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml:1:1-72
+	package
+		INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml:1:11-69
+uses-sdk
+INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml
+INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\packages\monotonic_clock\android\src\main\AndroidManifest.xml

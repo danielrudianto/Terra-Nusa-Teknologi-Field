@@ -1,0 +1,31 @@
+<variant
+    name="release"
+    package="com.dexterous.flutterlocalnotifications"
+    minSdkVersion="24"
+    targetSdkVersion="36.0"
+    mergedManifest="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml"
+    proguardFiles="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\intermediates\default_proguard_files\global\proguard-android-optimize.txt-9.1.0"
+    partialResultsDir="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out"
+    desugaredMethodsFiles="C:\Users\danie\.gradle\caches\9.3.1\transforms\f33723ab787b8f2eca32adc8e8df3ec7\workspace\transformed\desugar_jdk_libs_configuration-2.1.4-desugar-lint.txt;C:\Users\danie\.gradle\caches\9.3.1\transforms\18ec735604b1aaf8c9a7aff36aae93ea\workspace\transformed\D8BackportedDesugaredMethods.txt">
+  <buildFeatures
+      coreLibraryDesugaring="true"/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\release\java;src\main\kotlin;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"
+        keepRulesDirectories="src\main\keepRules;src\release\keepRules"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\intermediates\javac\release\compileReleaseJavaWithJavac\classes;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\tmp\kotlin-classes\release;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\intermediates\compile_r_class_jar\release\generateReleaseRFile\R.jar"
+      type="MAIN"
+      applicationId="com.dexterous.flutterlocalnotifications"
+      generatedSourceFolders="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_local_notifications\generated\ap_generated_sources\release\out"
+      desugaredMethodsFiles="C:\Users\danie\.gradle\caches\9.3.1\transforms\f33723ab787b8f2eca32adc8e8df3ec7\workspace\transformed\desugar_jdk_libs_configuration-2.1.4-desugar-lint.txt;C:\Users\danie\.gradle\caches\9.3.1\transforms\18ec735604b1aaf8c9a7aff36aae93ea\workspace\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

@@ -569,6 +569,19 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     label: Text(t(context).viewDrillLog),
                   )
                 else if (!drilled && !drillingElsewhere) ...[
+                  // No IPL confirmed for today: the surveyor has not cleared
+                  // this point, so drilling stays shut and the banner says why.
+                  if (!pt.iplReady) ...[
+                    TerraBanner(
+                      kind: BannerKind.warning,
+                      icon: Icons.assignment_late_outlined,
+                      title: t(context).iplNotReadyTitle,
+                      body: pt.iplDate == null
+                          ? t(context).iplNotReadyBody
+                          : t(context).iplNotReadyOld(longDate(DateTime.parse(pt.iplDate!))),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   FilledButton.icon(
                     // Nomor titiknya diketik ulang dulu, sama seperti
                     // sebelum mulai cor. Salah tap baris di daftar tidak
@@ -577,7 +590,9 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     // lubang tercatat di lubang sebelahnya, dan dari situ
                     // seluruh hitungan tertanam serta volume tiang itu
                     // berdiri di atas angka yang bukan miliknya.
-                    onPressed: () async {
+                    onPressed: !pt.iplReady
+                        ? null
+                        : () async {
                       final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
                           .map((e) => e.code);
                       final benar = await askCodeConfirm(context, code: pt.code, allCodes: semua);
@@ -688,14 +703,30 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
               // casting log held by the person at the hole.
               if (bolehCatat && pt.stage != 'sudah_cor') ...[
                 const SizedBox(height: 10),
+                // MATI di titik yang belum dibor sama sekali — Daniel, 23 Nov
+                // 2026. Orang gerbang memilih SP.D32 untuk TM yang dituang ke
+                // PP.D32, dan hasilnya dua data yatim. Lubang yang belum ada
+                // tidak mungkin dicor; tombol yang hidup di sini hanya
+                // mengundang salah pilih. Sebabnya disebut di bawahnya.
                 OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(c);
-                    context.push('/gate/new?pilePoint=${pt.uuid}');
-                  },
+                  onPressed: pt.stage == 'belum_bor'
+                      ? null
+                      : () {
+                          Navigator.pop(c);
+                          context.push('/gate/new?pilePoint=${pt.uuid}');
+                        },
                   icon: const Icon(Icons.local_shipping_outlined),
                   label: Text(t(context).gateRecordTruck),
                 ),
+                if (pt.stage == 'belum_bor') ...[
+                  const SizedBox(height: 8),
+                  TerraBanner(
+                    kind: BannerKind.warning,
+                    icon: Icons.block,
+                    title: t(context).gateNotDrilledTitle(pt.code),
+                    body: t(context).gateNotDrilledBody,
+                  ),
+                ],
               ],
               if (pt.serverId != null &&
                   (pt.casting != null ||

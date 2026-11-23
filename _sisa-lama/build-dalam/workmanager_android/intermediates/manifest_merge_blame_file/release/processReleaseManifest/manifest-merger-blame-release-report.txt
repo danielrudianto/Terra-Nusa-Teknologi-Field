@@ -1,0 +1,52 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    xmlns:tools="http://schemas.android.com/tools"
+4    package="dev.fluttercommunity.workmanager" >
+5
+6    <uses-sdk android:minSdkVersion="23" />
+6-->INJECTED
+6-->INJECTED
+7
+8    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+8-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:3:5-76
+8-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:3:22-74
+9    <!-- Foreground service support for long-running workers. -->
+10    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+10-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:5:5-76
+10-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:5:22-74
+11    <!--
+12        Android 14+ (target SDK 34+) requires a type-specific permission for
+13        each FGS type the app starts.
+14
+15        FOREGROUND_SERVICE_SHORT_SERVICE is always declared — expedited work
+16        runs as a shortService FGS (see #715). It is not a Play Console
+17        "special type" and needs no declaration/video.
+18
+19        FOREGROUND_SERVICE_DATA_SYNC is a Play Console special type that
+20        requires a declaration form and a demonstration video even when the
+21        app never starts a data-sync foreground service. It is therefore
+22        NOT declared here: apps that run long-running workers with the
+23        `dataSync` foreground service type must set
+24        `workmanager.enableDataSyncForegroundService=true` in gradle.properties
+25        (or via -P), which swaps in the opt-in manifest
+26        (src/main/AndroidManifest.dataSync.xml). See #725.
+27    -->
+28    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SHORT_SERVICE" />
+28-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:23:5-90
+28-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:23:22-88
+29
+30    <application>
+30-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:24:5-30:19
+31        <service
+31-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:25:9-29:35
+32            android:name="androidx.work.impl.foreground.SystemForegroundService"
+32-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:26:13-81
+33            android:foregroundServiceType="shortService"
+33-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:27:13-57
+34            tools:node="merge"
+34-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:28:13-31
+35            tools:targetApi="34" />
+35-->C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager_android-0.10.9\android\src\main\AndroidManifest.xml:29:13-33
+36    </application>
+37
+38</manifest>

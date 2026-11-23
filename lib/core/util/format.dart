@@ -99,6 +99,13 @@ String formatMeters(double? v, {int decimals = 2}) =>
     // Non-breaking space: "1,00" and "m" never end up on two lines.
     v == null ? '–' : '${v.toStringAsFixed(decimals).replaceAll('.', ',')}\u00A0m';
 
+/// Depth of a hole drilled over more than one day: "15,00 → 21,00 m" when
+/// the period started at [fromM] (a hole continued from an earlier day),
+/// otherwise plain [formatMeters]. Daniel, 23 Nov 2026 (SP.B73).
+String formatDepthFrom(double? fromM, double? toM) => fromM == null || fromM <= 0 || toM == null
+    ? formatMeters(toM)
+    : '${fromM.toStringAsFixed(2).replaceAll('.', ',')} → ${formatMeters(toM)}';
+
 /// "21,71 m³" — sepasang dengan [formatMeters]; SATUANNYA IKUT.
 ///
 /// Ada karena ketiadaannya menimbulkan dua bug sekaligus (19 Okt 2026):

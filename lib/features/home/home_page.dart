@@ -31,6 +31,9 @@ class HomePage extends ConsumerWidget {
     final canRecord = ref.watch(canRecordProvider);
     final canAttend = canRecord && Features.attendance && (session?.allows('field_attendance', 'create') ?? false);
     final canCast = canRecord && (session?.allows('field_casting', 'create') ?? false);
+    // Surveyor (23 Nov 2026): the IPL is their whole job, so it leads the
+    // home page; a surveyor without field rights sees nothing else to do.
+    final canIpl = canRecord && (session?.allows('field_ipl', 'create') ?? false);
     final canViewWorkers = Features.attendance && (session?.allows('field_worker', 'read') ?? false);
     // What was drilled and cast across projects: level 4 and up, and the
     // Engineering division at any level — the same rule as GET /field/reports
@@ -82,11 +85,18 @@ class HomePage extends ConsumerWidget {
                   title: t(context).projectsMissingTitle,
                   body: t(context).projectsMissingHome,
                 ),
-              if (!canAttend && !canCast)
+              if (!canAttend && !canCast && !canIpl)
                 TerraBanner(
                   kind: BannerKind.warning,
                   title: t(context).noFieldAccess,
                   body: t(context).noFieldAccessBody,
+                ),
+              if (canIpl)
+                _Shortcut(
+                  icon: Icons.assignment_turned_in_outlined,
+                  title: t(context).shortcutIpl,
+                  body: t(context).shortcutIplBody,
+                  onTap: () => context.push('/ipl'),
                 ),
               if (canAttend)
                 _Shortcut(

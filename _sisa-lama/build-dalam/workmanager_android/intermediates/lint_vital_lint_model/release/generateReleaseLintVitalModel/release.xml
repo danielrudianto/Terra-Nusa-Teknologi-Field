@@ -1,0 +1,30 @@
+<variant
+    name="release"
+    package="dev.fluttercommunity.workmanager"
+    minSdkVersion="23"
+    targetSdkVersion="35"
+    mergedManifest="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml"
+    manifestMergeReport="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\outputs\logs\manifest-merger-release-report.txt"
+    proguardFiles="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\intermediates\default_proguard_files\global\proguard-android-optimize.txt-9.1.0"
+    partialResultsDir="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out">
+  <buildFeatures/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\main\kotlin;src\release\java;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"
+        keepRulesDirectories="src\main\keepRules;src\release\keepRules"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\intermediates\javac\release\compileReleaseJavaWithJavac\classes;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\tmp\kotlin-classes\release;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\intermediates\compile_r_class_jar\release\generateReleaseRFile\R.jar"
+      type="MAIN"
+      applicationId="dev.fluttercommunity.workmanager"
+      generatedSourceFolders="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\workmanager_android\generated\ap_generated_sources\release\out"
+      desugaredMethodsFiles="C:\Users\danie\.gradle\caches\9.3.1\transforms\86a5b6c6fe219a50b73b902d3008c28c\workspace\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

@@ -178,6 +178,21 @@ class ApiClient {
     }
   }
 
+  /// One project's DAILY REPORT (drilling, and casting per truck) — the
+  /// material of the "Laporan harian" picture. Gate tickets not yet recorded
+  /// at the hole arrive as trucks without `seq` (status "on site").
+  Future<Map<String, Object?>> dailyReport(int projectId, DateTime date) async {
+    try {
+      final r = await dio.get<Map<String, dynamic>>('/field/reports/daily', queryParameters: {
+        'date': isoDate(date),
+        'projectID': projectId,
+      });
+      return (r.data ?? const {}).cast<String, Object?>();
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
   /// "Rekapitulasi Data Tiang" as .xlsx bytes. No [from] = since the start.
   ///
   /// [sheets] names which sheets the server builds (tiang / beton /
@@ -298,9 +313,16 @@ class ApiClient {
   /// Dibaca dari server, bukan dari HP ini, justru karena yang ditanyakan
   /// adalah titik yang dikerjakan HP LAIN — lognya memang tidak pernah ada
   /// di sini.
-  Future<Map<String, Object?>> pointHistory(int pileId) async {
+  ///
+  /// [brief]: WITHOUT the audit trail — for the Watch screen, which pulls
+  /// every 20 seconds and never shows it. Smaller and fewer queries; site
+  /// connections run over Starlink (23 Nov 2026).
+  Future<Map<String, Object?>> pointHistory(int pileId, {bool brief = false}) async {
     try {
-      final r = await dio.get<Map<String, dynamic>>('/field/pile-points/$pileId/riwayat');
+      final r = await dio.get<Map<String, dynamic>>(
+        '/field/pile-points/$pileId/riwayat',
+        queryParameters: brief ? const {'ringkas': 1} : null,
+      );
       return (r.data ?? const {}).cast<String, Object?>();
     } catch (e) {
       throw ApiError.from(e);

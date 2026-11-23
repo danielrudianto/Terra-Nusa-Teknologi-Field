@@ -360,6 +360,12 @@ class SyncEngine {
             deletedDrillLogs.add('${m['uuid']}');
           }
         }
+        // IPL (23 Nov 2026): confirmed or rejected in the office. The
+        // rejection reason rides in serverNote so the surveyor reads WHY.
+        for (final c in (d['iplStatus'] as List?) ?? const []) {
+          final m = (c as Map).cast<String, Object?>();
+          await db.recordServerStatus('${m['uuid']}', '${m['status']}', m['rejectReason']?.toString());
+        }
         // Gate records of everyone on the site: the person at the hole picks
         // a truck number from them instead of typing it. Phones that pulled
         // before this key existed simply never see it.

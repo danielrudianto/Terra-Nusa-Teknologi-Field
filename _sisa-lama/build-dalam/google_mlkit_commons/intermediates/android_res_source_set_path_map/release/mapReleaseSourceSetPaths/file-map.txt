@@ -1,0 +1,8 @@
+com.google_mlkit_commons-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.13.0\android\src\main\res
+com.google_mlkit_commons-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.13.0\android\src\release\res
+com.google_mlkit_commons-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_commons\generated\res\pngs\release
+com.google_mlkit_commons-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_commons\generated\updated_navigation_xml\release
+com.google_mlkit_commons-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_commons\intermediates\incremental\release\mergeReleaseResources\merged.dir
+com.google_mlkit_commons-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_commons\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+com.google_mlkit_commons-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_commons\intermediates\merged_res\release\mergeReleaseResources
+com.google_mlkit_commons-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\google_mlkit_commons\intermediates\packaged_res\release\packageReleaseResources

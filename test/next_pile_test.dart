@@ -9,6 +9,7 @@ Map<String, Object?> pile(
   String status = 'sudah_bor',
   String? checkedAt,
   bool deleted = false,
+  String? drillLogStatus,
 }) =>
     {
       'uuid': uuid,
@@ -18,6 +19,7 @@ Map<String, Object?> pile(
       'status': status,
       'checkedAt': checkedAt,
       'isDelete': deleted,
+      'drillLogStatus': drillLogStatus,
     };
 
 List<String> codes(List<Map<String, Object?>> piles) => [for (final p in piles) '${p['code']}'];
@@ -39,9 +41,19 @@ void main() {
       pile('b', 'PP.D14', checkedAt: '2026-11-18T08:00:00+07:00'),
       pile('c', 'PP.D15', status: 'sudah_cor'),
       pile('d', 'PP.D16', deleted: true),
-      pile('e', 'PP.D17', status: 'belum_bor'),
+      pile('e', 'PP.D17'),
     ];
     expect(codes(pilesForSameTruck(all, projectId: 7, currentUuid: 'a')), ['PP.D17']);
+  });
+
+  test('a pile point not drilled at all is left out; one being drilled is offered', () {
+    // Daniel, 23 Nov 2026: a truck recorded on SP.D32 instead of PP.D32.
+    final all = [
+      pile('a', 'PP.D13'),
+      pile('b', 'SP.D32', status: 'belum_bor'),
+      pile('c', 'SP.B73', status: 'belum_bor', drillLogStatus: 'berjalan'),
+    ];
+    expect(codes(pilesForSameTruck(all, projectId: 7, currentUuid: 'a')), ['SP.B73']);
   });
 
   test('ordered by sortOrder, then by code', () {

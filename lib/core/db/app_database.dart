@@ -121,6 +121,8 @@ const entityOrder = {
   'casting': 4,
   // Gate records pair with truck rows on the server in either order.
   'gate_ticket': 5,
+  // IPL lines point at pile points only, never at other documents.
+  'ipl': 6,
 };
 
 @DriftDatabase(tables: [MasterRecords, Documents, Photos, LocalMeta])

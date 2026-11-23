@@ -1585,6 +1585,399 @@
       }
     }
   },
+  "drTitle": "Laporan harian",
+  "@drTitle": {
+    "description": "drTitle"
+  },
+  "drProject": "Proyek",
+  "@drProject": {
+    "description": "drProject"
+  },
+  "drPickProject": "Pilih proyeknya dulu.",
+  "@drPickProject": {
+    "description": "drPickProject"
+  },
+  "drPickDay": "Pilih tanggal",
+  "@drPickDay": {
+    "description": "drPickDay"
+  },
+  "drNoteTitle": "Gambar yang sama dengan di web",
+  "@drNoteTitle": {
+    "description": "drNoteTitle"
+  },
+  "drNote": "Setiap TM yang sudah dicatat gerbang ikut digambar: On site, Proses cor, atau Selesai. Total hanya menghitung TM yang selesai. Titik yang masih dibor belum ikut.",
+  "@drNote": {
+    "description": "drNote"
+  },
+  "drLoadFailed": "Laporan harian gagal dimuat.",
+  "@drLoadFailed": {
+    "description": "drLoadFailed"
+  },
+  "drEmpty": "Tidak ada pengeboran yang selesai atau TM yang tercatat gerbang pada {date}.",
+  "@drEmpty": {
+    "description": "drEmpty",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "drShare": "Bagikan",
+  "@drShare": {
+    "description": "drShare"
+  },
+  "drSave": "Simpan",
+  "@drSave": {
+    "description": "drSave"
+  },
+  "drShared": "Gambar laporan harian dibagikan.",
+  "@drShared": {
+    "description": "drShared"
+  },
+  "drShareFailed": "Gambar gagal dibagikan: {error}",
+  "@drShareFailed": {
+    "description": "drShareFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "drSaved": "Gambar disimpan di galeri, album TerraBot Field.",
+  "@drSaved": {
+    "description": "drSaved"
+  },
+  "drSaveDenied": "Izin galeri ditolak. Bagikan saja gambarnya, atau izinkan galeri di Setelan HP.",
+  "@drSaveDenied": {
+    "description": "drSaveDenied"
+  },
+  "drSaveFailed": "Gambar gagal disimpan: {error}",
+  "@drSaveFailed": {
+    "description": "drSaveFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "drZoomHint": "Cubit untuk memperbesar.",
+  "@drZoomHint": {
+    "description": "drZoomHint"
+  },
+  "drImageTitle": "Laporan Harian Lapangan",
+  "@drImageTitle": {
+    "description": "drImageTitle"
+  },
+  "drDrilling": "Pengeboran",
+  "@drDrilling": {
+    "description": "drDrilling"
+  },
+  "drCasting": "Pengecoran",
+  "@drCasting": {
+    "description": "drCasting"
+  },
+  "drDrillSummary": "{n} titik · {m} m",
+  "@drDrillSummary": {
+    "description": "drDrillSummary",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "drCastSummary": "{n} titik · {tm} TM · {v} m³",
+  "@drCastSummary": {
+    "description": "drCastSummary",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "tm": {
+        "type": "String"
+      },
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "drDrillEmpty": "Tidak ada pengeboran yang selesai pada tanggal ini.",
+  "@drDrillEmpty": {
+    "description": "drDrillEmpty"
+  },
+  "drCastEmpty": "Belum ada TM yang tercatat gerbang pada tanggal ini.",
+  "@drCastEmpty": {
+    "description": "drCastEmpty"
+  },
+  "drDrillColumns": "No.|Titik|Operator|Jam mulai|Jam selesai|Kedalaman (m)|Durasi|Kecepatan (m/menit)",
+  "@drDrillColumns": {
+    "description": "drDrillColumns"
+  },
+  "drCastColumns": "No.|Titik|Pemasok|No. TM|Volume (m³)|Kumulatif (m³)|Status|Slump (cm)|Jam mulai|Jam selesai|Muka beton (m)|Durasi",
+  "@drCastColumns": {
+    "description": "drCastColumns"
+  },
+  "drStatusOnSite": "On site",
+  "@drStatusOnSite": {
+    "description": "drStatusOnSite"
+  },
+  "drStatusPouring": "Proses cor",
+  "@drStatusPouring": {
+    "description": "drStatusPouring"
+  },
+  "drStatusDone": "Selesai",
+  "@drStatusDone": {
+    "description": "drStatusDone"
+  },
+  "drTotal": "Total",
+  "@drTotal": {
+    "description": "drTotal"
+  },
+  "drTruckCount": "{n} TM",
+  "@drTruckCount": {
+    "description": "drTruckCount",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "drFooter": "Dibuat dari TerraBot, {time}",
+  "@drFooter": {
+    "description": "drFooter",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFinished": "selesai",
+  "@activityFinished": {
+    "description": "activityFinished"
+  },
+  "activitySince": "sejak",
+  "@activitySince": {
+    "description": "activitySince"
+  },
+  "activityLast": "terakhir",
+  "@activityLast": {
+    "description": "activityLast"
+  },
+  "activityPreparing": "Persiapan cor",
+  "@activityPreparing": {
+    "description": "activityPreparing"
+  },
+  "activitySendWa": "Kirim ke WA",
+  "@activitySendWa": {
+    "description": "activitySendWa"
+  },
+  "downloadExcelShort": "Unduh Excel",
+  "@downloadExcelShort": {
+    "description": "downloadExcelShort"
+  },
+  "watchGateTitle": "Sudah masuk gerbang · {n} TM",
+  "@watchGateTitle": {
+    "description": "watchGateTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "gateNotDrilledTitle": "{code} belum dibor",
+  "@gateNotDrilledTitle": {
+    "description": "gateNotDrilledTitle",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "gateNotDrilledBody": "TM hanya dapat dicatat untuk titik yang sudah atau sedang dibor. Periksa lagi nomor titiknya — TM ini mungkin untuk titik lain.",
+  "@gateNotDrilledBody": {
+    "description": "gateNotDrilledBody"
+  },
+  "reasonTitikBelumDibor": "Titik ini belum dibor, jadi TM-nya ditahan. Periksa nomor titiknya — kemungkinan salah pilih titik. Bila titiknya memang benar, data ini terkirim sendiri begitu log bornya masuk.",
+  "@reasonTitikBelumDibor": {
+    "description": "reasonTitikBelumDibor"
+  },
+  "shortcutIpl": "Izin pelaksanaan (IPL)",
+  "@shortcutIpl": {
+    "description": "shortcutIpl"
+  },
+  "shortcutIplBody": "Pilih titik yang siap dibor besok dan isi GS aktualnya.",
+  "@shortcutIplBody": {
+    "description": "shortcutIplBody"
+  },
+  "iplTitle": "Izin pelaksanaan lapangan",
+  "@iplTitle": {
+    "description": "iplTitle"
+  },
+  "iplIntro": "Pilih titik yang siap dibor, lalu isi GS aktual hasil tembakan. Kantor akan mengonfirmasi; sesudah itu tim bor bisa mulai dan tidak perlu mengisi GS lagi.",
+  "@iplIntro": {
+    "description": "iplIntro"
+  },
+  "iplDateLabel": "Tanggal bor",
+  "@iplDateLabel": {
+    "description": "iplDateLabel"
+  },
+  "iplTomorrow": "Besok",
+  "@iplTomorrow": {
+    "description": "iplTomorrow"
+  },
+  "iplToday": "Hari ini",
+  "@iplToday": {
+    "description": "iplToday"
+  },
+  "iplSearch": "Cari nomor titik",
+  "@iplSearch": {
+    "description": "iplSearch"
+  },
+  "iplNoPiles": "Semua titik di proyek ini sudah dibor.",
+  "@iplNoPiles": {
+    "description": "iplNoPiles"
+  },
+  "iplGsLabel": "GS aktual",
+  "@iplGsLabel": {
+    "description": "iplGsLabel"
+  },
+  "iplGsInvalid": "Angka GS tidak terbaca",
+  "@iplGsInvalid": {
+    "description": "iplGsInvalid"
+  },
+  "iplGsBelowTip": "GS harus di atas tip ({tip})",
+  "@iplGsBelowTip": {
+    "description": "iplGsBelowTip",
+    "placeholders": {
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+  "iplNothingFilled": "Belum ada GS yang diisi",
+  "@iplNothingFilled": {
+    "description": "iplNothingFilled"
+  },
+  "iplNothingFilledBody": "Isi GS pada titik yang siap dibor. Titik yang dikosongkan tidak ikut dikirim.",
+  "@iplNothingFilledBody": {
+    "description": "iplNothingFilledBody"
+  },
+  "iplFixErrors": "Ada GS yang salah. Betulkan yang bertanda merah dulu.",
+  "@iplFixErrors": {
+    "description": "iplFixErrors"
+  },
+  "iplSend": "Kirim IPL ({n} titik)",
+  "@iplSend": {
+    "description": "iplSend",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplResend": "Kirim ulang IPL ({n} titik)",
+  "@iplResend": {
+    "description": "iplResend",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplSaved": "IPL disimpan: {n} titik. Dikirim begitu ada sinyal.",
+  "@iplSaved": {
+    "description": "iplSaved",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplPileCount": "{n} titik",
+  "@iplPileCount": {
+    "description": "iplPileCount",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplHistory": "IPL sebelumnya",
+  "@iplHistory": {
+    "description": "iplHistory"
+  },
+  "iplWaitingSend": "Menunggu dikirim",
+  "@iplWaitingSend": {
+    "description": "iplWaitingSend"
+  },
+  "iplWaitingSendBody": "Tersimpan di HP ini dan akan dikirim begitu ada sinyal.",
+  "@iplWaitingSendBody": {
+    "description": "iplWaitingSendBody"
+  },
+  "iplWaitingOffice": "Menunggu konfirmasi kantor",
+  "@iplWaitingOffice": {
+    "description": "iplWaitingOffice"
+  },
+  "iplWaitingOfficeBody": "Masih bisa diubah dan dikirim ulang sampai dikonfirmasi.",
+  "@iplWaitingOfficeBody": {
+    "description": "iplWaitingOfficeBody"
+  },
+  "iplConfirmed": "Dikonfirmasi",
+  "@iplConfirmed": {
+    "description": "iplConfirmed"
+  },
+  "iplConfirmedBody": "Tim bor sudah bisa mulai di titik-titik ini pada tanggalnya. IPL ini tidak bisa diubah lagi.",
+  "@iplConfirmedBody": {
+    "description": "iplConfirmedBody"
+  },
+  "iplRejected": "Ditolak kantor",
+  "@iplRejected": {
+    "description": "iplRejected"
+  },
+  "iplRejectedBody": "Alasan: {reason}\nBetulkan GS-nya lalu kirim ulang.",
+  "@iplRejectedBody": {
+    "description": "iplRejectedBody",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "iplRefused": "Ditolak server",
+  "@iplRefused": {
+    "description": "iplRefused"
+  },
+  "iplNotReadyTitle": "Belum ada IPL hari ini",
+  "@iplNotReadyTitle": {
+    "description": "iplNotReadyTitle"
+  },
+  "iplNotReadyBody": "Titik ini belum masuk IPL yang dikonfirmasi untuk hari ini. Minta surveyor mengisinya dan kantor mengonfirmasi.",
+  "@iplNotReadyBody": {
+    "description": "iplNotReadyBody"
+  },
+  "iplNotReadyOld": "IPL terakhir untuk titik ini tanggal {date}, bukan hari ini. Minta surveyor mengisi IPL baru.",
+  "@iplNotReadyOld": {
+    "description": "iplNotReadyOld",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonIplDikonfirmasi": "IPL ini sudah dikonfirmasi kantor dan tidak bisa diubah.",
+  "@reasonIplDikonfirmasi": {
+    "description": "reasonIplDikonfirmasi"
+  },
+  "reasonIplTitikTidakBoleh": "Ada titik yang sudah dibor, sudah dikonfirmasi, atau bukan dari proyek ini.",
+  "@reasonIplTitikTidakBoleh": {
+    "description": "reasonIplTitikTidakBoleh"
+  },
+  "reasonIplGsSalah": "Ada GS yang tidak di atas tip level titiknya.",
+  "@reasonIplGsSalah": {
+    "description": "reasonIplGsSalah"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"

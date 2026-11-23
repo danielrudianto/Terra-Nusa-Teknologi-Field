@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.21 (51) — Laporan harian & Aktivitas baru
+
+<id>
+• Laporan harian kini ada di HP: buka Laporan, pilih proyek dan tanggal, lalu kirim gambarnya ke WhatsApp atau simpan ke galeri. Gambarnya sama persis dengan di web.
+• Tampilan baru Aktivitas: timeline per jam, total meter bor dan kubik cor, plus tombol Simpan dan Kirim ke WA untuk laporan hari itu.
+• Setiap TM yang sudah dicatat gerbang tampil sebagai On site, Proses cor, atau Selesai.
+</id>
+<en-US>
+• Daily report is now on the phone: open Reports, pick the project and date, then send the picture to WhatsApp or save it to the gallery. Same picture as on the web.
+• New Activity look: an hourly timeline, the day's drilled metres and cast cubes, and Save / Send to WA buttons for that day's report.
+• Every truck recorded at the gate shows as On site, Pouring or Done.
+</en-US>
+<zh-CN>
+• 手机上现在也有日报：打开报告，选择项目和日期，然后将图片发到 WhatsApp 或保存到相册。图片与网页版相同。
+• "活动"页面全新外观：按时间排列，显示当日钻孔米数和浇筑方量，并可保存或发送当日报告到 WA。
+• 门岗已登记的每辆罐车显示为在场、浇筑中或完成。
+</zh-CN>

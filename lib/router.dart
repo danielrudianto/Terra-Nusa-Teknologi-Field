@@ -20,7 +20,9 @@ import 'features/home/aktivitas_page.dart';
 import 'features/casting/titik_denah_page.dart';
 import 'features/drilling/drill_log_page.dart';
 import 'features/gate/gate_ticket_form.dart';
+import 'features/reports/daily_report_page.dart';
 import 'features/reports/report_page.dart';
+import 'features/ipl/ipl_page.dart';
 import 'core/config/features.dart';
 import 'core/providers.dart';
 
@@ -151,6 +153,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/activity', builder: (_, _) => const AktivitasPage()),
       GoRoute(path: '/reports', builder: (_, _) => const ReportPage()),
+      GoRoute(path: '/ipl', builder: (_, _) => const IplPage()),
+      GoRoute(
+        path: '/reports/daily',
+        builder: (_, s) => DailyReportPage(
+          projectId: int.tryParse(s.uri.queryParameters['project'] ?? ''),
+          date: DateTime.tryParse(s.uri.queryParameters['date'] ?? ''),
+        ),
+      ),
     ],
   );
   ref.onDispose(() {

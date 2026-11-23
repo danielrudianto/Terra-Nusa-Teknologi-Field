@@ -74,6 +74,16 @@ class FieldPilePoint {
   String? get checkedByName => server['checkedByName']?.toString();
   bool get isChecked => checkedAt != null;
 
+  /// Date (yyyy-MM-dd) of the latest CONFIRMED IPL naming this point.
+  String? get iplDate {
+    final s = server['iplDate']?.toString();
+    return s == null || s.length < 10 ? s : s.substring(0, 10);
+  }
+
+  /// Drilling may start only with an IPL confirmed for TODAY (23 Nov 2026).
+  /// A server older than IPL never sends the key: then nothing is gated.
+  bool get iplReady => !server.containsKey('iplDate') || iplDate == isoDate(DateTime.now());
+
   // -------------------------------------------------------------------
   // Kemajuan titik yang sedang dikerjakan HP lain
   // -------------------------------------------------------------------

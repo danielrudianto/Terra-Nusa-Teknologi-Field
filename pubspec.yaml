@@ -1,7 +1,7 @@
 name: terrabot_field
 description: TerraBot Field — AKN field app (crew attendance & pile casting log), offline-first.
 publish_to: "none"
-version: 1.0.21+50
+version: 1.0.21+53
 environment:
   # Flutter stable as of October 2026 = 3.47 (Dart 3.12). The package versions below
   # were checked against the source code of each latest release.
@@ -75,6 +75,11 @@ flutter:
   # Membangkitkan AppLocalizations dari lib/l10n/*.arb (lihat l10n.yaml).
   generate: true
 
+  # The AKN logo on the daily report picture (rendered from the web's
+  # assets/logo/akn-logo.svg).
+  assets:
+    - assets/images/akn-logo.png
+
   # Montserrat, same as TerraBot web. Put the TTF files in
   # assets/fonts/ (see SETUP.md) — bundled so the look stays
   # the same without signal.
@@ -90,3 +95,18 @@ flutter:
           weight: 700
         - asset: assets/fonts/Montserrat-ExtraBold.ttf
           weight: 800
+    # Barlow: ONLY for the daily report picture, which must look exactly
+    # like the one the web draws (`laporan-harian-gambar.ts`).
+    - family: Barlow
+      fonts:
+        - asset: assets/fonts/Barlow-Regular.ttf
+        - asset: assets/fonts/Barlow-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Barlow-Bold.ttf
+          weight: 700
+    - family: BarlowCondensed
+      fonts:
+        - asset: assets/fonts/BarlowCondensed-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/BarlowCondensed-Bold.ttf
+          weight: 700

@@ -1,31 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terrabot_field/core/sync/office_notice.dart';
 
-/// Kabar kantor (log dihapus / dibetulkan) disimpan di meta sebagai teks dan
-/// dibaca ulang oleh layar log. Rusak di sini = layar kembali diam saat
-/// catatannya dihapus, persis keluhan 22 Nov 2026.
+/// An office notice (log deleted / corrected) is stored in meta as text and
+/// read back by the log screen. Broken here = the screen goes silent again
+/// when the log is deleted, exactly the complaint of 22 Nov 2026.
 void main() {
-  test('pulang-pergi utuh', () {
-    final k = OfficeNotice(at: DateTime.parse('2026-11-22T09:40:00+07:00'), oleh: 'Ade', catatan: 'Alasan: salah titik');
-    final b = OfficeNotice.decode(k.encode())!;
-    expect(b.oleh, 'Ade');
-    expect(b.catatan, 'Alasan: salah titik');
-    expect(b.at, DateTime.parse('2026-11-22T09:40:00+07:00'));
+  test('round trip keeps everything', () {
+    final n = OfficeNotice(at: DateTime.parse('2026-11-22T09:40:00+07:00'), by: 'Ade', note: 'Alasan: salah titik');
+    final back = OfficeNotice.decode(n.encode())!;
+    expect(back.by, 'Ade');
+    expect(back.note, 'Alasan: salah titik');
+    expect(back.at, DateTime.parse('2026-11-22T09:40:00+07:00'));
   });
 
-  test('kosong atau rusak = tidak ada kabar, bukan galat', () {
+  test('empty or broken = no notice, not an error', () {
     expect(OfficeNotice.decode(null), isNull);
     expect(OfficeNotice.decode(''), isNull);
-    expect(OfficeNotice.decode('{bukan json'), isNull);
+    expect(OfficeNotice.decode('{not json'), isNull);
   });
 
-  test('tanpa jam dan nama tetap terbaca', () {
-    final b = OfficeNotice.decode(const OfficeNotice().encode())!;
-    expect(b.at, isNull);
-    expect(b.oleh, isNull);
+  test('a notice without time and name still reads', () {
+    final back = OfficeNotice.decode(const OfficeNotice().encode())!;
+    expect(back.at, isNull);
+    expect(back.by, isNull);
   });
 
-  test('kunci per uuid tidak bertabrakan antara hapus dan betulkan', () {
+  test('delete and edit keys of one uuid do not collide', () {
     expect(officeDeletedKey('a'), isNot(officeEditedKey('a')));
   });
 }

@@ -1,0 +1,30 @@
+<variant
+    name="release"
+    package="io.flutter.plugins.urllauncher"
+    minSdkVersion="24"
+    targetSdkVersion="36.0"
+    mergedManifest="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml"
+    manifestMergeReport="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\outputs\logs\manifest-merger-release-report.txt"
+    proguardFiles="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\default_proguard_files\global\proguard-android-optimize.txt-9.1.0"
+    partialResultsDir="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\lint_partial_results\release\lintAnalyzeRelease\out">
+  <buildFeatures/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\release\java;src\main\kotlin;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"
+        keepRulesDirectories="src\main\keepRules;src\release\keepRules"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\javac\release\compileReleaseJavaWithJavac\classes;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\tmp\kotlin-classes\release;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\intermediates\compile_r_class_jar\release\generateReleaseRFile\R.jar"
+      type="MAIN"
+      applicationId="io.flutter.plugins.urllauncher"
+      generatedSourceFolders="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\generated\ap_generated_sources\release\out;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\url_launcher_android\generated\source\buildConfig\release"
+      desugaredMethodsFiles="C:\Users\danie\.gradle\caches\9.3.1\transforms\9dc8b9c6756bcd5aa91b8fba07fb0e96\workspace\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

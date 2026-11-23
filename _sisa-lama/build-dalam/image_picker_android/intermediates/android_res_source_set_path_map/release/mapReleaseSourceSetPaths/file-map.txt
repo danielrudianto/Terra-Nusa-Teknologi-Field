@@ -1,0 +1,8 @@
+io.flutter.plugins.imagepicker.image_picker_android-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+25\android\src\main\res
+io.flutter.plugins.imagepicker.image_picker_android-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+25\android\src\release\res
+io.flutter.plugins.imagepicker.image_picker_android-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\image_picker_android\generated\res\pngs\release
+io.flutter.plugins.imagepicker.image_picker_android-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\image_picker_android\generated\updated_navigation_xml\release
+io.flutter.plugins.imagepicker.image_picker_android-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\image_picker_android\intermediates\incremental\release\mergeReleaseResources\merged.dir
+io.flutter.plugins.imagepicker.image_picker_android-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\image_picker_android\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+io.flutter.plugins.imagepicker.image_picker_android-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\image_picker_android\intermediates\merged_res\release\mergeReleaseResources
+io.flutter.plugins.imagepicker.image_picker_android-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\image_picker_android\intermediates\packaged_res\release\packageReleaseResources

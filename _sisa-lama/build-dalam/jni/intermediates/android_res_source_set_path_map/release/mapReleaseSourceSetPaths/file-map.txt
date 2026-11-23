@@ -1,0 +1,8 @@
+com.github.dart_lang.jni-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.1.0\android\src\main\res
+com.github.dart_lang.jni-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\jni-1.1.0\android\src\release\res
+com.github.dart_lang.jni-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\generated\res\pngs\release
+com.github.dart_lang.jni-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\generated\updated_navigation_xml\release
+com.github.dart_lang.jni-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\intermediates\incremental\release\mergeReleaseResources\merged.dir
+com.github.dart_lang.jni-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+com.github.dart_lang.jni-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\intermediates\merged_res\release\mergeReleaseResources
+com.github.dart_lang.jni-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\jni\intermediates\packaged_res\release\packageReleaseResources

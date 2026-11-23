@@ -2,29 +2,29 @@
 1.0.21 (50) — Lebih ringan untuk orang di lubang
 
 <id>
-• Layar cor tidak lagi menanyakan mutu beton, sounding sebelum TM, dan volume TM. Mutu diambil dari titik atau surat jalan, muka beton sebelum TM dihitung sendiri.
-• Tombol "Ukur tremie dulu" sebelum TM pertama sekarang bisa langsung ditekan.
-• Selesai bor bisa ditutup walau X/Y aktual belum diukur surveyor.
-• Kalau kantor menghapus atau membetulkan catatan, HP langsung memberi tahu siapa, kapan, dan alasannya. Data ikut segar tiap menit selama app terbuka.
-• Laporan lapangan sekarang terbuka untuk level 4 ke atas dan semua orang divisi Engineering.
-• Layar Aktivitas menampilkan titik yang sedang persiapan cor (tremie dirangkai, TM belum mulai dituang).
-• Orang di lubang cukup isi nomor TM, sounding, dan tremie. Volume, slump, dan pemasok diambil dari catatan gerbang dan langsung tampil begitu masuk.
+• Lubang cukup isi nomor TM, sounding, dan tremie. Volume, slump, dan pemasok diambil dari catatan gerbang dan tampil begitu masuk.
+• Tidak ada lagi pertanyaan mutu beton dan sounding sebelum TM.
+• Tombol "Ukur tremie dulu" bisa langsung ditekan.
+• Bor bisa ditutup walau X/Y aktual belum diukur.
+• Hapus/koreksi dari kantor langsung terlihat di HP: siapa, kapan, alasannya.
+• Aktivitas menampilkan titik yang sedang persiapan cor.
+• Laporan terbuka untuk level 4+ dan Engineering.
 </id>
 <en-US>
-• The casting screen no longer asks for the concrete grade, the sounding before each truck, or truck volumes.
-• "Measure the tremie first" before the first truck can now be tapped straight away.
-• Drilling can be closed even before the surveyor has measured the actual X/Y.
-• When the office deletes or corrects a log, the phone says who, when and why. Data refreshes every minute while the app is open.
-• Field reports are now open to level 4 and above and everyone in the Engineering division.
-• The Activity screen now shows piles being prepared for casting (tremie being assembled, no truck pouring yet).
 • At the hole, only the truck number, sounding and tremie are entered. Volume, slump and supplier come from the gate record and show as soon as it arrives.
+• No more questions for concrete grade or the sounding before each truck.
+• "Measure the tremie first" can be tapped straight away.
+• Drilling can close before actual X/Y is measured.
+• Office deletes/fixes show on the phone: who, when, why.
+• Activity shows piles being prepared for casting.
+• Reports open to level 4+ and Engineering.
 </en-US>
 <zh-CN>
-• 灌注界面不再询问混凝土强度等级、每车浇筑前测深和车辆方量。强度等级取自桩位或送货单，每车浇筑前的混凝土面由应用自动计算。
-• 第一车之前的"先测量导管"按钮现在可直接点按。
-• 测量员尚未测量实际 X/Y 时也可结束钻孔。
-• 办公室删除或修正记录时，手机会立即显示操作人、时间和原因。应用打开期间每分钟自动刷新数据。
-• 现场报告现已向 4 级及以上和工程部全体人员开放。
-• "活动"页面现在会显示正在准备浇筑的桩位（正在组装导管，尚无搅拌车开始浇筑）。
 • 桩孔处只需填写车号、测深和导管。方量、坍落度和供应商来自闸口记录，到达后立即显示。
+• 不再询问混凝土强度等级和每车浇筑前测深。
+• "先测量导管"按钮可直接点按。
+• 未测实际 X/Y 也可结束钻孔。
+• 办公室删除或修正记录后，手机立即显示操作人、时间和原因。
+• "活动"页面显示正在准备浇筑的桩位。
+• 报告向 4 级及以上和工程部开放。
 </zh-CN>

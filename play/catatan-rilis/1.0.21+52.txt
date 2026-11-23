@@ -1,0 +1,24 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.21 (52) — Laporan tampilan baru
+
+<id>
+• Halaman Laporan tampil baru, senada dengan Aktivitas: panel putih, angka besar, status berupa tulisan berwarna.
+• Tombol Unduh Excel dan Laporan harian tidak terpotong lagi.
+• Laporan harian: pilih proyek lewat daftar yang lega, tombol Simpan dan Kirim ke WA.
+• Lubang yang dibor dua hari: hari kedua hanya menghitung meter tambahannya (15 → 21 m = 6 m).
+• Pantau cor: TM yang sudah masuk gerbang langsung tampil sebagai On site.
+</id>
+<en-US>
+• New look for the Reports page, matching Activity: white panels, big figures, status shown as coloured text.
+• Download Excel and Daily report buttons are no longer cut off.
+• Daily report: projects are picked from a roomy list; buttons are Save and Send to WA.
+• Holes drilled over two days: the second day counts only its extra metres (15 → 21 m = 6 m).
+• Watch casting: trucks that passed the gate show right away as On site.
+</en-US>
+<zh-CN>
+• 报告页面换上新外观，与"活动"页一致：白色面板、醒目的数字，状态以彩色文字显示。
+• "下载 Excel"和"日报"按钮文字不再被截断。
+• 日报：项目从宽敞的列表中选择，按钮为"保存"和"发到 WA"。
+• 分两天钻的孔：第二天只计算新增的米数（15 → 21 米 = 6 米）。
+• 浇筑监控：已进场的搅拌车立即显示为 On site。
+</zh-CN>

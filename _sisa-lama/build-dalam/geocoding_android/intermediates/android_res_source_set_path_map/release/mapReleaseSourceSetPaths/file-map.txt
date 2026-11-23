@@ -1,0 +1,8 @@
+com.baseflow.geocoding.geocoding_android-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_android-5.1.0\android\src\main\res
+com.baseflow.geocoding.geocoding_android-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\geocoding_android-5.1.0\android\src\release\res
+com.baseflow.geocoding.geocoding_android-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\generated\res\pngs\release
+com.baseflow.geocoding.geocoding_android-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\generated\updated_navigation_xml\release
+com.baseflow.geocoding.geocoding_android-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\incremental\release\mergeReleaseResources\merged.dir
+com.baseflow.geocoding.geocoding_android-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+com.baseflow.geocoding.geocoding_android-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\merged_res\release\mergeReleaseResources
+com.baseflow.geocoding.geocoding_android-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\packaged_res\release\packageReleaseResources

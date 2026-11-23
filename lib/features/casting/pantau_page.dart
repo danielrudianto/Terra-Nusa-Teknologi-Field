@@ -10,6 +10,7 @@ import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
 import '../../core/widgets/foto_server.dart';
+import '../../core/widgets/quiet.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
@@ -139,7 +140,7 @@ class _PantauPageState extends ConsumerState<PantauPage> with WidgetsBindingObse
 /// riwayat akan ikut menyalakan penarikan berkala — dan mematikan penarikan
 /// di sini akan ikut mengosongkan riwayat.
 final pantauProvider = FutureProvider.autoDispose.family<Map<String, Object?>, int>(
-  (ref, pileId) => ref.read(apiProvider).pointHistory(pileId),
+  (ref, pileId) => ref.read(apiProvider).pointHistory(pileId, brief: true),
 );
 
 class _Isi extends StatelessWidget {
@@ -165,10 +166,22 @@ class _Isi extends StatelessWidget {
     return semua.isEmpty ? null : semua.last;
   }
 
+  /// TM yang sudah masuk GERBANG tetapi belum dicatat di lubang.
+  ///
+  /// Daniel, 23 Nov 2026: "data mobil TM yang masuk gerbang gaada waktu
+  /// pantau cor". Server sudah menandainya (`orphan`) dengan aturan yang
+  /// sama dengan laporan harian: yang ditolak tidak ikut, dan begitu orang
+  /// lubang mencatat TM bernomor sama ia pindah ke tabel TM.
+  List<Map<String, Object?>> get _gerbang => ((data['gateTickets'] as List?) ?? const [])
+      .map((x) => (x as Map).cast<String, Object?>())
+      .where((g) => g['orphan'] == true && g['isRejected'] != true && g['isRejected'] != 1)
+      .toList();
+
   @override
   Widget build(BuildContext context) {
     final cor = _cor;
     final bor = _bor;
+    final gerbang = _gerbang;
 
     return ListView(
       padding: pagePaddingAman(context),
@@ -177,13 +190,17 @@ class _Isi extends StatelessWidget {
           _PantauCor(cor: cor, kode: code)
         else if (bor != null)
           _PantauBor(bor: bor, titik: (data['titik'] as Map?)?.cast<String, Object?>())
-        else
+        else if (gerbang.isEmpty)
           TerraBanner(
             kind: BannerKind.info,
             icon: Icons.hourglass_empty,
             title: t(context).watchNothingTitle,
             body: t(context).watchNothingBody,
           ),
+        if (gerbang.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _DiGerbang(tiket: gerbang),
+        ],
       ],
     );
   }
@@ -1054,5 +1071,93 @@ class _BarisTabel extends StatelessWidget {
         child: isi,
       ),
     );
+  }
+}
+
+/// TM yang sudah di lokasi (lewat gerbang) dan menunggu dituang.
+///
+/// TERBUKA, tidak dilipat seperti tabel TM: "mixernya sudah di lokasi
+/// belum" justru pertanyaan pertama orang yang memantau pengecoran.
+class _DiGerbang extends StatelessWidget {
+  const _DiGerbang({required this.tiket});
+
+  final List<Map<String, Object?>> tiket;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    return QuietPanel(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          QuietLabel(dot: w.warnFg, text: t(context).watchGateTitle('${tiket.length}')),
+          const SizedBox(height: 4),
+          for (final (i, g) in tiket.indexed) ...[
+            if (i > 0) Container(height: 1, color: w.line),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'TM ${g['truckNo'] ?? '–'}',
+                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: w.ink),
+                              ),
+                              if (toDoubleOrNull(g['volumeM3']) != null)
+                                TextSpan(
+                                  text: '   ${formatVolume(toDoubleOrNull(g['volumeM3']))}',
+                                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: w.ink),
+                                ),
+                            ],
+                          ),
+                        ),
+                        if (_ket(context, g) case final ket?) ...[
+                          const SizedBox(height: 2),
+                          Text(ket, style: TextStyle(color: w.faint, fontSize: 12.5)),
+                        ],
+                        const SizedBox(height: 3),
+                        Text(
+                          t(context).drStatusOnSite,
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: w.warnFg),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    _datang(context, g),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: w.muted),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static String _datang(BuildContext context, Map<String, Object?> g) {
+    final jam = DateTime.tryParse('${g['arrivedAt']}');
+    return jam == null ? '' : t(context).truckArrivedAt(formatTime(jam));
+  }
+
+  /// Pemasok, nomor tiket, slump — yang kosong dilewati.
+  static String? _ket(BuildContext context, Map<String, Object?> g) {
+    final bagian = <String>[
+      if ('${g['supplierName'] ?? ''}'.trim().isNotEmpty) '${g['supplierName']}',
+      if ('${g['ticketNo'] ?? ''}'.trim().isNotEmpty) '${g['ticketNo']}',
+      if (toDoubleOrNull(g['slumpCm']) != null)
+        t(context).slumpOf(toDoubleOrNull(g['slumpCm'])!.toStringAsFixed(1).replaceAll('.', ',')),
+    ];
+    return bagian.isEmpty ? null : bagian.join(' · ');
   }
 }

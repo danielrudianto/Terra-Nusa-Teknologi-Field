@@ -11,7 +11,11 @@
 ///  * a deleted one;
 ///  * a CONFIRMED one, and one already cast — the server refuses any new
 ///    record for them, and offering a choice that will be refused is worse
-///    than not offering it.
+///    than not offering it;
+///  * one NOT DRILLED at all (no drill mark, no drill log) — a hole that does
+///    not exist cannot be poured into, and the server holds such a record
+///    back (Daniel, 23 Nov 2026: a truck recorded on SP.D32 instead of
+///    PP.D32). A drill log in progress counts as drilling: `drillLogStatus`.
 ///
 /// Ordered like the pile point list: by `sortOrder`, then by code.
 List<Map<String, Object?>> pilesForSameTruck(
@@ -25,7 +29,8 @@ List<Map<String, Object?>> pilesForSameTruck(
           p['isDelete'] != true &&
           '${p['uuid']}' != currentUuid &&
           p['checkedAt'] == null &&
-          '${p['status']}' != 'sudah_cor')
+          '${p['status']}' != 'sudah_cor' &&
+          ('${p['status']}' != 'belum_bor' || p['drillLogStatus'] != null))
         p,
   ];
   piles.sort((a, b) {

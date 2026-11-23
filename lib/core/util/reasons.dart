@@ -28,6 +28,7 @@ String reasonTextOf(AppLocalizations l, String? code, [String? detail]) {
     'TANGGAL_DEPAN' => l.reasonTanggalDepan,
     'ABSEN_SUDAH_ADA' => l.reasonAbsenSudahAda,
     'WORKER_BELUM_ADA' => l.reasonWorkerBelumAda,
+    'TITIK_BELUM_DIBOR' => l.reasonTitikBelumDibor,
     'PEKERJA_DIHAPUS' => l.reasonPekerjaDihapus,
     'PEKERJA_BUKAN_KRU' => l.reasonPekerjaBukanKru,
     'PEKERJA_GANDA' => l.reasonPekerjaGanda,
@@ -54,6 +55,9 @@ String reasonTextOf(AppLocalizations l, String? code, [String? detail]) {
     'BOR_KOSONG' => l.reasonBorKosong,
     'ENTRI_GANDA' => l.reasonEntriGanda,
     'BERKAS_HILANG' => l.reasonBerkasHilang,
+    'IPL_DIKONFIRMASI' => l.reasonIplDikonfirmasi,
+    'IPL_TITIK_TIDAK_BOLEH' => l.reasonIplTitikTidakBoleh,
+    'IPL_GS_SALAH' => l.reasonIplGsSalah,
     null => l.rejectedByServer,
     _ => code,
   };

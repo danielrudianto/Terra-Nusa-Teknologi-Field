@@ -624,7 +624,9 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
           _GsRow(
             groundLevel: _groundLevel,
             plannedM: _plannedM,
-            onChange: _finished || cast || _handedAway ? null : () => _mintaGs(),
+            // GS from a confirmed IPL is the surveyor's: the rig crew no
+            // longer types or corrects it (23 Nov 2026).
+            onChange: _finished || cast || _handedAway || _pilePoint!['iplDate'] != null ? null : () => _mintaGs(),
           ),
           // DI BAWAH barisnya, bukan di atas: isinya menyuruh mengetuk baris
           // itu, dan petunjuk yang menyebut "di atas" harus benar-benar ada

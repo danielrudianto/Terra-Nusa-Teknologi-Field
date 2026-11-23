@@ -1,0 +1,30 @@
+<variant
+    name="release"
+    package="com.baseflow.geocoding"
+    minSdkVersion="24"
+    targetSdkVersion="36.0"
+    mergedManifest="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml"
+    manifestMergeReport="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\outputs\logs\manifest-merger-release-report.txt"
+    proguardFiles="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\default_proguard_files\global\proguard-android-optimize.txt-9.1.0"
+    partialResultsDir="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out">
+  <buildFeatures/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\main\kotlin;src\release\java;src\release\kotlin"
+        resDirectories="src\main\res;src\release\res"
+        assetsDirectories="src\main\assets;src\release\assets"
+        keepRulesDirectories="src\main\keepRules;src\release\keepRules"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\javac\release\compileReleaseJavaWithJavac\classes;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\tmp\kotlin-classes\release;D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\intermediates\compile_r_class_jar\release\generateReleaseRFile\R.jar"
+      type="MAIN"
+      applicationId="com.baseflow.geocoding"
+      generatedSourceFolders="D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\geocoding_android\generated\ap_generated_sources\release\out"
+      desugaredMethodsFiles="C:\Users\danie\.gradle\caches\9.3.1\transforms\9dc8b9c6756bcd5aa91b8fba07fb0e96\workspace\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

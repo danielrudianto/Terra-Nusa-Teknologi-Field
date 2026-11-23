@@ -22,6 +22,10 @@ class Kegiatan {
     required this.utama,
     required this.ket,
     this.preparing = false,
+    this.depthM,
+    this.metersM,
+    this.volumeM3,
+    this.trucks = 0,
   });
 
   /// Pengeboran (true) atau pengecoran (false).
@@ -64,6 +68,19 @@ class Kegiatan {
   /// Such a log had no time at all — no truck start, no truck end — so it
   /// was skipped. Its time is now when the log was opened (`createdAt`).
   final bool preparing;
+
+  /// Drilling: depth reached (the final depth once closed).
+  final double? depthM;
+
+  /// Drilling: metres drilled THAT DAY — the depth minus where a hole
+  /// continued from an earlier day started (SP.B73: 15 -> 21 m = 6 m).
+  /// Used by the day totals on the Activity page; null from an old server,
+  /// which then falls back to [depthM].
+  final double? metersM;
+
+  /// Casting: concrete poured so far and the trucks it came in.
+  final double? volumeM3;
+  final int trucks;
 }
 
 /// Sama hari kalender dengan [acuan]?
@@ -97,6 +114,8 @@ List<Kegiatan> susunKegiatan(Map<String, Object?> jawaban, DateTime sekarang) {
     final kapan = _jam(m['endAt']) ?? _jam(m['startAt']);
     if (kapan == null || !_hariYangSama(kapan, sekarang)) continue;
     final dalam = _d(m['depthM']);
+    // A hole continued from an earlier day: only today's part counts.
+    final dari = _d(m['depthStartM']);
     hasil.add(Kegiatan(
       bor: true,
       kode: '${m['pilePointCode']}',
@@ -107,8 +126,10 @@ List<Kegiatan> susunKegiatan(Map<String, Object?> jawaban, DateTime sekarang) {
       // `formatMeters` SUDAH menempelkan satuannya, berikut spasi tak
       // terputus. Ditambah ' m' lagi, hasilnya "14,00 m m" — dilaporkan
       // Daniel 19 Okt 2026.
-      utama: dalam == null ? '—' : formatMeters(dalam),
+      utama: dalam == null ? '—' : formatDepthFrom(dari, dalam),
       ket: '${m['operatorName'] ?? m['byName'] ?? ''}',
+      depthM: dalam,
+      metersM: _d(m['meters']),
     ));
   }
 
@@ -134,8 +155,11 @@ List<Kegiatan> susunKegiatan(Map<String, Object?> jawaban, DateTime sekarang) {
       kapan: kapan,
       selesai: '${m['status']}' != 'berjalan',
       // Nothing poured yet: "0 TM · 0 m³" would read as a failed pour.
-      utama: preparing ? '' : '$tm TM · ${formatVolume(vol)}',
+      // "4 TM · 22,5 m³" (Daniel, 22 Nov 2026: dot, not ×).
+      utama: preparing ? '' : '$tm TM · ${formatVolume(vol, decimals: 1)}',
       ket: '${m['byName'] ?? ''}',
+      volumeM3: preparing ? null : vol,
+      trucks: preparing ? 0 : tm,
     ));
   }
 
@@ -335,10 +359,8 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
             ),
             if (_terbuka) ...[
               const SizedBox(height: 10),
-              for (final k in tampil) ...[
-                BarisKegiatan(k: k, onKetuk: () => _buka(k)),
-                if (k != tampil.last) const Divider(height: 14),
-              ],
+              for (final k in tampil)
+                BarisKegiatan(k: k, onKetuk: () => _buka(k), last: k == tampil.last),
               if (sisa > 0) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -372,11 +394,29 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
 /// PUBLIK dengan sengaja: dua layar yang menampilkan kegiatan yang sama
 /// dengan dua baris yang disusun terpisah akan menua sendiri-sendiri, lalu
 /// menampilkan jam atau satuan yang berbeda untuk kejadian yang sama.
+///
+/// TIMELINE, redesigned at Daniel's request (22 Nov 2026: "bentuknya jelek
+/// banget", then "terlalu childish ... bikin lebih mewah"). Quiet on
+/// purpose — no vehicle icons, no coloured pills:
+///
+///     18:27  ◎  SP.B73                    15,00 m
+///  terakhir  │  Anura Aldiansyah
+///            │  Sedang dibor
+///
+///   * the TIME has its own column — "when" is the first question;
+///   * the small dot carries the KIND (amber = drilling, brand = casting)
+///     and is hollow with a soft halo while the work is still running;
+///   * the recorder's name sits ABOVE the status (asked by Daniel), and the
+///     status is a coloured WORD, not a colour alone;
+///   * the figure is regular weight — the point code is what is read first.
 class BarisKegiatan extends StatelessWidget {
-  const BarisKegiatan({super.key, required this.k, required this.onKetuk});
+  const BarisKegiatan({super.key, required this.k, required this.onKetuk, this.last = false});
 
   final Kegiatan k;
   final VoidCallback onKetuk;
+
+  /// The last row draws no rail below its dot.
+  final bool last;
 
   @override
   Widget build(BuildContext context) {
@@ -385,53 +425,131 @@ class BarisKegiatan extends StatelessWidget {
     // membungkus seluruh isi, jadi barisnya memasang penadah sendiri.
     return InkWell(
       onTap: k.pilePointID == null ? null : onKetuk,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: _isi(context, w),
+      borderRadius: BorderRadius.circular(10),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _time(context, w),
+            _rail(w),
+            const SizedBox(width: 8),
+            Expanded(child: _body(context, w)),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _isi(BuildContext context, TerraColors w) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          k.bor ? Icons.construction : Icons.local_shipping,
-          size: 18,
-          color: k.bor ? w.warnFg : w.brand,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(k.kode, style: const TextStyle(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 1),
-              Text(
-                // Jamnya SELALU disebut, dan statusnya ikut: "beres 10:45"
-                // menjawab pertanyaannya, "terakhir 10:45" menyatakan bahwa
-                // pekerjaannya masih jalan dan angkanya belum akhir.
-                k.selesai
-                    ? t(context).activityTodayDone(formatTime(k.kapan))
-                    : k.preparing
-                        ? t(context).activityTodayPreparing(formatTime(k.kapan))
-                        : t(context).activityTodayRunning(formatTime(k.kapan)),
-                style: TextStyle(fontSize: 12, color: k.selesai ? w.muted : w.warnFg),
+  Color _kindColor(TerraColors w) => k.bor ? w.warnFg : w.brand;
+
+  Widget _time(BuildContext context, TerraColors w) {
+    final caption = k.selesai
+        ? t(context).activityFinished
+        : k.preparing
+            ? t(context).activitySince
+            : t(context).activityLast;
+    return SizedBox(
+      width: 50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            formatTime(k.kapan),
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: w.ink,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          Text(caption, style: TextStyle(fontSize: 11, color: w.faint)),
+        ],
+      ),
+    );
+  }
+
+  Widget _rail(TerraColors w) {
+    final c = _kindColor(w);
+    final running = !k.selesai;
+    return SizedBox(
+      width: 30,
+      child: Column(
+        children: [
+          const SizedBox(height: 4),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              // Hollow with a soft halo while running: the one difference
+              // that is not colour alone.
+              color: running ? w.surface : c,
+              border: running ? Border.all(color: c, width: 2) : null,
+              boxShadow: running ? [BoxShadow(color: c.withValues(alpha: 0.18), spreadRadius: 4)] : null,
+            ),
+          ),
+          if (!last)
+            Expanded(
+              child: Container(
+                width: 1.5,
+                margin: const EdgeInsets.only(top: 5),
+                color: w.border,
               ),
-              if (k.ket.trim().isNotEmpty)
-                Text(k.ket, style: TextStyle(fontSize: 11.5, color: w.faint)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context, TerraColors w) {
+    final (label, colour) = k.selesai
+        ? (t(context).statusDone, w.okFg)
+        : k.preparing
+            ? (t(context).activityPreparing, w.checkedFg)
+            : k.bor
+                ? (t(context).stageDrilling, w.warnFg)
+                : (t(context).stageCasting, w.brand);
+    return Padding(
+      padding: EdgeInsets.only(bottom: last ? 2 : 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  k.kode,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800, color: w.ink),
+                ),
+              ),
+              if (k.utama.isNotEmpty)
+                Text(
+                  k.utama,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: w.ink,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
             ],
           ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          k.utama,
-          textAlign: TextAlign.right,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
-        ),
-      ],
+          if (k.ket.trim().isNotEmpty) ...[
+            const SizedBox(height: 3),
+            Text(
+              k.ket,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12.5, color: w.muted),
+            ),
+          ],
+          const SizedBox(height: 1),
+          Text(label, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: colour)),
+        ],
+      ),
     );
   }
 }

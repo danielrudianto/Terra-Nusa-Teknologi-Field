@@ -1,0 +1,8 @@
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-main-0 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-11.2.0\android\src\main\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-release-1 C:\Users\danie\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-11.2.0\android\src\release\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-pngs-2 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_secure_storage\generated\res\pngs\release
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-updated_navigation_xml-3 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_secure_storage\generated\updated_navigation_xml\release
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-mergeReleaseResources-4 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_secure_storage\intermediates\incremental\release\mergeReleaseResources\merged.dir
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-mergeReleaseResources-5 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_secure_storage\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-release-6 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_secure_storage\intermediates\merged_res\release\mergeReleaseResources
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-release-7 D:\Repos\Terra-Nusa-Teknologi-Field\Terra-Nusa-Teknologi-Field\build\flutter_secure_storage\intermediates\packaged_res\release\packageReleaseResources

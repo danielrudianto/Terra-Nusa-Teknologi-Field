@@ -8,7 +8,10 @@ import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
 import '../../core/util/format.dart';
+import '../../core/widgets/quiet.dart';
 import '../../core/widgets/terra_banner.dart';
+import '../../core/network/api_error.dart';
+import '../reports/daily_report_actions.dart';
 import 'aktivitas_hari_ini.dart';
 
 /// KEGIATAN LAPANGAN SATU HARI — hari mana pun, bukan hanya hari ini.
@@ -118,7 +121,7 @@ class _AktivitasPageState extends ConsumerState<AktivitasPage> {
                           ),
                         ],
                       )
-                    : _Daftar(daftar: daftar, onKetuk: _buka),
+                    : _Daftar(daftar: daftar, hari: _hari, onKetuk: _buka),
               ),
             ),
           ),
@@ -159,14 +162,16 @@ final aktivitasTanggalProvider =
 /// Nama proyeknya diambil dari [projectsProvider] — data yang sudah ada di
 /// telepon — bukan dari jawaban laporan. Lihat [Kegiatan.projectID].
 class _Daftar extends ConsumerWidget {
-  const _Daftar({required this.daftar, required this.onKetuk});
+  const _Daftar({required this.daftar, required this.hari, required this.onKetuk});
 
   final List<Kegiatan> daftar;
+
+  /// The day shown — the daily report buttons make THIS day's picture.
+  final DateTime hari;
   final void Function(Kegiatan) onKetuk;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final w = context.colors;
     final proyek = ref.watch(projectsProvider).value ?? const [];
 
     // `daftar` SUDAH terurut terbaru di atas, dan `Map` di Dart menjaga
@@ -189,72 +194,67 @@ class _Daftar extends ConsumerWidget {
         // ditulis dua kali berturut-turut.
         if (kelompok.length > 1) ...[
           _Ringkas(daftar: daftar, judul: t(context).activityAllProjects),
-          const SizedBox(height: 14),
+          const SizedBox(height: 28),
         ],
         for (final (i, e) in kelompok.entries.indexed) ...[
-          if (i > 0) const SizedBox(height: 18),
-          if (!tanpaProyek)
-            _KepalaProyek(nama: _namaProyek(context, proyek, e.key)),
-          _Ringkas(daftar: e.value),
-          const SizedBox(height: 12),
-          for (final k in e.value) ...[
-            BarisKegiatan(k: k, onKetuk: () => onKetuk(k)),
-            Divider(height: 14, color: w.line),
-          ],
+          if (i > 0) const SizedBox(height: 32),
+          if (!tanpaProyek) _KepalaProyek(proyek: _proyek(proyek, e.key), id: e.key),
+          // Summary + the day's report buttons. Without a project id (an old
+          // server) there is no report to make, so the buttons stay away.
+          _Ringkas(daftar: e.value, projectId: e.key, hari: hari),
+          const SizedBox(height: 18),
+          QuietPanel(
+            padding: const EdgeInsets.fromLTRB(12, 20, 16, 8),
+            child: Column(
+              children: [
+                for (final k in e.value)
+                  BarisKegiatan(k: k, onKetuk: () => onKetuk(k), last: k == e.value.last),
+              ],
+            ),
+          ),
         ],
       ],
     );
   }
 
-  /// "TNT-24-001 · Gudang Cikarang", sama dengan layar lain.
-  ///
-  /// Proyek yang TIDAK ADA di telepon tetap disebut dengan nomornya —
-  /// sama dengan halaman absensi. Ia tetap keliru bila nomornya tidak
-  /// dikenal, tetapi keliru yang dapat ditanyakan ke kantor, bukan baris
-  /// kegiatan yang hilang tanpa jejak.
-  static String _namaProyek(
-    BuildContext context,
-    List<Map<String, Object?>> proyek,
-    int? id,
-  ) {
-    if (id == null) return t(context).activityNoProject;
+  static Map<String, Object?>? _proyek(List<Map<String, Object?>> proyek, int? id) {
     for (final p in proyek) {
-      if ('${p['id']}' == '$id') return '${p['code']} \u00b7 ${p['name']}';
+      if ('${p['id']}' == '$id') return p;
     }
-    return 'Proyek #$id';
+    return null;
   }
 }
 
-/// Kepala satu kelompok proyek.
+/// Kepala satu kelompok proyek: KODE tebal, nama di sebelahnya redup.
 ///
-/// Sengaja TENANG — satu baris kecil berhuruf tebal, bukan kartu berwarna:
-/// yang dibaca di layar ini adalah kegiatannya, dan kepala yang mencolok
-/// akan bersaing dengan isinya.
+/// Proyek yang TIDAK ADA di telepon tetap disebut dengan nomornya — sama
+/// dengan halaman absensi: keliru yang dapat ditanyakan ke kantor, bukan
+/// baris kegiatan yang hilang tanpa jejak.
 class _KepalaProyek extends StatelessWidget {
-  const _KepalaProyek({required this.nama});
+  const _KepalaProyek({required this.proyek, required this.id});
 
-  final String nama;
+  final Map<String, Object?>? proyek;
+  final int? id;
 
   @override
   Widget build(BuildContext context) {
     final w = context.colors;
+    final kode = id == null ? t(context).activityNoProject : '${proyek?['code'] ?? 'Proyek #$id'}';
+    final nama = proyek == null ? '' : '${proyek!['name'] ?? ''}';
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(left: 2, bottom: 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
-          Icon(Icons.business_outlined, size: 15, color: w.muted),
-          const SizedBox(width: 6),
+          Text(kode, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: w.ink)),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               nama,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.2,
-                color: w.muted,
-              ),
+              style: TextStyle(fontSize: 12.5, color: w.muted),
             ),
           ),
         ],
@@ -331,9 +331,11 @@ class _PemilihHari extends StatelessWidget {
 /// JUMLAH HARI ITU — satu-satunya hal yang tidak ada di kartu beranda.
 ///
 /// Pertanyaan yang dibawa ke rapat bukan "titik mana saja yang dikerjakan",
-/// melainkan "kemarin dapat berapa meter dan berapa kubik".
-class _Ringkas extends StatelessWidget {
-  const _Ringkas({required this.daftar, this.judul});
+/// melainkan "kemarin dapat berapa meter dan berapa kubik" — jadi METER dan
+/// KUBIK yang paling besar, jumlah titiknya keterangan (redesign 22 Nov
+/// 2026). Di bawahnya tombol laporan harian proyek itu untuk hari itu.
+class _Ringkas extends ConsumerStatefulWidget {
+  const _Ringkas({required this.daftar, this.judul, this.projectId, this.hari});
 
   final List<Kegiatan> daftar;
 
@@ -341,87 +343,155 @@ class _Ringkas extends StatelessWidget {
   /// berjudul oleh kepala kelompoknya sendiri.
   final String? judul;
 
-  @override
-  Widget build(BuildContext context) {
-    final w = context.colors;
-    final bor = daftar.where((k) => k.bor).length;
-    // A pile still in preparation has not been poured: counting it here
-    // would claim a pour that has not happened.
-    final cor = daftar.where((k) => !k.bor && !k.preparing).length;
+  /// With both: the "Simpan" and "Kirim ke WA" buttons for this project's
+  /// daily report on [hari].
+  final int? projectId;
+  final DateTime? hari;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: w.surface2,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: w.line),
-      ),
-      child: Column(
-        children: [
-          if (judul != null) ...[
-            Text(
-              judul!,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.3,
-                color: w.muted,
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: _Angka(
-                  ikon: Icons.construction,
-                  warna: w.warnFg,
-                  nilai: '$bor',
-                  label: t(context).activityDrilled,
-                ),
-              ),
-              Container(width: 1, height: 30, color: w.line),
-              Expanded(
-                child: _Angka(
-                  ikon: Icons.local_shipping,
-                  warna: w.brand,
-                  nilai: '$cor',
-                  label: t(context).activityPoured,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  ConsumerState<_Ringkas> createState() => _RingkasState();
 }
 
-class _Angka extends StatelessWidget {
-  const _Angka({
-    required this.ikon,
-    required this.warna,
-    required this.nilai,
-    required this.label,
-  });
+class _RingkasState extends ConsumerState<_Ringkas> {
+  /// Which button is working: 'save' | 'share' | null. One at a time — the
+  /// picture is made from the server each time.
+  String? _busy;
 
-  final IconData ikon;
-  final Color warna;
-  final String nilai;
-  final String label;
+  Future<void> _run(String which) async {
+    final id = widget.projectId;
+    final day = widget.hari;
+    if (id == null || day == null || _busy != null) return;
+    final l = t(context);
+    final lang = Localizations.localeOf(context).languageCode;
+    final m = ScaffoldMessenger.of(context);
+    setState(() => _busy = which);
+    try {
+      final made = await makeDailyReport(ref, l, lang, id, day);
+      if (!mounted) return;
+      final png = made.png;
+      if (png == null) {
+        m
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(l.drEmpty(longDate(day)))));
+        return;
+      }
+      if (which == 'save') {
+        await saveDailyReport(context, png, made.report.fileName);
+      } else {
+        await shareDailyReport(context, png, made.report.fileName);
+      }
+    } catch (e) {
+      m
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(e is ApiError ? e.message : l.drLoadFailed)));
+    } finally {
+      if (mounted) setState(() => _busy = null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final w = context.colors;
+    final daftar = widget.daftar;
+    final bor = daftar.where((k) => k.bor).toList();
+    // A pile still in preparation has not been poured: counting it here
+    // would claim a pour that has not happened.
+    final cor = daftar.where((k) => !k.bor && !k.preparing).toList();
+    // Metres drilled THAT DAY: a hole continued from yesterday adds only
+    // its difference (SP.B73, 23 Nov 2026).
+    final meter = bor.fold<double>(0, (s, k) => s + (k.metersM ?? k.depthM ?? 0));
+    final kubik = cor.fold<double>(0, (s, k) => s + (k.volumeM3 ?? 0));
+    final tm = cor.fold<int>(0, (s, k) => s + k.trucks);
+    final buttons = widget.projectId != null && widget.hari != null;
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(ikon, size: 18, color: warna),
-        const SizedBox(height: 4),
-        Text(nilai,
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w800, color: w.ink)),
-        Text(label, style: TextStyle(fontSize: 12, color: w.muted)),
+        if (widget.judul != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 10),
+            child: Text(
+              widget.judul!,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: w.ink),
+            ),
+          ),
+        QuietPanel(
+          padding: const EdgeInsets.fromLTRB(4, 16, 4, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: QuietFigure(
+                        dot: w.warnFg,
+                        label: t(context).drDrilling,
+                        value: reportNumber(_lang(context), meter, 1),
+                        unit: 'm',
+                        sub: '${bor.length} ${t(context).activityDrilled}',
+                      ),
+                    ),
+                    Container(width: 1, color: w.line),
+                    Expanded(
+                      child: QuietFigure(
+                        dot: w.brand,
+                        label: t(context).drCasting,
+                        value: reportNumber(_lang(context), kubik, 1),
+                        unit: 'm³',
+                        sub: '${cor.length} ${t(context).activityPoured} · $tm TM',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (buttons) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: Dimens.minTouch,
+                          child: OutlinedButton.icon(
+                            onPressed: _busy == null ? () => _run('save') : null,
+                            icon: _busy == 'save' ? const _Spin() : const Icon(Icons.download, size: 18),
+                            label: Text(t(context).drSave),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SizedBox(
+                          height: Dimens.minTouch,
+                          child: FilledButton.icon(
+                            style: quietPrimary(context),
+                            onPressed: _busy == null ? () => _run('share') : null,
+                            icon: _busy == 'share' ? const _Spin() : const Icon(Icons.share, size: 18),
+                            label: Text(t(context).activitySendWa),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }
+
+  static String _lang(BuildContext context) => Localizations.localeOf(context).languageCode;
+}
+
+class _Spin extends StatelessWidget {
+  const _Spin();
+
+  @override
+  Widget build(BuildContext context) =>
+      const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2));
 }
