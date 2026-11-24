@@ -40,19 +40,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The stable channel, not a pinned version.
+      # PINNED to the version the releases are built with.
       #
-      # `pubspec.lock` records `flutter: ">=3.47.0"` and SETUP.md says
-      # "stable 3.47 or newer" — a lower bound, not an exact version, so
-      # pinning one here would state something the repo does not.
+      # This used to follow the stable channel, with a note to pin it the day
+      # a new stable broke the build on unchanged code. That day was 24 Nov
+      # 2026: a newer stable deprecates `package:flutter/material.dart` (moved
+      # to `material_ui`), so all 73 importing files raised an info and
+      # `--fatal-infos` failed the gate while Daniel's own 3.47.7 analyzed
+      # clean.
       #
-      # The trade: a future stable can break the build on a day nobody
-      # changed any code. If that happens, pin `flutter-version` to the
-      # version that works rather than reverting this file — a gate that is
-      # switched off to make it quiet stops being a gate.
+      # Raise this together with the laptop's `flutter upgrade`, and do the
+      # `material_ui` migration as its own change — never switch the gate off
+      # to make it quiet.
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.47.7
           cache: true
 
       - run: flutter pub get
