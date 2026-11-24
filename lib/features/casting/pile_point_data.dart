@@ -101,6 +101,17 @@ class FieldPilePoint {
     return iplDates?.contains(today) ?? iplDate == today;
   }
 
+  /// Casting may start with an IPL confirmed for today OR YESTERDAY: a pour
+  /// that starts after midnight is still yesterday's permitted work. The
+  /// same rule as the server (`_tahan_tanpa_ipl`, 24 Nov 2026).
+  bool get iplReadyForCast {
+    if (!server.containsKey('iplDate')) return true;
+    final now = DateTime.now();
+    final days = {isoDate(now), isoDate(now.subtract(const Duration(days: 1)))};
+    final dates = iplDates ?? {?iplDate};
+    return dates.any(days.contains);
+  }
+
   // -------------------------------------------------------------------
   // Kemajuan titik yang sedang dikerjakan HP lain
   // -------------------------------------------------------------------

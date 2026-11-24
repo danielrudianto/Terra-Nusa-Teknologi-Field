@@ -13,6 +13,7 @@ import '../../core/widgets/view_states.dart';
 import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
 import '../drilling/bor_kurva_view.dart';
+import 'concrete_profile.dart';
 
 /// Riwayat satu titik, dibaca LANGSUNG dari server.
 ///
@@ -99,7 +100,7 @@ class PointHistoryPage extends ConsumerWidget {
         else ...[
           _JudulBagian(t(context).castSection),
           for (final (i, c) in castings.indexed)
-            AppearIn(order: i, child: _KartuCor(cor: (c as Map).cast<String, Object?>())),
+            AppearIn(order: i, child: _KartuCor(cor: (c as Map).cast<String, Object?>(), code: code)),
         ],
         if (jejak.isNotEmpty)
           _JejakLipat(
@@ -112,9 +113,12 @@ class PointHistoryPage extends ConsumerWidget {
 
 /// Satu log cor beserta TM-nya.
 class _KartuCor extends StatelessWidget {
-  const _KartuCor({required this.cor});
+  const _KartuCor({required this.cor, required this.code});
 
   final Map<String, Object?> cor;
+
+  /// Kode titiknya — untuk judul gambar profil beton yang dibagikan.
+  final String code;
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +136,8 @@ class _KartuCor extends StatelessWidget {
     final volume = toDoubleOrNull(h['volumeAktualM3']);
     final teoritis = toDoubleOrNull(h['volumeTeoritisAktualM3']) ?? toDoubleOrNull(h['volumeTeoritisRencanaM3']);
     final lebih = toDoubleOrNull(h['lebihPakaiPersen']);
+    final keadaan = ((h['keadaanSekarang'] as Map?) ?? const {}).cast<String, Object?>();
+    final dasar = toDoubleOrNull(keadaan['dasarLubangM']);
 
     return ListCard(
       child: Column(
@@ -183,6 +189,20 @@ class _KartuCor extends StatelessWidget {
           if ((toIntOrNull(tremie['jumlahSegmen']) ?? 0) > 0) ...[
             const Divider(height: 22),
             _SusunanTremie(ringkas: tremie),
+          ],
+          // PROFIL BETON — necking/bulking per TM, dapat disalin dan
+          // dibagikan (Daniel, 24 Nov 2026: "Mana gambar bulking necking
+          // nya bos????"). Sama dengan layar Pantau; hanya bila dasar
+          // lubangnya diketahui.
+          if (!dihapus && tm.isNotEmpty && dasar != null && dasar > 0) ...[
+            const Divider(height: 22),
+            ConcreteProfileCard(
+              segments: concreteSegments(tm, cor['diameterMm'], dasar),
+              bottomM: dasar,
+              cutOffM: toDoubleOrNull(keadaan['cutOffM']) ?? 0,
+              diameterMm: cor['diameterMm'],
+              code: code,
+            ),
           ],
           if (cor['note'] != null && '${cor['note']}'.trim().isNotEmpty) ...[
             const SizedBox(height: 10),

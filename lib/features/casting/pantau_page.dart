@@ -16,6 +16,7 @@ import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
 import '../drilling/bor_kurva_view.dart';
 import 'calc/pile_snapshot.dart';
+import 'concrete_profile.dart';
 import 'pile_section_view.dart';
 
 /// PANTAU satu titik yang sedang dikerjakan HP lain.
@@ -352,6 +353,20 @@ class _PantauCor extends StatelessWidget {
             label: t(context).watchEmbedment,
             nilai: formatMeters(toDoubleOrNull(k['tremieBottomM'])! - muka),
           ),
+
+        // PROFIL BETON — necking dan bulking per TM, dapat disalin dan
+        // dibagikan (24 Nov 2026). Hanya bila dasar lubangnya diketahui:
+        // tanpa itu ruas TM pertama tidak punya batas bawah.
+        if (dasar != null && dasar > 0 && tm.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          ConcreteProfileCard(
+            segments: concreteSegments(tm, cor['diameterMm'], dasar),
+            bottomM: dasar,
+            cutOffM: toDoubleOrNull(k['cutOffM']) ?? 0,
+            diameterMm: cor['diameterMm'],
+            code: kode,
+          ),
+        ],
 
         // TABEL TM — angka di atas menjawab "sampai mana", tabel ini
         // menjawab "dari mana angka itu". Ditaruh DI BAWAH angkanya, bukan

@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.27 (60) — Lembar titik lebih ringkas
+
+<id>
+• Lembar titik lebih ringkas: tombol kerja langsung terlihat, data titik lengkap dilipat di bawah ringkasan diameter, panjang bor, dan volume.
+• Engineering level 1 hanya melihat titik di IPL hari ini; level 2 ke atas melihat semua titik.
+</id>
+<en-US>
+• A simpler point sheet: the work buttons show straight away, and the full point data folds under a summary of diameter, drill length and volume.
+• Engineering level 1 sees only today's IPL points; level 2 and up see every point.
+</en-US>
+<zh-CN>
+• 桩位页面更简洁：操作按钮直接可见，完整桩位数据折叠在直径、钻孔长度和体积摘要之下。
+• 工程部 1 级只能看到今日 IPL 中的桩位；2 级及以上可看到全部桩位。
+</zh-CN>

@@ -29,6 +29,7 @@ String reasonTextOf(AppLocalizations l, String? code, [String? detail]) {
     'ABSEN_SUDAH_ADA' => l.reasonAbsenSudahAda,
     'WORKER_BELUM_ADA' => l.reasonWorkerBelumAda,
     'TITIK_BELUM_DIBOR' => l.reasonTitikBelumDibor,
+    'TANPA_IPL' => l.reasonTanpaIpl,
     'PEKERJA_DIHAPUS' => l.reasonPekerjaDihapus,
     'PEKERJA_BUKAN_KRU' => l.reasonPekerjaBukanKru,
     'PEKERJA_GANDA' => l.reasonPekerjaGanda,

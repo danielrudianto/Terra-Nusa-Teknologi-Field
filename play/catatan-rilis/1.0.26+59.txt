@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.26 (59) — Profil beton di riwayat titik
+
+<id>
+• Profil beton (necking/bulking) kini juga tampil di Riwayat titik, di kartu Pengecoran, lengkap dengan tombol Salin teks dan Bagikan.
+• Label kedalaman pada grafik bor ditulis bulat sehingga tidak lagi terpotong.
+</id>
+<en-US>
+• The concrete profile (necking/bulking) now also appears in a point's History, on the Casting card, with Copy text and Share.
+• Depth labels on the drilling chart are rounded so they are no longer cut off.
+</en-US>
+<zh-CN>
+• 混凝土剖面（缩颈/扩径）现在也显示在桩位历史的浇筑卡片中，可复制文字和分享。
+• 钻孔图表的深度标签取整显示，不再被截断。
+</zh-CN>

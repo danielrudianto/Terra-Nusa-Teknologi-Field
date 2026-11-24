@@ -310,7 +310,9 @@ class _KurvaPainter extends CustomPainter {
       final m = skalaDalam * i / 4;
       final yy = y(m);
       canvas.drawLine(Offset(kiri, yy), Offset(kanan, yy), garisBantu);
-      _teks(canvas, formatMeters(m), Offset(0, yy - 7), kiri - 6, colors.faint,
+      // Bulat: "4,03 m" tidak muat di sumbunya dan terpotong jadi "4,03…"
+      // (24 Nov 2026). Garis bantunya penanda skala, bukan bacaan.
+      _teks(canvas, formatMeters(m, decimals: skalaDalam < 8 ? 1 : 0), Offset(0, yy - 7), kiri - 6, colors.faint,
           align: TextAlign.right);
     }
 

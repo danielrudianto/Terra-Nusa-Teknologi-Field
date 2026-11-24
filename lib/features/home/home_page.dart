@@ -14,6 +14,7 @@ import '../../core/widgets/list_card.dart';
 import 'aktivitas_hari_ini.dart';
 import 'status_banners.dart';
 import 'watched_logs.dart';
+import '../ipl/ipl_approve_page.dart';
 import '../settings/power_guide.dart';
 
 class HomePage extends ConsumerWidget {
@@ -41,6 +42,11 @@ class HomePage extends ConsumerWidget {
     final level = session?.permissions.level ?? 0;
     final engineering = session?.permissions.departments.contains('engineering') ?? false;
     final canReport = (level >= 4 || engineering) && (session?.allows('field_casting', 'read') ?? false);
+    // Confirming IPLs from the phone (24 Nov 2026): level 4 and up, the same
+    // rule as the web. The waiting count is read only for those who see it.
+    final canApprove = canApproveIpl(session);
+    final waiting = canApprove ? ref.watch(pendingIplProvider).value : null;
+    final waitingCount = (waiting?['ipl'] as List?)?.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +64,10 @@ class HomePage extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncProvider.notifier).run(diminta: true),
+        onRefresh: () {
+          if (canApprove) ref.invalidate(pendingIplProvider);
+          return ref.read(syncProvider.notifier).run(diminta: true);
+        },
         child: ListView(
           padding: pagePaddingAman(context),
           children: [
@@ -90,6 +99,15 @@ class HomePage extends ConsumerWidget {
                   kind: BannerKind.warning,
                   title: t(context).noFieldAccess,
                   body: t(context).noFieldAccessBody,
+                ),
+              if (canApprove)
+                _Shortcut(
+                  icon: Icons.verified_outlined,
+                  title: t(context).iplApproveTitle,
+                  body: waitingCount == null || waitingCount == 0
+                      ? t(context).iplApproveShortcutBody
+                      : t(context).iplApproveWaiting('$waitingCount'),
+                  onTap: () => context.push('/ipl/approve'),
                 ),
               if (canIpl)
                 _Shortcut(

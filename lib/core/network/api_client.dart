@@ -193,6 +193,39 @@ class ApiClient {
     }
   }
 
+  /// IPLs still WAITING for confirmation, across every project, each with its
+  /// points (24 Nov 2026: confirming an IPL from the phone, level 4 and up).
+  /// `canDecide` says whether this user may confirm or reject at all; `own`
+  /// on an IPL marks one this user filed and may not decide on.
+  Future<Map<String, Object?>> pendingIpl() async {
+    try {
+      final r = await dio.get<Map<String, dynamic>>('/field/ipl/menunggu');
+      return (r.data ?? const {}).cast<String, Object?>();
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Confirm an IPL. Returns the codes whose GS was written (`written`) and
+  /// those left alone because they already have a drill log (`skipped`).
+  Future<Map<String, Object?>> confirmIpl(int iplId) async {
+    try {
+      final r = await dio.post<Map<String, dynamic>>('/field/ipl/$iplId/confirm');
+      return (r.data ?? const {}).cast<String, Object?>();
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// Reject an IPL with a reason; the surveyor reads it and sends it again.
+  Future<void> rejectIpl(int iplId, String reason) async {
+    try {
+      await dio.post<Map<String, dynamic>>('/field/ipl/$iplId/reject', data: {'reason': reason});
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
   /// "Rekapitulasi Data Tiang" as .xlsx bytes. No [from] = since the start.
   ///
   /// [sheets] names which sheets the server builds (tiang / beton /

@@ -42,6 +42,16 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _pullTimer = Timer.periodic(_pullEvery, (_) => _pullWhileOpen());
+    // Cold start: once the stored session is read, fetch its permissions
+    // again — see [_reloadPermissions].
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final s = await ref.read(sessionProvider.future);
+        if (mounted && s.isLoggedIn) _reloadPermissions();
+      } catch (_) {
+        // No stored session yet: the login reads permissions itself.
+      }
+    });
   }
 
   @override
@@ -57,6 +67,16 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) return;
     if (!(ref.read(sessionProvider).value?.isLoggedIn ?? false)) return;
     unawaited(ref.read(syncProvider.notifier).run());
+  }
+
+  /// PERMISSIONS ARE READ AGAIN on every start and return to the app
+  /// (24 Nov 2026). They used to be read only at login, so a module added
+  /// later — IPL, 23 Nov — stayed invisible on a phone that logged in
+  /// before it existed: Ko Michael, level 5, saw no IPL entry until he
+  /// tapped "Muat ulang hak akses" in Settings. No signal = the last known
+  /// permissions stay (see [SessionNotifier.reloadPermissions]).
+  void _reloadPermissions() {
+    unawaited(ref.read(sessionProvider.notifier).reloadPermissions().catchError((_) {}));
   }
 
   /// Returning to the app = a good moment to push: the foreman has just
@@ -76,6 +96,7 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       // satu-satunya kesempatan memperbaiki pendaftaran token yang gagal
       // karena HP-nya tanpa sinyal saat aplikasi dibuka.
       unawaited(PesanAwan.pastikanTerdaftar(ref.read(apiProvider)));
+      _reloadPermissions();
     }
     // Back from the phone's settings: read battery saving again.
     if (state == AppLifecycleState.resumed) ref.invalidate(powerStatusProvider);

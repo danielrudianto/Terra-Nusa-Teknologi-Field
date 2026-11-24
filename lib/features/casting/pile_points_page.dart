@@ -91,7 +91,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
     if (session == null) return false;
     final level = session.permissions.level;
     final engineering = session.permissions.departments.contains('engineering');
-    final plans = level >= 4 || engineering || session.allows('field_ipl', 'create');
+    // Engineering sees every point from LEVEL 2, to supervise (Daniel,
+    // 24 Nov 2026: "Level 2 baru bisa lihat semua untuk awasin"); an
+    // engineer at level 1 sees today's IPL points, like the rig crew.
+    final plans = level >= 4 || (engineering && level >= 2) || session.allows('field_ipl', 'create');
     final works = session.allows('field_casting', 'create');
     final serverKnowsIpl = all.any((pt) => pt.server.containsKey('iplDate'));
     return works && !plans && serverKnowsIpl;
@@ -395,6 +398,12 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
           final g = pt.geometry;
           final drilled = pt.isDrilled;
           final elsewhere = pt.castedElsewhere && pt.stage != 'sudah_cor';
+          // DRILLING AND CASTING ONLY WITH A CONFIRMED IPL (24 Nov 2026): the
+          // server holds back anything new without one. Level 5 may go
+          // ahead — the server lets them through and records it.
+          final level5 = (ref.read(sessionProvider).value?.permissions.level ?? 0) >= 5;
+          final iplBor = level5 || pt.iplReady;
+          final iplCor = level5 || pt.iplReadyForCast;
           final drillLogOpen = pt.drillLog != null && pt.drillLogBody?['status'] != 'selesai';
           final drillingElsewhere = pt.drillLoggedElsewhere && pt.stage == 'sedang_bor';
           final castingIsMine = myId != null && pt.castingHolderId == myId;
@@ -428,15 +437,37 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   ),
                 ],
               ),
+              // MANDOR-FIRST (Daniel, 24 Nov 2026: "orang bego (mandor)
+              // jangan dibikin susah"). The three numbers a rig crew works
+              // to stay in sight; the full engineering table folds away, so
+              // the buttons are on screen without scrolling.
+              Text(
+                t(context).pointSummary(
+                  '${pt.diameterMm}',
+                  formatMeters(g?.plannedDrillLengthM),
+                  pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ','),
+                ),
+                style: TextStyle(color: w.muted, fontSize: 14),
+              ),
+              Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: const EdgeInsets.only(bottom: 6),
+                  dense: true,
+                  title: Text(t(context).pointDataTitle, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+                  children: [
+                    _InfoRow(t(context).fieldDiameter, '${pt.diameterMm} mm'),
+                    _InfoRow(t(context).fieldLevels, '${_elevation(pt.groundLevel)} / ${_elevation(pt.cutOffLevel)} / ${_elevation(pt.tipLevel)}'),
+                    _InfoRow(t(context).fieldCutOffDepth, formatMeters(g?.cutOffDepthM)),
+                    _InfoRow(t(context).fieldPlannedDrill, formatMeters(g?.plannedDrillLengthM)),
+                    _InfoRow(t(context).fieldPlannedEff, formatMeters(pt.plannedEffectiveLengthM)),
+                    _InfoRow(t(context).fieldPlannedVol, '${pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³'),
+                    if (pt.drillDepthM != null) _InfoRow(t(context).fieldActualDrill, formatMeters(pt.drillDepthM)),
+                  ],
+                ),
+              ),
               const SizedBox(height: 8),
-              _InfoRow(t(context).fieldDiameter, '${pt.diameterMm} mm'),
-              _InfoRow(t(context).fieldLevels, '${_elevation(pt.groundLevel)} / ${_elevation(pt.cutOffLevel)} / ${_elevation(pt.tipLevel)}'),
-              _InfoRow(t(context).fieldCutOffDepth, formatMeters(g?.cutOffDepthM)),
-              _InfoRow(t(context).fieldPlannedDrill, formatMeters(g?.plannedDrillLengthM)),
-              _InfoRow(t(context).fieldPlannedEff, formatMeters(pt.plannedEffectiveLengthM)),
-              _InfoRow(t(context).fieldPlannedVol, '${pt.plannedTheoreticalVolumeM3.toStringAsFixed(2).replaceAll('.', ',')} m³'),
-              if (pt.drillDepthM != null) _InfoRow(t(context).fieldActualDrill, formatMeters(pt.drillDepthM)),
-              const SizedBox(height: 14),
               if (g == null && pt.stage != 'sudah_cor')
                 TerraBanner(
                   kind: BannerKind.warning,
@@ -616,7 +647,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                 else if (!drilled && !drillingElsewhere) ...[
                   // No IPL confirmed for today: the surveyor has not cleared
                   // this point, so drilling stays shut and the banner says why.
-                  if (!pt.iplReady) ...[
+                  if (!iplBor) ...[
                     TerraBanner(
                       kind: BannerKind.warning,
                       icon: Icons.assignment_late_outlined,
@@ -635,7 +666,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     // lubang tercatat di lubang sebelahnya, dan dari situ
                     // seluruh hitungan tertanam serta volume tiang itu
                     // berdiri di atas angka yang bukan miliknya.
-                    onPressed: !pt.iplReady
+                    onPressed: !iplBor
                         ? null
                         : () async {
                       final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
@@ -654,10 +685,14 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(c);
-                      _markDrilled(pt);
-                    },
+                    // A FIRST drill mark needs today's IPL too; correcting
+                    // a point already drilled (below) does not.
+                    onPressed: !iplBor
+                        ? null
+                        : () {
+                            Navigator.pop(c);
+                            _markDrilled(pt);
+                          },
                     icon: const Icon(Icons.straighten),
                     label: Text(t(context).markDrilledNoLog),
                   ),
@@ -685,13 +720,22 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     icon: const Icon(Icons.open_in_new),
                     label: Text(t(context).openCastLog),
                   )
-                else if (pt.stage != 'sudah_cor' && !elsewhere)
+                else if (pt.stage != 'sudah_cor' && !elsewhere) ...[
+                  if (drilled && !iplCor) ...[
+                    TerraBanner(
+                      kind: BannerKind.warning,
+                      icon: Icons.assignment_late_outlined,
+                      title: t(context).iplNotReadyCastTitle,
+                      body: t(context).iplNotReadyCastBody,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   FilledButton.icon(
                     // Nomor titiknya diketik ulang dulu. Salah tap baris di
                     // daftar inilah yang pernah membuat cor satu titik
                     // tercatat di titik sebelahnya, dan baru ketahuan setelah
                     // angkanya ikut terhitung di volume. Lihat askCodeConfirm.
-                    onPressed: g == null || !drilled
+                    onPressed: g == null || !drilled || !iplCor
                         ? null
                         : () async {
                             final semua = (ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const [])
@@ -738,6 +782,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                     icon: const Icon(Icons.play_arrow),
                     label: Text(t(context).startCastLog),
                   ),
+                ],
               ],
               // Riwayat penuh dari server: satu-satunya cara melihat angka
               // log cor yang dibuat HP lain, termasuk titik yang sudah selesai

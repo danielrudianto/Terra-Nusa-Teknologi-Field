@@ -2280,6 +2280,256 @@
   "@reasonIplTitikSudahAda": {
     "description": "reasonIplTitikSudahAda"
   },
+  "iplApproveTitle": "Konfirmasi IPL",
+  "@iplApproveTitle": {
+    "description": "iplApproveTitle"
+  },
+  "iplApproveShortcutBody": "Periksa IPL yang diajukan surveyor, lalu konfirmasi atau tolak.",
+  "@iplApproveShortcutBody": {
+    "description": "iplApproveShortcutBody"
+  },
+  "iplApproveWaiting": "{n} IPL menunggu konfirmasi Anda.",
+  "@iplApproveWaiting": {
+    "description": "iplApproveWaiting",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplApproveNone": "Tidak ada IPL yang menunggu konfirmasi.",
+  "@iplApproveNone": {
+    "description": "iplApproveNone"
+  },
+  "iplApproveLoadFailed": "Daftar IPL gagal dimuat",
+  "@iplApproveLoadFailed": {
+    "description": "iplApproveLoadFailed"
+  },
+  "iplApproveMeta": "Diajukan {name}, {n} titik",
+  "@iplApproveMeta": {
+    "description": "iplApproveMeta",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplApproveOwnShort": "Anda yang mengajukan IPL ini",
+  "@iplApproveOwnShort": {
+    "description": "iplApproveOwnShort"
+  },
+  "iplApproveOwn": "IPL ini Anda ajukan sendiri",
+  "@iplApproveOwn": {
+    "description": "iplApproveOwn"
+  },
+  "iplApproveOwnBody": "Pengaju tidak boleh mengonfirmasi IPL-nya sendiri, kecuali level 5. Minta atasan lain memeriksanya.",
+  "@iplApproveOwnBody": {
+    "description": "iplApproveOwnBody"
+  },
+  "iplApproveNoRight": "Anda hanya dapat melihat IPL ini",
+  "@iplApproveNoRight": {
+    "description": "iplApproveNoRight"
+  },
+  "iplApproveNoRightBody": "Konfirmasi dan penolakan IPL untuk level 4 ke atas atau divisi Engineering.",
+  "@iplApproveNoRightBody": {
+    "description": "iplApproveNoRightBody"
+  },
+  "iplApproveConfirm": "Konfirmasi",
+  "@iplApproveConfirm": {
+    "description": "iplApproveConfirm"
+  },
+  "iplApproveReject": "Tolak",
+  "@iplApproveReject": {
+    "description": "iplApproveReject"
+  },
+  "iplApproveConfirmTitle": "Konfirmasi IPL {date}?",
+  "@iplApproveConfirmTitle": {
+    "description": "iplApproveConfirmTitle",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "iplApproveConfirmBody": "GS aktual dari IPL ini ditulis ke {n} titik, dan nama serta tanda tangan Anda tercetak di PDF-nya. Titik yang sudah punya log bor tetap memakai GS lamanya.",
+  "@iplApproveConfirmBody": {
+    "description": "iplApproveConfirmBody",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplApproveDone": "IPL dikonfirmasi.",
+  "@iplApproveDone": {
+    "description": "iplApproveDone"
+  },
+  "iplApproveDoneSkipped": "IPL dikonfirmasi. {codes} sudah punya log bor, GS-nya tidak diubah.",
+  "@iplApproveDoneSkipped": {
+    "description": "iplApproveDoneSkipped",
+    "placeholders": {
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "iplApproveRejectTitle": "Tolak IPL ini?",
+  "@iplApproveRejectTitle": {
+    "description": "iplApproveRejectTitle"
+  },
+  "iplApproveRejectBody": "Tulis alasannya. Surveyor membacanya di HP, membetulkan, lalu mengirim ulang.",
+  "@iplApproveRejectBody": {
+    "description": "iplApproveRejectBody"
+  },
+  "iplApproveReasonLabel": "Alasan penolakan",
+  "@iplApproveReasonLabel": {
+    "description": "iplApproveReasonLabel"
+  },
+  "iplApproveReasonShort": "Alasan minimal 5 huruf.",
+  "@iplApproveReasonShort": {
+    "description": "iplApproveReasonShort"
+  },
+  "iplApproveRejectedDone": "IPL ditolak. Surveyor melihat alasannya di HP.",
+  "@iplApproveRejectedDone": {
+    "description": "iplApproveRejectedDone"
+  },
+  "iplApproveNote": "Catatan: {note}",
+  "@iplApproveNote": {
+    "description": "iplApproveNote",
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "iplApproveNoSignature": "Tanda tangan Anda belum terdaftar",
+  "@iplApproveNoSignature": {
+    "description": "iplApproveNoSignature"
+  },
+  "iplApproveNoSignatureBody": "PDF IPL mencetak tanda tangan pengonfirmasi. Daftarkan tanda tangan Anda di TerraBot web (Tanda tangan saya); begitu terdaftar, PDF yang diunduh ulang langsung memuatnya.",
+  "@iplApproveNoSignatureBody": {
+    "description": "iplApproveNoSignatureBody"
+  },
+  "profileTitle": "Profil beton",
+  "@profileTitle": {
+    "description": "profileTitle"
+  },
+  "profileNone": "Belum ada TM yang disounding sesudah dituang. Tanpa muka beton sesudah tiap TM, necking dan bulking tidak dapat dihitung.",
+  "@profileNone": {
+    "description": "profileNone"
+  },
+  "profileNecking": "Necking {p}",
+  "@profileNecking": {
+    "description": "profileNecking",
+    "placeholders": {
+      "p": {
+        "type": "String"
+      }
+    }
+  },
+  "profileBulking": "Bulking",
+  "@profileBulking": {
+    "description": "profileBulking"
+  },
+  "profileFits": "Sesuai {p}",
+  "@profileFits": {
+    "description": "profileFits",
+    "placeholders": {
+      "p": {
+        "type": "String"
+      }
+    }
+  },
+  "profileShort": "Ruas pendek, tidak dinilai",
+  "@profileShort": {
+    "description": "profileShort"
+  },
+  "profileHow": "Rata-rata per TM: volume dibagi tinggi yang diisinya. Necking bila lebih dari 5% di bawah rencana, bulking bila lebih dari 10% di atasnya. Lebar gambar dibesarkan 2× supaya simpangannya terlihat.",
+  "@profileHow": {
+    "description": "profileHow"
+  },
+  "profileCopy": "Salin teks",
+  "@profileCopy": {
+    "description": "profileCopy"
+  },
+  "profileShare": "Bagikan",
+  "@profileShare": {
+    "description": "profileShare"
+  },
+  "profileCopied": "Laporan profil beton disalin.",
+  "@profileCopied": {
+    "description": "profileCopied"
+  },
+  "profileReportTitle": "Profil beton {code}",
+  "@profileReportTitle": {
+    "description": "profileReportTitle",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "profileReportDesign": "Diameter rencana {d}, dasar lubang {bottom}",
+  "@profileReportDesign": {
+    "description": "profileReportDesign",
+    "placeholders": {
+      "d": {
+        "type": "String"
+      },
+      "bottom": {
+        "type": "String"
+      }
+    }
+  },
+  "profileReportCount": "{necking} necking, {bulking} bulking, {fits} sesuai",
+  "@profileReportCount": {
+    "description": "profileReportCount",
+    "placeholders": {
+      "necking": {
+        "type": "String"
+      },
+      "bulking": {
+        "type": "String"
+      },
+      "fits": {
+        "type": "String"
+      }
+    }
+  },
+  "iplNotReadyCastTitle": "Belum ada IPL untuk dicor",
+  "@iplNotReadyCastTitle": {
+    "description": "iplNotReadyCastTitle"
+  },
+  "iplNotReadyCastBody": "Pengecoran hanya untuk titik yang ada di IPL terkonfirmasi hari ini atau kemarin. Minta surveyor mengirim IPL, lalu atasan mengonfirmasinya.",
+  "@iplNotReadyCastBody": {
+    "description": "iplNotReadyCastBody"
+  },
+  "reasonTanpaIpl": "Titik ini belum ada di IPL terkonfirmasi untuk tanggal itu, jadi datanya ditahan di HP. Data ini terkirim sendiri begitu IPL-nya dikonfirmasi.",
+  "@reasonTanpaIpl": {
+    "description": "reasonTanpaIpl"
+  },
+  "pointSummary": "Ø {d} mm · bor {drill} · {vol} m³",
+  "@pointSummary": {
+    "description": "pointSummary",
+    "placeholders": {
+      "d": {
+        "type": "String"
+      },
+      "drill": {
+        "type": "String"
+      },
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "pointDataTitle": "Data titik lengkap",
+  "@pointDataTitle": {
+    "description": "pointDataTitle"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"
