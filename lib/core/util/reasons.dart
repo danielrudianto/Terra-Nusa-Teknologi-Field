@@ -58,6 +58,7 @@ String reasonTextOf(AppLocalizations l, String? code, [String? detail]) {
     'IPL_DIKONFIRMASI' => l.reasonIplDikonfirmasi,
     'IPL_TITIK_TIDAK_BOLEH' => l.reasonIplTitikTidakBoleh,
     'IPL_GS_SALAH' => l.reasonIplGsSalah,
+    'IPL_TITIK_SUDAH_ADA' => l.reasonIplTitikSudahAda,
     null => l.rejectedByServer,
     _ => code,
   };

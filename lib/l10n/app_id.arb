@@ -2247,6 +2247,39 @@
   "@todayOnlyNoneBody": {
     "description": "todayOnlyNoneBody"
   },
+  "iplConfirmLead": "Baca ulang sebelum dikirim. Dikerjakan {date}: {n} titik.",
+  "@iplConfirmLead": {
+    "description": "iplConfirmLead",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplConfirmDiff": "{diff} dari desain",
+  "@iplConfirmDiff": {
+    "description": "iplConfirmDiff",
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "iplConfirmFoot": "Kantor akan memeriksa dan mengonfirmasinya. Tim bor hanya boleh mulai di titik yang dikonfirmasi.",
+  "@iplConfirmFoot": {
+    "description": "iplConfirmFoot"
+  },
+  "iplConfirmBack": "Periksa lagi",
+  "@iplConfirmBack": {
+    "description": "iplConfirmBack"
+  },
+  "reasonIplTitikSudahAda": "Titik ini sudah ada di IPL lain untuk tanggal yang sama. Keluarkan dari IPL ini, atau ubah IPL yang sudah ada.",
+  "@reasonIplTitikSudahAda": {
+    "description": "reasonIplTitikSudahAda"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"

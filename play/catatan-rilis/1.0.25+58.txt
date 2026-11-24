@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.25 (58) — IPL dibaca ulang sebelum dikirim
+
+<id>
+• Sebelum IPL dikirim, semua titik yang dicentang ditampilkan untuk dibaca ulang: kode, jenis pekerjaan, GS, dan selisihnya dari GS desain.
+• IPL yang memuat titik yang sudah ada di IPL lain pada tanggal yang sama kini ditolak, dengan alasannya.
+</id>
+<en-US>
+• Before an IPL is sent, every ticked point is listed to be read back: code, type of work, GS, and its difference from the design GS.
+• An IPL with a point already in another IPL for the same date is now rejected, with the reason.
+</en-US>
+<zh-CN>
+• 发送 IPL 前，列出所有已勾选的桩点供再次核对：桩号、工作类型、GS 及与设计 GS 的差值。
+• 若 IPL 中的桩点已在同一日期的另一份 IPL 中，现会被拒绝并说明原因。
+</zh-CN>

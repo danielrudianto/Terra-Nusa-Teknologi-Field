@@ -12,13 +12,13 @@ import '../../core/theme/dimens.dart';
 import '../../core/util/format.dart';
 import '../../core/util/reasons.dart';
 import '../../core/widgets/app_snack.dart';
-import '../../core/widgets/confirm.dart';
 import '../../core/widgets/quiet.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/view_states.dart';
 import '../casting/level_reference.dart';
 import 'gs_dialog.dart';
 import 'gs_ukur.dart';
+import 'ipl_confirm_dialog.dart';
 
 /// IPL — Izin Pelaksanaan Lapangan (23 Nov 2026).
 ///
@@ -352,17 +352,24 @@ class _IplPageState extends ConsumerState<IplPage> {
         'groundLevel': decimalText(r.gs!, decimals: 3),
       });
     }
-    const shownCodes = 24;
-    final codes = [for (final p in picked) '${p['code']}'];
-    final codeText = codes.length <= shownCodes
-        ? codes.join(', ')
-        : '${codes.take(shownCodes).join(', ')} ${l.iplConfirmMore('${codes.length - shownCodes}')}';
-    final ok = await askConfirm(
+    final ok = await showIplConfirmDialog(
       context,
-      icon: Icons.fact_check_outlined,
-      title: l.iplConfirmTitle,
-      body: l.iplConfirmBody(longDate(DateTime.parse(_date)), '${codes.length}', codeText),
-      confirmLabel: l.send,
+      dateText: longDate(DateTime.parse(_date)),
+      lines: [
+        for (final p in picked)
+          (
+            code: '${p['code']}',
+            kind: switch (_kindOf(p)) {
+              _Kind.lanjut => l.iplKindLanjut,
+              _Kind.cor => l.iplKindCor,
+              _Kind.bor => null,
+            },
+            gs: _check(context, p).gs!,
+            // Half-drilled and drilled points keep the point's own GS, so a
+            // difference against it says nothing.
+            design: _gsLocked(p) ? null : toDoubleOrNull(p['groundLevel']),
+          ),
+      ],
     );
     if (!ok || !mounted) return;
 
