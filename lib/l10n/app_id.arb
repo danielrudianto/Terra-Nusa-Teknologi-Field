@@ -1815,7 +1815,7 @@
   "@iplTitle": {
     "description": "iplTitle"
   },
-  "iplIntro": "Pilih titik yang siap dibor, lalu isi GS aktual hasil tembakan. Kantor akan mengonfirmasi; sesudah itu tim bor bisa mulai dan tidak perlu mengisi GS lagi.",
+  "iplIntro": "Ketuk titik untuk mengisi GS hasil tembakan — GS desainnya ikut tampil, dan GS tersimpan walau titiknya belum dijadwalkan. Centang titik yang BENAR-BENAR dikerjakan pada tanggal ini, lalu kirim IPL-nya ke kantor.",
   "@iplIntro": {
     "description": "iplIntro"
   },
@@ -1856,11 +1856,11 @@
       }
     }
   },
-  "iplNothingFilled": "Belum ada GS yang diisi",
+  "iplNothingFilled": "Belum ada titik yang dicentang",
   "@iplNothingFilled": {
     "description": "iplNothingFilled"
   },
-  "iplNothingFilledBody": "Isi GS pada titik yang siap dibor. Titik yang dikosongkan tidak ikut dikirim.",
+  "iplNothingFilledBody": "Centang titik yang benar-benar dikerjakan pada tanggal ini. Yang tidak dicentang tidak masuk IPL, tetapi GS-nya tetap tersimpan.",
   "@iplNothingFilledBody": {
     "description": "iplNothingFilledBody"
   },
@@ -2004,7 +2004,7 @@
       }
     }
   },
-  "iplDraftRestored": "{n} GS dipulihkan dari ketikan sebelumnya",
+  "iplDraftRestored": "{n} centang dipulihkan dari sebelumnya",
   "@iplDraftRestored": {
     "description": "iplDraftRestored",
     "placeholders": {
@@ -2013,9 +2013,144 @@
       }
     }
   },
-  "iplDraftRestoredBody": "Ketikan GS disimpan di HP ini sampai IPL dikirim, jadi boleh dicicil. Yang belum dikirim belum sampai ke kantor.",
+  "iplDraftRestoredBody": "Centang disimpan di HP ini sampai IPL dikirim, jadi boleh dicicil. GS yang diketik tersimpan sendiri dan ikut terkirim saat sinkron.",
   "@iplDraftRestoredBody": {
     "description": "iplDraftRestoredBody"
+  },
+  "iplGsEmpty": "GS belum diisi",
+  "@iplGsEmpty": {
+    "description": "iplGsEmpty"
+  },
+  "iplConfirmMore": "dan {n} lainnya",
+  "@iplConfirmMore": {
+    "description": "iplConfirmMore",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplConfirmTitle": "Kirim IPL ini ke kantor?",
+  "@iplConfirmTitle": {
+    "description": "iplConfirmTitle"
+  },
+  "iplConfirmBody": "Dikerjakan {date}: {n} titik — {codes}.\n\nKantor akan memeriksa dan mengonfirmasinya. Tim bor hanya boleh mulai di titik yang dikonfirmasi.",
+  "@iplConfirmBody": {
+    "description": "iplConfirmBody",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      },
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "iplPickedNoGs": "{n} titik dicentang belum ada GS-nya: {codes}",
+  "@iplPickedNoGs": {
+    "description": "iplPickedNoGs",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "iplFilterAll": "Semua ({n})",
+  "@iplFilterAll": {
+    "description": "iplFilterAll",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplFilterPicked": "Dicentang ({n})",
+  "@iplFilterPicked": {
+    "description": "iplFilterPicked",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplFilterUnmeasured": "Belum diukur ({n})",
+  "@iplFilterUnmeasured": {
+    "description": "iplFilterUnmeasured",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplFilterEmpty": "Tidak ada titik di daftar ini.",
+  "@iplFilterEmpty": {
+    "description": "iplFilterEmpty"
+  },
+  "iplMeasuredAt": "GS tersimpan {time}",
+  "@iplMeasuredAt": {
+    "description": "iplMeasuredAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "entityIpl": "IPL",
+  "@entityIpl": {
+    "description": "entityIpl"
+  },
+  "entityGsUkur": "Ukur GS",
+  "@entityGsUkur": {
+    "description": "entityGsUkur"
+  },
+  "iplTickAndSave": "Centang",
+  "@iplTickAndSave": {
+    "description": "iplTickAndSave"
+  },
+  "iplSaveGs": "Simpan GS",
+  "@iplSaveGs": {
+    "description": "iplSaveGs"
+  },
+  "iplNotMeasured": "Belum diukur",
+  "@iplNotMeasured": {
+    "description": "iplNotMeasured"
+  },
+  "iplDesignShort": "desain {value}",
+  "@iplDesignShort": {
+    "description": "iplDesignShort",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "iplGsDesign": "GS desain",
+  "@iplGsDesign": {
+    "description": "iplGsDesign"
+  },
+  "iplGsDiff": "{diff} m dari GS desain",
+  "@iplGsDiff": {
+    "description": "iplGsDiff",
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "iplGsDiffFar": "{diff} m dari GS desain — lebih dari 30 cm. Periksa lagi tembakan dan nomor titiknya.",
+  "@iplGsDiffFar": {
+    "description": "iplGsDiffFar",
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      }
+    }
   },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {

@@ -123,6 +123,8 @@ const entityOrder = {
   'gate_ticket': 5,
   // IPL lines point at pile points only, never at other documents.
   'ipl': 6,
+  // A measured GS is a note on a pile point, sent in any order.
+  'gs_ukur': 7,
 };
 
 @DriftDatabase(tables: [MasterRecords, Documents, Photos, LocalMeta])

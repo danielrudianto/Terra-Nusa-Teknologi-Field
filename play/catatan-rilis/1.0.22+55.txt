@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.22 (55) — IPL checklist dan GS ukur tersimpan
+
+<id>
+• IPL jadi checklist: centang titik yang benar-benar dikerjakan, lalu kirim. Sebelum terkirim, daftar kodenya ditampilkan sekali lagi.
+• GS diisi lewat dialog yang menampilkan GS desain dan selisihnya; beda lebih dari 30 cm diberi peringatan.
+• GS tersimpan walau titiknya belum dijadwalkan, jadi bisa dicicil. Tombol Kirim mengambang.
+</id>
+<en-US>
+• The IPL is now a checklist: tick the points that will really be worked on, then send. The codes are shown once more before sending.
+• GS is entered in a dialog showing the design GS and the difference; more than 30 cm gets a warning.
+• GS is kept even if the point is not scheduled, so it can be done bit by bit. The Send button floats.
+</en-US>
+<zh-CN>
+• IPL 改为勾选清单：勾选确实施工的桩点后发送，发送前再次显示桩号。
+• 在对话框中填写 GS，同时显示设计 GS 和差值；相差超过 30 cm 时给出提醒。
+• 即使尚未排期也会保存 GS，可分次完成。发送按钮改为悬浮。
+</zh-CN>

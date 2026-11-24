@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.23 (56) — Dialog GS dan notifikasi di HP
+
+<id>
+• IPL: centang titik membuka dialog GS yang menampilkan GS desain dan selisihnya. Beda lebih dari 30 cm diberi peringatan.
+• Ketuk titik tanpa mencentang untuk menyimpan GS saja, walau titiknya belum dijadwalkan.
+• Notifikasi Mulai bor dan Mulai cor kini masuk ke HP.
+</id>
+<en-US>
+• IPL: ticking a point opens a GS dialog showing the design GS and the difference. More than 30 cm gets a warning.
+• Tap a point without ticking it to save its GS only, even if it is not scheduled yet.
+• Start drilling and Start casting notifications now reach the phone.
+</en-US>
+<zh-CN>
+• IPL：勾选桩点时打开 GS 对话框，显示设计 GS 及差值。相差超过 30 cm 时给出提醒。
+• 点按桩点而不勾选，可仅保存 GS，即使尚未排期。
+• "开始钻孔"和"开始浇筑"通知现在会推送到手机。
+</zh-CN>

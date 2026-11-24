@@ -117,6 +117,7 @@ class _DocumentCard extends ConsumerWidget {
         'drill_log' => '/drilling/log/${d.uuid}',
         'worker' => '/workers/${d.uuid}',
         'gate_ticket' => '/gate/${d.uuid}',
+        'ipl' || 'gs_ukur' => '/ipl',
         _ => null,
       };
 

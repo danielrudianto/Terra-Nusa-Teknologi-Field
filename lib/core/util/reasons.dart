@@ -72,5 +72,7 @@ String entityLabel(BuildContext context, String entity) => switch (entity) {
       'drill_log' => t(context).entityDrillLog,
       'casting' => t(context).entityCasting,
       'gate_ticket' => t(context).entityGateTicket,
+      'ipl' => t(context).entityIpl,
+      'gs_ukur' => t(context).entityGsUkur,
       _ => entity,
     };
