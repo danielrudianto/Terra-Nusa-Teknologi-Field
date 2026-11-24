@@ -2861,26 +2861,6 @@
   "@reasonMachine": {
     "description": "reasonMachine"
   },
-  "reasonBit": "Ganti / perbaikan mata bor",
-  "@reasonBit": {
-    "description": "reasonBit"
-  },
-  "reasonWaiting": "Menunggu bahan atau alat",
-  "@reasonWaiting": {
-    "description": "reasonWaiting"
-  },
-  "reasonHardLayer": "Batu / lapisan keras",
-  "@reasonHardLayer": {
-    "description": "reasonHardLayer"
-  },
-  "reasonWeather": "Hujan / cuaca",
-  "@reasonWeather": {
-    "description": "reasonWeather"
-  },
-  "reasonInstruction": "Menunggu instruksi",
-  "@reasonInstruction": {
-    "description": "reasonInstruction"
-  },
   "reasonOther": "Lainnya",
   "@reasonOther": {
     "description": "reasonOther"

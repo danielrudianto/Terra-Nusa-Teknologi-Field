@@ -6,20 +6,18 @@ import '../../core/i18n.dart';
 ///
 /// Typed notes said the same thing ten ways — "istirahat", "isoma", "rehat",
 /// "mesin rusak", "trouble" — and nothing could be counted. Now the crew
-/// picks one of a few reasons; only "Lainnya" still takes a few words.
+/// picks one of three; only "Lainnya" still takes a few words.
 ///
 /// What is STORED is the Indonesian text below, whatever language the phone
 /// shows — the same rule as the site-mix supplier name "Lokal". The office
 /// reads and counts one set of words; the phone only TRANSLATES them for
 /// display ([drillNoteText]).
+///
+/// THREE choices only (Daniel, 24 Nov 2026): Istirahat, Kerusakan mesin, and
+/// Lainnya — which is typed. A longer list was tried and cut back.
 enum DrillReason {
   rest('Istirahat'),
   machine('Kerusakan mesin'),
-  bit('Ganti / perbaikan mata bor'),
-  waiting('Menunggu bahan atau alat'),
-  hardLayer('Batu / lapisan keras'),
-  weather('Hujan / cuaca'),
-  instruction('Menunggu instruksi'),
   other('Lainnya');
 
   const DrillReason(this.stored);
@@ -30,16 +28,11 @@ enum DrillReason {
   String label(AppLocalizations l) => switch (this) {
         DrillReason.rest => l.reasonRest,
         DrillReason.machine => l.reasonMachine,
-        DrillReason.bit => l.reasonBit,
-        DrillReason.waiting => l.reasonWaiting,
-        DrillReason.hardLayer => l.reasonHardLayer,
-        DrillReason.weather => l.reasonWeather,
-        DrillReason.instruction => l.reasonInstruction,
         DrillReason.other => l.reasonOther,
       };
 }
 
-/// "Lainnya: <words>" — the one reason that carries free text.
+/// `Lainnya: ...` — the one reason that carries free text.
 const otherPrefix = 'Lainnya: ';
 
 /// Read a stored note back: the reason, and the words for "Lainnya".
