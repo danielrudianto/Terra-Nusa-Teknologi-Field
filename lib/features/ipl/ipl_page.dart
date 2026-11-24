@@ -40,6 +40,14 @@ import 'gs_ukur.dart';
 ///    go into the IPL, and sending asks once more with their codes in view.
 ///    Ticks are kept on the phone until the IPL is sent.
 ///
+/// RECOMMENDATIONS on top (Daniel, 24 Nov 2026: "bantu kasih
+/// recommendation, terutama yang setengah jalan gitu bang minta
+/// diberesin"): half-drilled points first, with a warning, then drilled
+/// points waiting to be cast, then GS measured but not scheduled — each with
+/// one tap to put them all in. Half-drilled and drilled points keep the GS
+/// the point already has: it was used to work out the drilled depth, and the
+/// server does not rewrite it either.
+///
 /// The send button FLOATS (Daniel: it sat under 180 points). It is always
 /// tappable; when it cannot send yet it says why.
 ///
@@ -53,6 +61,26 @@ class IplPage extends ConsumerStatefulWidget {
 }
 
 enum _Filter { all, picked, unmeasured }
+
+/// What a point would be cleared for — the same three kinds the server
+/// freezes on each IPL line.
+enum _Kind {
+  /// Not drilled yet.
+  bor,
+
+  /// Drilling started but not finished: half-done, to be finished first
+  /// (Daniel, 24 Nov 2026: "yang setengah jalan gitu bang minta diberesin").
+  lanjut,
+
+  /// Drilled, not cast yet.
+  cor,
+}
+
+_Kind _kindOf(Map<String, Object?> p) {
+  if (p['status'] == 'sudah_bor') return _Kind.cor;
+  if (p['drillLogUuid'] != null) return _Kind.lanjut;
+  return _Kind.bor;
+}
 
 class _IplPageState extends ConsumerState<IplPage> {
   int? _projectId;
@@ -260,11 +288,45 @@ class _IplPageState extends ConsumerState<IplPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _restorePicks(key));
   }
 
+  /// The GS a point goes into the IPL with. Half-drilled and drilled
+  /// points keep the GS the point already has — LOCKED, see the class doc.
+  double? _gsOf(Map<String, Object?> pile) {
+    if (_kindOf(pile) != _Kind.bor) {
+      final fixed = toDoubleOrNull(pile['groundLevel']);
+      if (fixed != null) return fixed;
+    }
+    return _gs['${pile['uuid']}'];
+  }
+
+  bool _gsLocked(Map<String, Object?> pile) =>
+      _kindOf(pile) != _Kind.bor && toDoubleOrNull(pile['groundLevel']) != null;
+
+  /// Tick a point. A locked GS needs no dialog; any other GS is entered or
+  /// checked against the design first.
+  void _pick(Map<String, Object?> pile) {
+    if (_gsLocked(pile)) {
+      _toggle('${pile['uuid']}', true);
+    } else {
+      _askGs(pile, tick: true).ignore();
+    }
+  }
+
+  /// "Masukkan semua" on a recommendation: every point of it that has its
+  /// GS — the others still need the dialog, one by one.
+  void _pickAll(List<Map<String, Object?>> piles) {
+    setState(() {
+      for (final p in piles) {
+        if (_gsOf(p) != null) _picked.add('${p['uuid']}');
+      }
+    });
+    _queuePicks();
+  }
+
   /// The GS of a pile, or the reason it cannot be sent. The dialog already
   /// refuses a GS below the tip; checked again because a GS can also come
   /// from an older IPL.
   ({double? gs, String? error}) _check(BuildContext context, Map<String, Object?> pile) {
-    final gs = _gs['${pile['uuid']}'];
+    final gs = _gsOf(pile);
     if (gs == null) return (gs: null, error: null);
     final tip = toDoubleOrNull(pile['tipLevel']);
     if (tip != null && gs <= tip) return (gs: null, error: t(context).iplGsBelowTip(formatElevation(tip)));
@@ -365,13 +427,23 @@ class _IplPageState extends ConsumerState<IplPage> {
         ? const AsyncData(<Map<String, Object?>>[])
         : ref.watch(pilePointsProvider(_projectId!));
     final inDoc = _lineUuid.keys.toSet();
-    final piles = [
+    // On offer: not drilled, half drilled, or drilled and not cast yet —
+    // the same rule as the server's `_titik_boleh_ipl`. Half-done first,
+    // then waiting for concrete, then new points: the order work should go.
+    final offered = [
       for (final p in pilesAsync.value ?? const <Map<String, Object?>>[])
         if (inDoc.contains('${p['uuid']}') ||
-            (p['status'] == 'belum_bor' && p['checkedAt'] == null && !cleared.contains('${p['uuid']}')))
+            (p['checkedAt'] == null &&
+                !cleared.contains('${p['uuid']}') &&
+                (p['status'] == 'belum_bor' || (p['status'] == 'sudah_bor' && p['castingUuid'] == null))))
           p,
     ];
-    bool hasGs(Map<String, Object?> p) => _gs.containsKey('${p['uuid']}');
+    final piles = [
+      for (final k in const [_Kind.lanjut, _Kind.cor, _Kind.bor])
+        for (final p in offered)
+          if (_kindOf(p) == k) p,
+    ];
+    bool hasGs(Map<String, Object?> p) => _gsOf(p) != null;
     // Ticks for points no longer on offer (drilled since, cleared by a
     // confirmed IPL) are ignored, not sent.
     final picked = [for (final p in piles) if (_picked.contains('${p['uuid']}')) p];
@@ -379,6 +451,18 @@ class _IplPageState extends ConsumerState<IplPage> {
     final anyError = piles.any((p) => _check(context, p).error != null);
     final pickedError = picked.any((p) => _check(context, p).error != null);
     final unmeasured = [for (final p in piles) if (!hasGs(p)) p];
+    bool unpicked(Map<String, Object?> p) => !_picked.contains('${p['uuid']}');
+    final halfDone = [for (final p in piles) if (_kindOf(p) == _Kind.lanjut && unpicked(p)) p];
+    final toCast = [for (final p in piles) if (_kindOf(p) == _Kind.cor && unpicked(p)) p];
+    final measuredWaiting = [
+      for (final p in piles)
+        if (_kindOf(p) == _Kind.bor && unpicked(p) && _gs.containsKey('${p['uuid']}')) p,
+    ];
+    String codes(List<Map<String, Object?>> ps) {
+      const shown = 6;
+      final c = [for (final p in ps.take(shown)) '${p['code']}'].join(', ');
+      return ps.length > shown ? '$c ${l.iplConfirmMore('${ps.length - shown}')}' : c;
+    }
 
     final q = _search.trim().toLowerCase();
     final base = switch (_filter) {
@@ -475,6 +559,44 @@ class _IplPageState extends ConsumerState<IplPage> {
             padding: const EdgeInsets.only(bottom: 12),
             child: TerraBanner(kind: BannerKind.warning, title: l.iplFixErrors),
           ),
+        if (!locked && (halfDone.isNotEmpty || toCast.isNotEmpty || measuredWaiting.isNotEmpty)) ...[
+          Text(l.iplRecommendTitle, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+          const SizedBox(height: 8),
+          if (halfDone.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TerraBanner(
+                kind: BannerKind.warning,
+                icon: Icons.construction,
+                title: l.iplRecommendHalfDone('${halfDone.length}'),
+                body: l.iplRecommendHalfDoneBody(codes(halfDone)),
+                action: TextButton(onPressed: () => _pickAll(halfDone), child: Text(l.iplRecommendAdd)),
+              ),
+            ),
+          if (toCast.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TerraBanner(
+                kind: BannerKind.info,
+                icon: Icons.local_shipping_outlined,
+                title: l.iplRecommendToCast('${toCast.length}'),
+                body: l.iplRecommendToCastBody(codes(toCast)),
+                action: TextButton(onPressed: () => _pickAll(toCast), child: Text(l.iplRecommendAdd)),
+              ),
+            ),
+          if (measuredWaiting.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TerraBanner(
+                kind: BannerKind.ok,
+                icon: Icons.straighten,
+                title: l.iplRecommendMeasured('${measuredWaiting.length}'),
+                body: l.iplRecommendMeasuredBody(codes(measuredWaiting)),
+                action: TextButton(onPressed: () => _pickAll(measuredWaiting), child: Text(l.iplRecommendAdd)),
+              ),
+            ),
+          const SizedBox(height: 6),
+        ],
         Wrap(
           spacing: 8,
           runSpacing: 4,
@@ -560,18 +682,16 @@ class _IplPageState extends ConsumerState<IplPage> {
                   child: _PileRow(
                     pile: p,
                     picked: _picked.contains(uuid),
-                    gs: _gs[uuid],
+                    gs: _gsOf(p),
+                    kind: _kindOf(p),
+                    gsLocked: _gsLocked(p),
                     error: _check(context, p).error,
                     measuredAt: m?.updatedAt,
                     locked: locked,
-                    onPick: (on) {
-                      if (on) {
-                        _askGs(p, tick: true).ignore();
-                      } else {
-                        _toggle(uuid, false);
-                      }
-                    },
-                    onMeasure: () => _askGs(p, tick: false).ignore(),
+                    onPick: (on) => on ? _pick(p) : _toggle(uuid, false),
+                    onMeasure: () => _gsLocked(p)
+                        ? showSnack(context, l.iplGsLocked, icon: Icons.lock_outline)
+                        : _askGs(p, tick: false).ignore(),
                   ),
                 );
               },
@@ -626,6 +746,8 @@ class _PileRow extends StatelessWidget {
     required this.pile,
     required this.picked,
     required this.gs,
+    required this.kind,
+    required this.gsLocked,
     required this.error,
     required this.measuredAt,
     required this.locked,
@@ -636,6 +758,10 @@ class _PileRow extends StatelessWidget {
   final Map<String, Object?> pile;
   final bool picked;
   final double? gs;
+  final _Kind kind;
+
+  /// GS fixed by the point's drilling; shown with a lock, not editable.
+  final bool gsLocked;
   final String? error;
 
   /// When this surveyor last saved a GS for the point; `null` = never.
@@ -679,8 +805,17 @@ class _PileRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('${pile['code']}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: w.ink)),
+                      if (kind != _Kind.bor)
+                        Text(
+                          kind == _Kind.lanjut ? l.iplKindLanjut : l.iplKindCor,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: kind == _Kind.lanjut ? w.warnFg : w.brand,
+                          ),
+                        ),
                       if (meta.isNotEmpty) Text(meta, style: TextStyle(fontSize: 12, color: w.muted)),
-                      if (measuredAt != null)
+                      if (measuredAt != null && !gsLocked)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
@@ -702,7 +837,14 @@ class _PileRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (gsLocked) ...[
+                          Icon(Icons.lock_outline, size: 14, color: w.muted),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
                       value == null ? l.iplNotMeasured : formatElevation(value, decimals: 3),
                       style: value == null
                           ? TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: w.muted)
@@ -712,8 +854,10 @@ class _PileRow extends StatelessWidget {
                               color: w.ink,
                               fontFeatures: const [FontFeature.tabularFigures()],
                             ),
+                        ),
+                      ],
                     ),
-                    if (design != null)
+                    if (design != null && !gsLocked)
                       Text(
                         l.iplDesignShort(formatElevation(design, decimals: 3)),
                         style: TextStyle(fontSize: 12, color: w.muted),

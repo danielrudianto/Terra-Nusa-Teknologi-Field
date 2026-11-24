@@ -80,9 +80,26 @@ class FieldPilePoint {
     return s == null || s.length < 10 ? s : s.substring(0, 10);
   }
 
+  /// EVERY date of a confirmed IPL naming this point (24 Nov 2026), or
+  /// `null` from a server that does not send them yet.
+  Set<String>? get iplDates {
+    if (!server.containsKey('iplDates')) return null;
+    final s = server['iplDates']?.toString() ?? '';
+    return {for (final d in s.split(',')) if (d.trim().length >= 10) d.trim().substring(0, 10)};
+  }
+
   /// Drilling may start only with an IPL confirmed for TODAY (23 Nov 2026).
   /// A server older than IPL never sends the key: then nothing is gated.
-  bool get iplReady => !server.containsKey('iplDate') || iplDate == isoDate(DateTime.now());
+  ///
+  /// Checked against ALL confirmed dates when the server sends them: the
+  /// latest one alone is wrong for a point in today's IPL and in tomorrow's
+  /// too — once tomorrow's is confirmed, the latest date is tomorrow and the
+  /// point would be shut for the rest of today.
+  bool get iplReady {
+    if (!server.containsKey('iplDate')) return true;
+    final today = isoDate(DateTime.now());
+    return iplDates?.contains(today) ?? iplDate == today;
+  }
 
   // -------------------------------------------------------------------
   // Kemajuan titik yang sedang dikerjakan HP lain

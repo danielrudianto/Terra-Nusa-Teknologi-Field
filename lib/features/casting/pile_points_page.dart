@@ -85,6 +85,18 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         _ => true,
       };
 
+  /// Whether this account sees only today's IPL points — see `build`.
+  bool _todayOnly(List<FieldPilePoint> all) {
+    final session = ref.watch(sessionProvider).value;
+    if (session == null) return false;
+    final level = session.permissions.level;
+    final engineering = session.permissions.departments.contains('engineering');
+    final plans = level >= 4 || engineering || session.allows('field_ipl', 'create');
+    final works = session.allows('field_casting', 'create');
+    final serverKnowsIpl = all.any((pt) => pt.server.containsKey('iplDate'));
+    return works && !plans && serverKnowsIpl;
+  }
+
   @override
   Widget build(BuildContext context) {
     final w = context.colors;
@@ -116,9 +128,31 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         loading: () => const SkeletonCards(),
         error: (e, _) => ErrorState(title: t(context).pointsLoadError, message: '$e'),
         data: (all) {
+          // MANDOR SEE TODAY'S WORK ONLY (Daniel, 24 Nov 2026: "yang pegang
+          // bor & cor itu mandor, gw gamau mereka lihat list sebanyak itu ...
+          // chance dia buat salah gede banget"). The points of an IPL
+          // confirmed for TODAY, plus whatever this account is in the middle
+          // of — a log it holds must never vanish from under it.
+          //
+          // Who still sees everything: the surveyor (who makes the IPL),
+          // level 4 and up, and Engineering — the office and the people who
+          // plan, not the crew working the rig. A server too old to send
+          // IPL dates gets the full list, as before.
+          final onlyToday = _todayOnly(all);
+          final myId = ref.watch(sessionProvider).value?.user?.id;
+          bool mine(FieldPilePoint pt) {
+            final held = myId != null &&
+                ((pt.drillLogHolderId == myId && pt.stage == 'sedang_bor') ||
+                    (pt.castingHolderId == myId && pt.stage == 'berjalan'));
+            final localDrill = pt.drillLog != null && pt.drillLogBody?['status'] != 'selesai' && pt.stage == 'sedang_bor';
+            final localCast = pt.casting != null && pt.stage == 'berjalan';
+            return held || localDrill || localCast;
+          }
+
+          final base = onlyToday ? all.where((pt) => pt.iplReady || mine(pt)).toList() : all;
           final matching = _search.isEmpty
-              ? all
-              : all.where((pt) => pt.code.toLowerCase().contains(_search.toLowerCase())).toList();
+              ? base
+              : base.where((pt) => pt.code.toLowerCase().contains(_search.toLowerCase())).toList();
           final items = matching.where((pt) => _inFilter(pt, _filter)).toList();
           final castCount = all.where((pt) => pt.stage == 'selesai' || pt.stage == 'sudah_cor').length;
 
@@ -144,6 +178,17 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (onlyToday) ...[
+                        TerraBanner(
+                          kind: base.isEmpty ? BannerKind.warning : BannerKind.info,
+                          icon: Icons.assignment_turned_in_outlined,
+                          title: base.isEmpty
+                              ? t(context).todayOnlyNoneTitle
+                              : t(context).todayOnlyTitle('${base.length}'),
+                          body: base.isEmpty ? t(context).todayOnlyNoneBody : t(context).todayOnlyBody,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                       TextField(
                         controller: _searchInput,
                         textInputAction: TextInputAction.search,

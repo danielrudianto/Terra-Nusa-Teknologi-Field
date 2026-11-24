@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.24 (57) — Rekomendasi IPL dan titik hari ini
+
+<id>
+• IPL: rekomendasi di atas daftar — bor setengah jalan, titik siap dicor, dan GS yang sudah diukur — masing-masing bisa dimasukkan sekali ketuk.
+• Mandor kini hanya melihat titik di IPL yang dikonfirmasi untuk hari ini, ditambah pekerjaan yang sedang dipegang.
+• Dialog GS menampilkan GS desain dan selisihnya. Notifikasi Mulai bor dan Mulai cor masuk ke HP.
+</id>
+<en-US>
+• IPL: suggestions above the list — half-drilled points, points ready to cast, and measured GS — each added in one tap.
+• Foremen now see only the points in an IPL confirmed for today, plus the work they are holding.
+• The GS dialog shows the design GS and the difference. Start drilling and Start casting notifications reach the phone.
+</en-US>
+<zh-CN>
+• IPL：列表上方显示建议——钻孔未完成、可浇筑及已测 GS 的桩点，一键加入。
+• 工长现在只看到今天已确认 IPL 中的桩点，以及自己正在负责的工作。
+• GS 对话框显示设计 GS 及差值。"开始钻孔"和"开始浇筑"通知推送到手机。
+</zh-CN>

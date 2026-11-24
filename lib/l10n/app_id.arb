@@ -2152,6 +2152,101 @@
       }
     }
   },
+  "iplRecommendTitle": "Rekomendasi",
+  "@iplRecommendTitle": {
+    "description": "iplRecommendTitle"
+  },
+  "iplRecommendAdd": "Masukkan",
+  "@iplRecommendAdd": {
+    "description": "iplRecommendAdd"
+  },
+  "iplRecommendHalfDone": "{n} titik bornya setengah jalan",
+  "@iplRecommendHalfDone": {
+    "description": "iplRecommendHalfDone",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplRecommendHalfDoneBody": "Bereskan dulu sebelum titik baru: {codes}. GS-nya tetap yang dipakai saat mulai bor.",
+  "@iplRecommendHalfDoneBody": {
+    "description": "iplRecommendHalfDoneBody",
+    "placeholders": {
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "iplRecommendToCast": "{n} titik sudah selesai dibor, belum dicor",
+  "@iplRecommendToCast": {
+    "description": "iplRecommendToCast",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplRecommendToCastBody": "Lubang yang terbuka terlalu lama bisa runtuh: {codes}.",
+  "@iplRecommendToCastBody": {
+    "description": "iplRecommendToCastBody",
+    "placeholders": {
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "iplRecommendMeasured": "{n} titik GS-nya sudah diukur",
+  "@iplRecommendMeasured": {
+    "description": "iplRecommendMeasured",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplRecommendMeasuredBody": "Siap dijadwalkan: {codes}.",
+  "@iplRecommendMeasuredBody": {
+    "description": "iplRecommendMeasuredBody",
+    "placeholders": {
+      "codes": {
+        "type": "String"
+      }
+    }
+  },
+  "iplKindLanjut": "Lanjutkan pengeboran",
+  "@iplKindLanjut": {
+    "description": "iplKindLanjut"
+  },
+  "iplKindCor": "Pengecoran",
+  "@iplKindCor": {
+    "description": "iplKindCor"
+  },
+  "iplGsLocked": "GS titik ini terkunci: sudah dipakai menghitung kedalaman bor.",
+  "@iplGsLocked": {
+    "description": "iplGsLocked"
+  },
+  "todayOnlyTitle": "{n} titik untuk hari ini",
+  "@todayOnlyTitle": {
+    "description": "todayOnlyTitle",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "todayOnlyBody": "Hanya titik di IPL yang dikonfirmasi untuk hari ini, ditambah pekerjaan yang sedang Anda pegang.",
+  "@todayOnlyBody": {
+    "description": "todayOnlyBody"
+  },
+  "todayOnlyNoneTitle": "Belum ada titik untuk hari ini",
+  "@todayOnlyNoneTitle": {
+    "description": "todayOnlyNoneTitle"
+  },
+  "todayOnlyNoneBody": "Belum ada IPL yang dikonfirmasi untuk hari ini. Minta surveyor mengirim IPL dan kantor mengonfirmasinya, lalu tarik daftar ini ke bawah untuk memuat ulang.",
+  "@todayOnlyNoneBody": {
+    "description": "todayOnlyNoneBody"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"
