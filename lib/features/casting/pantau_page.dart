@@ -15,6 +15,7 @@ import '../../core/widgets/terra_banner.dart';
 import '../../core/i18n.dart';
 import '../drilling/bor_kurva.dart';
 import '../drilling/bor_kurva_view.dart';
+import '../drilling/drill_reasons.dart';
 import 'calc/pile_snapshot.dart';
 import 'concrete_profile.dart';
 import 'pile_section_view.dart';
@@ -985,7 +986,7 @@ class _TabelBacaanState extends State<_TabelBacaan> {
                       // bentuk yang sama — dan hanya yang ada di lokasi
                       // dapat membedakannya.
                       sorot: (b.deltaM ?? 0) < 0,
-                      catatan: b.bacaan['note']?.toString(),
+                      catatan: b.bacaan['note'] == null ? null : drillNoteText(t(context), '${b.bacaan['note']}'),
                       takTergambar: !b.tergambar,
                     ),
                   ],

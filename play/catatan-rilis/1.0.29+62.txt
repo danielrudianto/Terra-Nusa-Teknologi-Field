@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.29 (62) — Mulai bor dari 0 dan catatan pilihan
+
+<id>
+• Mulai log bor langsung mencatat bacaan pertama 0 m pada jam itu, tanpa tombol kedua.
+• Catatan bacaan bor kini dipilih, tidak diketik: Istirahat, Kerusakan mesin, Ganti mata bor, Menunggu bahan, Batu / lapisan keras, Hujan, Menunggu instruksi, atau Lainnya.
+</id>
+<en-US>
+• Starting a drill log records the first reading, 0 m at that moment, straight away.
+• Drill reading notes are now picked, not typed: Break, Machine breakdown, Bit change, Waiting for material, Rock / hard layer, Rain, Waiting for instructions, or Other.
+</en-US>
+<zh-CN>
+• 开始钻孔记录时立即记下第一条读数：当时 0 米，无需再按第二个按钮。
+• 钻孔读数备注改为选择而非输入：休息、机器故障、更换钻头、等待材料、岩石 / 硬层、下雨、等待指示或其他。
+</zh-CN>

@@ -2853,6 +2853,46 @@
       }
     }
   },
+  "reasonRest": "Istirahat",
+  "@reasonRest": {
+    "description": "reasonRest"
+  },
+  "reasonMachine": "Kerusakan mesin",
+  "@reasonMachine": {
+    "description": "reasonMachine"
+  },
+  "reasonBit": "Ganti / perbaikan mata bor",
+  "@reasonBit": {
+    "description": "reasonBit"
+  },
+  "reasonWaiting": "Menunggu bahan atau alat",
+  "@reasonWaiting": {
+    "description": "reasonWaiting"
+  },
+  "reasonHardLayer": "Batu / lapisan keras",
+  "@reasonHardLayer": {
+    "description": "reasonHardLayer"
+  },
+  "reasonWeather": "Hujan / cuaca",
+  "@reasonWeather": {
+    "description": "reasonWeather"
+  },
+  "reasonInstruction": "Menunggu instruksi",
+  "@reasonInstruction": {
+    "description": "reasonInstruction"
+  },
+  "reasonOther": "Lainnya",
+  "@reasonOther": {
+    "description": "reasonOther"
+  },
+  "drillNoteLabel": "Catatan (pilih bila bor berhenti)",
+  "@drillNoteLabel": {
+    "description": "drillNoteLabel"
+  },
+  "drillNoteOtherLabel": "Tulis singkat",
+  "@drillNoteOtherLabel": {
+    "description": "drillNoteOtherLabel"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"
@@ -4129,7 +4169,7 @@
   "@noteOptional": {
     "description": "noteOptional"
   },
-  "drillNoteHint": "mis. ketemu batu, ganti mata bor",
+  "drillNoteHint": "mis. pindah posisi rig",
   "@drillNoteHint": {
     "description": "drillNoteHint"
   },

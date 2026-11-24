@@ -676,7 +676,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
                       Navigator.pop(c);
                       unawaited(
                         context.push(
-                          '/drilling/log/${newUuid()}?pilePoint=${pt.uuid}',
+                          '/drilling/log/${newUuid()}?pilePoint=${pt.uuid}&start=1',
                         ),
                       );
                     },

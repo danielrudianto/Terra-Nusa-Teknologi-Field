@@ -136,7 +136,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/gate/:uuid', builder: (_, s) => GateTicketForm(uuid: s.pathParameters['uuid'])),
       GoRoute(
         path: '/drilling/log/:uuid',
-        builder: (_, s) => DrillLogPage(uuid: s.pathParameters['uuid']!, pilePointUuid: s.uri.queryParameters['pilePoint']),
+        builder: (_, s) => DrillLogPage(
+          uuid: s.pathParameters['uuid']!,
+          pilePointUuid: s.uri.queryParameters['pilePoint'],
+          autoStart: s.uri.queryParameters['start'] == '1',
+        ),
       ),
       GoRoute(
         path: '/casting/point/:id/watch',

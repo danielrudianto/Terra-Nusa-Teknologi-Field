@@ -27,6 +27,7 @@ import '../../core/widgets/view_states.dart';
 import '../casting/handover.dart';
 import '../casting/level_reference.dart';
 import 'drill_readings.dart';
+import 'drill_reasons.dart';
 import 'koordinat_aktual.dart';
 import 'operator_picker.dart';
 import '../../core/sync/office_notice.dart';
@@ -39,10 +40,15 @@ import '../../core/i18n.dart';
 /// "Selesai bor" marks the point drilled with the deepest reading, which is
 /// what the casting log measures from.
 class DrillLogPage extends ConsumerStatefulWidget {
-  const DrillLogPage({super.key, required this.uuid, this.pilePointUuid});
+  const DrillLogPage({super.key, required this.uuid, this.pilePointUuid, this.autoStart = false});
 
   final String uuid;
   final String? pilePointUuid;
+
+  /// Opened from "Mulai log bor": the first reading — 0 m, now — is written
+  /// straight away, no second button to find (Daniel, 24 Nov 2026: "tombol
+  /// mulai bor supaya dia start dari 0"). Only for a NEW log.
+  final bool autoStart;
 
   @override
   ConsumerState<DrillLogPage> createState() => _DrillLogPageState();
@@ -133,6 +139,11 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         _pilePoint!['checkedAt'] == null &&
         _pilePoint!['status'] != 'sudah_cor') {
       await _mintaGs(pertamaKali: true);
+    }
+    // "Mulai log bor" = drilling starts NOW at 0 m. After the GS question,
+    // so the planned length is on screen from the first second.
+    if (widget.autoStart && row == null && _readings.isEmpty && !_finished && mounted) {
+      await _start();
     }
     // Handed over: the colleague's phone buzzes now, not this one.
     if (_handedAway) {
@@ -1035,7 +1046,7 @@ class _ReadingCard extends StatelessWidget {
               children: [
                 Text(formatMeters(reading.depthM), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: w.ink)),
                 if (progress != null) Text(progress, style: TextStyle(color: w.muted, fontSize: 13)),
-                if (reading.note != null) Text(reading.note!, style: TextStyle(color: w.ink, fontSize: 13)),
+                if (reading.note != null) Text(drillNoteText(t(context), reading.note!), style: TextStyle(color: w.ink, fontSize: 13)),
               ],
             ),
           ),
@@ -1089,7 +1100,9 @@ class _ReadingSheetState extends State<_ReadingSheet> {
   late final _depth = TextEditingController(
     text: widget.editing == null ? '' : widget.editing!.depthM.toStringAsFixed(2).replaceAll('.', ','),
   );
-  late final _note = TextEditingController(text: widget.editing?.note ?? '');
+  /// The picked reason; "Lainnya" also takes a few words in [_note].
+  late DrillReason? _reason = parseDrillNote(widget.editing?.note).reason;
+  late final _note = TextEditingController(text: parseDrillNote(widget.editing?.note).other);
   String? _problem;
 
   @override
@@ -1142,8 +1155,7 @@ class _ReadingSheetState extends State<_ReadingSheet> {
       setState(() => _problem = farBeyondPlanText(depth, planned));
       return;
     }
-    final note = _note.text.trim();
-    Navigator.pop(context, _ReadingResult(at: _at, depthM: depth, note: note.isEmpty ? null : note));
+    Navigator.pop(context, _ReadingResult(at: _at, depthM: depth, note: drillNoteOf(_reason, _note.text)));
   }
 
   @override
@@ -1228,11 +1240,31 @@ class _ReadingSheetState extends State<_ReadingSheet> {
             ),
           ],
           const SizedBox(height: 12),
-          TextField(
-            controller: _note,
-            maxLength: 255,
-            decoration: InputDecoration(labelText: t(context).noteOptional, hintText: t(context).drillNoteHint),
+          // PICKED, not typed — one set of words the office can count. See
+          // `drill_reasons.dart`. Tapping the picked one again clears it.
+          Text(t(context).drillNoteLabel, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final r in DrillReason.values)
+                ChoiceChip(
+                  label: Text(r.label(t(context))),
+                  selected: _reason == r,
+                  onSelected: (on) => setState(() => _reason = on ? r : null),
+                ),
+            ],
           ),
+          if (_reason == DrillReason.other) ...[
+            const SizedBox(height: 10),
+            TextField(
+              controller: _note,
+              maxLength: 200,
+              autofocus: _note.text.isEmpty,
+              decoration: InputDecoration(labelText: t(context).drillNoteOtherLabel, hintText: t(context).drillNoteHint),
+            ),
+          ],
           const SizedBox(height: 8),
           SizedBox(
             height: Dimens.minTouch + 4,
