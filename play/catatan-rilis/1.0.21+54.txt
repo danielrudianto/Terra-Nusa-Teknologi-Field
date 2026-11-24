@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.21 (54) — Mulai bor, IPL susulan, draf GS
+
+<id>
+• Log bor dimulai dengan tombol Mulai bor sekarang (0 m), tanpa mengetik kedalaman.
+• Surveyor: kalau IPL tanggal itu sudah dikonfirmasi, titik tambahan masuk IPL susulan yang dikonfirmasi lagi.
+• IPL: GS yang sudah diketik tersimpan di HP sampai dikirim, jadi boleh dicicil. Tombol Kirim kini mengambang.
+</id>
+<en-US>
+• A drill log now starts with a Start drilling now button (0 m), no depth to type.
+• Surveyor: when the IPL for a date is already confirmed, extra points go into a follow-up IPL that is confirmed again.
+• IPL: typed GS is kept on the phone until sent, so it can be filled in bit by bit. The Send button now floats.
+</en-US>
+<zh-CN>
+• 钻孔记录现以"开始钻孔"按钮（0 m）开始，无需输入深度。
+• 测量员：若该日期的 IPL 已确认，新增桩点将列入需重新确认的补充 IPL。
+• IPL：已输入的 GS 保存在手机上直到发送，可分次填写。发送按钮改为悬浮。
+</zh-CN>

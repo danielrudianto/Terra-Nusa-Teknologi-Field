@@ -339,6 +339,22 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
     return true;
   }
 
+  /// The first reading is "drilling started, the hole is 0 m" — a button,
+  /// not a number to type (Daniel, 23 Nov 2026: crews typed 0.1 m because
+  /// 0 was refused). The time can still be corrected by tapping the row.
+  Future<void> _start() async {
+    if (_operatorUuid == null && !await _chooseOperator()) return;
+    if (!mounted) return;
+    final at = DateTime.now();
+    final saved = await _update((d) {
+      final list = _entries;
+      list.add({'uuid': newUuid(), 'at': isoWithOffset(at), 'depthM': decimalText(0), 'note': null});
+      d['entries'] = list;
+    });
+    if (!saved || !mounted) return;
+    _snack(t(context).drillStartedAt(formatTime(at)));
+  }
+
   Future<void> _addOrEdit([DrillReading? editing]) async {
     // Who drilled it is part of the record (weekly metres per operator):
     // asked before the first reading, not forgotten until the end.
@@ -703,11 +719,17 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
                         height: Dimens.minTouch + 4,
                         child: BlockedAction(
                           reason: canEdit ? null : halangan,
-                          child: FilledButton.icon(
-                            onPressed: canEdit ? () => _addOrEdit() : null,
-                            icon: const Icon(Icons.add),
-                            label: Text(t(context).recordDepth),
-                          ),
+                          child: _readings.isEmpty
+                              ? FilledButton.icon(
+                                  onPressed: canEdit ? _start : null,
+                                  icon: const Icon(Icons.play_arrow_rounded),
+                                  label: Text(t(context).drillStartNow),
+                                )
+                              : FilledButton.icon(
+                                  onPressed: canEdit ? () => _addOrEdit() : null,
+                                  icon: const Icon(Icons.add),
+                                  label: Text(t(context).recordDepth),
+                                ),
                         ),
                       ),
                     ),
@@ -1094,7 +1116,11 @@ class _ReadingSheetState extends State<_ReadingSheet> {
   void _submit() {
     if (_followNow) _at = DateTime.now();
     final depth = parseNumber(_depth.text);
-    if (depth == null || depth <= 0) {
+    // 0 m is the START of drilling: allowed only as the earliest reading.
+    final earliest = widget.readings
+        .where((r) => r.uuid != widget.editing?.uuid)
+        .every((r) => r.at.isAfter(_at));
+    if (depth == null || depth < 0 || (depth == 0 && !earliest)) {
       setState(() => _problem = t(context).depthInvalid);
       return;
     }

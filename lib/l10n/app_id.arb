@@ -1978,6 +1978,45 @@
   "@reasonIplGsSalah": {
     "description": "reasonIplGsSalah"
   },
+  "iplFollowUpTitle": "IPL susulan",
+  "@iplFollowUpTitle": {
+    "description": "iplFollowUpTitle"
+  },
+  "iplFollowUpBody": "IPL tanggal ini sudah dikonfirmasi untuk {n} titik. Titik yang dikirim sekarang masuk IPL susulan dan perlu dikonfirmasi lagi.",
+  "@iplFollowUpBody": {
+    "description": "iplFollowUpBody",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "drillStartNow": "Mulai bor sekarang",
+  "@drillStartNow": {
+    "description": "drillStartNow"
+  },
+  "drillStartedAt": "Bor dimulai jam {time} (0 m). Catat kedalaman berikutnya selama bor berjalan.",
+  "@drillStartedAt": {
+    "description": "drillStartedAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "iplDraftRestored": "{n} GS dipulihkan dari ketikan sebelumnya",
+  "@iplDraftRestored": {
+    "description": "iplDraftRestored",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "iplDraftRestoredBody": "Ketikan GS disimpan di HP ini sampai IPL dikirim, jadi boleh dicicil. Yang belum dikirim belum sampai ke kantor.",
+  "@iplDraftRestoredBody": {
+    "description": "iplDraftRestoredBody"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"
@@ -3209,7 +3248,7 @@
   "@readingTime": {
     "description": "readingTime"
   },
-  "depthInvalid": "Isi kedalaman (m), lebih dari 0.",
+  "depthInvalid": "Isi kedalaman (m). 0 hanya untuk bacaan pertama (bor mulai).",
   "@depthInvalid": {
     "description": "depthInvalid"
   },
