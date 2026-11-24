@@ -2530,6 +2530,329 @@
   "@pointDataTitle": {
     "description": "pointDataTitle"
   },
+  "todayPointsTitle": "Titik hari ini · {project} ({n})",
+  "@todayPointsTitle": {
+    "description": "todayPointsTitle",
+    "placeholders": {
+      "project": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "todayPointsProgress": "{drilled} sudah dibor, {cast} sudah dicor. Ketuk untuk membuka daftarnya.",
+  "@todayPointsProgress": {
+    "description": "todayPointsProgress",
+    "placeholders": {
+      "drilled": {
+        "type": "String"
+      },
+      "cast": {
+        "type": "String"
+      }
+    }
+  },
+  "noProjectAssignedTitle": "Belum ada proyek untuk Anda",
+  "@noProjectAssignedTitle": {
+    "description": "noProjectAssignedTitle"
+  },
+  "noProjectAssignedBody": "Kantor belum menambahkan Anda ke tim lapangan proyek mana pun. Minta kantor menambahkan Anda di halaman proyek, lalu tarik layar ini untuk memperbarui.",
+  "@noProjectAssignedBody": {
+    "description": "noProjectAssignedBody"
+  },
+  "retry": "Coba lagi",
+  "@retry": {
+    "description": "retry"
+  },
+  "timeWheelTitle": "Jam berapa?",
+  "@timeWheelTitle": {
+    "description": "timeWheelTitle"
+  },
+  "timeWheelUse": "Pakai jam {time}",
+  "@timeWheelUse": {
+    "description": "timeWheelUse",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesAgoShort": "−{n} mnt",
+  "@minutesAgoShort": {
+    "description": "minutesAgoShort",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionTitle": "Penampang lubang",
+  "@sectionTitle": {
+    "description": "sectionTitle"
+  },
+  "sectionEstimated": "muka beton perkiraan",
+  "@sectionEstimated": {
+    "description": "sectionEstimated"
+  },
+  "sectionGround": "muka tanah",
+  "@sectionGround": {
+    "description": "sectionGround"
+  },
+  "sectionTruckEnd": "Akhir TM ini ±",
+  "@sectionTruckEnd": {
+    "description": "sectionTruckEnd"
+  },
+  "sectionConcreteEst": "Muka beton ±",
+  "@sectionConcreteEst": {
+    "description": "sectionConcreteEst"
+  },
+  "sectionEmbedded": "Tertanam",
+  "@sectionEmbedded": {
+    "description": "sectionEmbedded"
+  },
+  "sectionTremieTip": "Ujung tremie",
+  "@sectionTremieTip": {
+    "description": "sectionTremieTip"
+  },
+  "notifUsedOf": "Terpakai {used} m³ dari {theo} m³ teoritis",
+  "@notifUsedOf": {
+    "description": "notifUsedOf",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "theo": {
+        "type": "String"
+      }
+    }
+  },
+  "notifConcreteLevel": "Muka beton {level} · cut-off {cutoff}",
+  "@notifConcreteLevel": {
+    "description": "notifConcreteLevel",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "cutoff": {
+        "type": "String"
+      }
+    }
+  },
+  "notifConcreteLevelEst": "Muka beton {level} (perkiraan) · cut-off {cutoff}",
+  "@notifConcreteLevelEst": {
+    "description": "notifConcreteLevelEst",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "cutoff": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieInstalled": "Terpasang {len} m dari {total} m · ujung bawah di {tip}",
+  "@tremieInstalled": {
+    "description": "tremieInstalled",
+    "placeholders": {
+      "len": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeNotSensible": "Mutu beton tidak masuk akal.",
+  "@gradeNotSensible": {
+    "description": "gradeNotSensible"
+  },
+  "pointCardLine": "D{d} · efektif {eff} · {vol}",
+  "@pointCardLine": {
+    "description": "pointCardLine",
+    "placeholders": {
+      "d": {
+        "type": "String"
+      },
+      "eff": {
+        "type": "String"
+      },
+      "vol": {
+        "type": "String"
+      }
+    }
+  },
+  "driftMinutes": "{m} menit",
+  "@driftMinutes": {
+    "description": "driftMinutes",
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "driftHours": "{h} jam",
+  "@driftHours": {
+    "description": "driftHours",
+    "placeholders": {
+      "h": {
+        "type": "String"
+      }
+    }
+  },
+  "driftHoursMinutes": "{h} jam {m} menit",
+  "@driftHoursMinutes": {
+    "description": "driftHoursMinutes",
+    "placeholders": {
+      "h": {
+        "type": "String"
+      },
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "driftSlow": "{amount} terlambat",
+  "@driftSlow": {
+    "description": "driftSlow",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "driftFast": "{amount} lebih cepat",
+  "@driftFast": {
+    "description": "driftFast",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "apiOffline": "Tidak dapat terhubung ke server. Periksa sinyal.",
+  "@apiOffline": {
+    "description": "apiOffline"
+  },
+  "apiStatus": "Server menjawab {code}.",
+  "@apiStatus": {
+    "description": "apiStatus",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "chanNews": "Kabar lapangan",
+  "@chanNews": {
+    "description": "chanNews"
+  },
+  "chanNewsDesc": "Pemberitahuan dari server: satu titik mulai dibor atau mulai dicor",
+  "@chanNewsDesc": {
+    "description": "chanNewsDesc"
+  },
+  "chanCasting": "Pengecoran berjalan",
+  "@chanCasting": {
+    "description": "chanCasting"
+  },
+  "chanCastingDesc": "Stopwatch TM yang sedang dicor",
+  "@chanCastingDesc": {
+    "description": "chanCastingDesc"
+  },
+  "chanCastReminder": "Pengingat cor",
+  "@chanCastReminder": {
+    "description": "chanCastReminder"
+  },
+  "chanCastReminderDesc": "Berbunyi dan bergetar saat satu TM sudah 20 menit belum selesai dicor",
+  "@chanCastReminderDesc": {
+    "description": "chanCastReminderDesc"
+  },
+  "chanDrillReminder": "Pengingat log bor",
+  "@chanDrillReminder": {
+    "description": "chanDrillReminder"
+  },
+  "chanDrillReminderDesc": "Berbunyi dan bergetar bila log bor yang berjalan 45 menit belum ada bacaan baru",
+  "@chanDrillReminderDesc": {
+    "description": "chanDrillReminderDesc"
+  },
+  "chanUnsent": "Data belum terkirim",
+  "@chanUnsent": {
+    "description": "chanUnsent"
+  },
+  "chanUnsentDesc": "Pengingat bila data lapangan lebih dari sehari belum terkirim",
+  "@chanUnsentDesc": {
+    "description": "chanUnsentDesc"
+  },
+  "locGpsOff": "GPS HP mati. Nyalakan Lokasi di pengaturan cepat.",
+  "@locGpsOff": {
+    "description": "locGpsOff"
+  },
+  "locDenied": "Izin lokasi ditolak.",
+  "@locDenied": {
+    "description": "locDenied"
+  },
+  "locDeniedForever": "Izin lokasi ditolak permanen. Buka Pengaturan → Aplikasi → TerraBot Field → Izin.",
+  "@locDeniedForever": {
+    "description": "locDeniedForever"
+  },
+  "locNoSignal": "Sinyal GPS tidak didapat dalam 20 detik.",
+  "@locNoSignal": {
+    "description": "locNoSignal"
+  },
+  "locFailed": "Lokasi gagal dibaca: {error}",
+  "@locFailed": {
+    "description": "locFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewApproved": "Disetujui kantor",
+  "@reviewApproved": {
+    "description": "reviewApproved"
+  },
+  "reviewChecked": "Diperiksa kantor",
+  "@reviewChecked": {
+    "description": "reviewChecked"
+  },
+  "reviewRunning": "Berjalan",
+  "@reviewRunning": {
+    "description": "reviewRunning"
+  },
+  "reviewWaiting": "Menunggu tinjauan",
+  "@reviewWaiting": {
+    "description": "reviewWaiting"
+  },
+  "attIn": "masuk ✓",
+  "@attIn": {
+    "description": "attIn"
+  },
+  "attNotIn": "belum masuk",
+  "@attNotIn": {
+    "description": "attNotIn"
+  },
+  "attOut": "pulang ✓",
+  "@attOut": {
+    "description": "attOut"
+  },
+  "attNotOut": "belum pulang",
+  "@attNotOut": {
+    "description": "attNotOut"
+  },
+  "crewCount": "{n} kru",
+  "@crewCount": {
+    "description": "crewCount",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"

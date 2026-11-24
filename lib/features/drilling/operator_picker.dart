@@ -148,7 +148,7 @@ class _OperatorSheetState extends ConsumerState<_OperatorSheet> {
                     _name.text = _search.text;
                   }),
                   icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Operator baru'),
+                  label: Text(t(context).newOperator),
                 ),
               ),
             ],

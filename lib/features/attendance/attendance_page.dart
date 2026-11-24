@@ -91,7 +91,7 @@ class AttendancePage extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('${body['date']} · $rows kru · ${hasCheckIn ? 'masuk ✓' : 'belum masuk'} · ${hasCheckOut ? 'pulang ✓' : 'belum pulang'}',
+                  Text('${body['date']} · ${t(context).crewCount('$rows')} · ${hasCheckIn ? t(context).attIn : t(context).attNotIn} · ${hasCheckOut ? t(context).attOut : t(context).attNotOut}',
                       style: TextStyle(color: w.muted, fontSize: 13)),
                   if (d.serverStatus != null) ...[
                     const SizedBox(height: 6),

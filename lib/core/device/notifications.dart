@@ -1,11 +1,15 @@
 import 'dart:typed_data';
-import 'dart:ui' show Color;
+import 'dart:ui' show Color, Locale;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../i18n.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+
+/// Channel names in the app's language; Indonesian before the first
+/// screen (the background isolate on a cold start).
+AppLocalizations get _tr => L10n.current ?? lookupAppLocalizations(const Locale('id'));
 
 /// Casting stopwatch notification.
 ///
@@ -165,11 +169,11 @@ class Notifications {
     // berbunyi padahal notifikasinya terlihat.
     try {
       await android?.createNotificationChannel(
-        const AndroidNotificationChannel(
+        AndroidNotificationChannel(
           kanalKabar,
-          'Kabar lapangan',
+          _tr.chanNews,
           description:
-              'Pemberitahuan dari server: satu titik mulai dibor atau mulai dicor',
+              _tr.chanNewsDesc,
           importance: Importance.high,
           playSound: true,
           enableVibration: true,
@@ -237,8 +241,8 @@ class Notifications {
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'casting',
-          'Pengecoran berjalan',
-          channelDescription: 'Stopwatch TM yang sedang dicor',
+          _tr.chanCasting,
+          channelDescription: _tr.chanCastingDesc,
           importance: Importance.low,
           priority: Priority.low,
           ongoing: true,
@@ -298,9 +302,9 @@ class Notifications {
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _kanalCor,
-          'Pengingat cor',
+          _tr.chanCastReminder,
           channelDescription:
-              'Berbunyi dan bergetar saat satu TM sudah 20 menit belum selesai dicor',
+              _tr.chanCastReminderDesc,
           importance: Importance.max,
           priority: Priority.max,
           enableVibration: true,
@@ -341,9 +345,9 @@ class Notifications {
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           kanalKabar,
-          'Kabar lapangan',
+          _tr.chanNews,
           channelDescription:
-              'Pemberitahuan dari server: satu titik mulai dibor atau mulai dicor',
+              _tr.chanNewsDesc,
           importance: Importance.high,
           priority: Priority.high,
           enableVibration: true,
@@ -375,8 +379,8 @@ class Notifications {
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'casting',
-          'Pengecoran berjalan',
-          channelDescription: 'Stopwatch TM yang sedang dicor',
+          _tr.chanCasting,
+          channelDescription: _tr.chanCastingDesc,
           importance: Importance.low,
           priority: Priority.low,
           ongoing: true,
@@ -459,9 +463,9 @@ class Notifications {
   static NotificationDetails get _buzzDetails => NotificationDetails(
         android: AndroidNotificationDetails(
           _kanalCor,
-          'Pengingat cor',
+          _tr.chanCastReminder,
           channelDescription:
-              'Berbunyi dan bergetar saat satu TM sudah 20 menit belum selesai dicor',
+              _tr.chanCastReminderDesc,
           importance: Importance.max,
           priority: Priority.max,
           enableVibration: true,
@@ -612,9 +616,9 @@ class Notifications {
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _kanalBor,
-            'Pengingat log bor',
+            _tr.chanDrillReminder,
             channelDescription:
-                'Berbunyi dan bergetar bila log bor yang berjalan 45 menit belum ada bacaan baru',
+                _tr.chanDrillReminderDesc,
             // `max` SELALU, bukan naik-turun menurut pengingat ke berapa.
             // Tingkat kepentingan kanal ditentukan notifikasi PERTAMA yang
             // memakainya lalu dibekukan Android; yang pertama menyala
@@ -685,11 +689,11 @@ class Notifications {
       payload: '/queue',
       scheduledDate: tz.TZDateTime.from(at.toUtc(), tz.UTC),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'unsent_reminder',
-          'Data belum terkirim',
-          channelDescription: 'Pengingat bila data lapangan lebih dari sehari belum terkirim',
+          _tr.chanUnsent,
+          channelDescription: _tr.chanUnsentDesc,
           importance: Importance.high,
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,

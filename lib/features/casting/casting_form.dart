@@ -826,13 +826,20 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     // actually known — the person at the hole does not have them, and
     // "0 m³ of 9 m³" reads as concrete that went missing.
     final allVolumesKnown = _trucks.every((x) => toDoubleOrNull(x['volumeM3']) != null);
+    // No context here: the language the app is showing, else Indonesian.
+    final l = L10n.current ?? lookupAppLocalizations(const Locale('id'));
     return [
       toDoubleOrNull(truck['volumeM3']) == null
           ? 'TM #${truck['seq']}'
           : 'TM #${truck['seq']} · ${_decimal(truck['volumeM3'])} m³',
       if (allVolumesKnown)
-      'Terpakai ${_decimal(k.totalVolumeM3)} m³ dari ${_decimal(k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3)} m³ teoritis',
-      'Muka beton ${formatMeters(level.depthM)}${level.measured ? '' : ' (perkiraan)'} · cut-off ${formatMeters(k.geometry.cutOffDepthM)}',
+        l.notifUsedOf(
+          _decimal(k.totalVolumeM3),
+          _decimal(k.geometry.actualTheoreticalVolumeM3 ?? k.geometry.plannedTheoreticalVolumeM3),
+        ),
+      level.measured
+          ? l.notifConcreteLevel(formatMeters(level.depthM), formatMeters(k.geometry.cutOffDepthM))
+          : l.notifConcreteLevelEst(formatMeters(level.depthM), formatMeters(k.geometry.cutOffDepthM)),
     ].join('\n');
   }
   Future<void> _startTruck(Map<String, Object?> truck) async {
@@ -2187,8 +2194,11 @@ class _TremieCard extends StatelessWidget {
     final stickUp = k.tremieStickUpM;
     final (statusText, statusColor, statusIcon) = !canEditLayout
         ? (
-            'Terpasang ${_decimal(k.installedLengthAfter(currentSeq))} m dari ${_decimal(total)} m · '
-                'ujung bawah di ${formatMeters(k.tremieBottomAfter(currentSeq))}',
+            t(context).tremieInstalled(
+              _decimal(k.installedLengthAfter(currentSeq)),
+              _decimal(total),
+              formatMeters(k.tremieBottomAfter(currentSeq)),
+            ),
             w.muted,
             Icons.straighten,
           )
@@ -4158,7 +4168,7 @@ class _HeaderSheetState extends State<_HeaderSheet> {
   void _submit() {
     final grade = _grade.text.trim().isEmpty ? null : parseNumber(_grade.text);
     if (_grade.text.trim().isNotEmpty && (grade == null || grade <= 0 || grade > 150)) {
-      setState(() => _error = 'Mutu beton tidak masuk akal.');
+      setState(() => _error = t(context).gradeNotSensible);
       return;
     }
     // DIUKUR, bukan diasumsikan: yang diisi QS adalah kedalaman ujung bawah

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart' show Locale;
 
+import '../i18n.dart';
 import '../util/error_reporter.dart';
 
 /// Error from the server in a displayable form.
@@ -30,12 +32,12 @@ class ApiError implements Exception {
       final r = e.response;
       if (r == null) {
         return ApiError(
-          message: 'Tidak dapat terhubung ke server. Periksa sinyal.',
+          message: (L10n.current ?? lookupAppLocalizations(const Locale('id'))).apiOffline,
           offline: true,
         );
       }
       final data = r.data;
-      String message = 'Server menjawab ${r.statusCode}.';
+      String message = (L10n.current ?? lookupAppLocalizations(const Locale('id'))).apiStatus('${r.statusCode}');
       String? code;
       Map<String, Object?>? context;
       if (data is Map) {

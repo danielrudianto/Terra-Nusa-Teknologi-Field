@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart' show Locale;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../i18n.dart';
+
 class GeoPoint {
   const GeoPoint({required this.lat, required this.lng, required this.accuracyM, required this.mocked});
 
@@ -34,19 +36,22 @@ class LocationResult {
   final String? problem;
 }
 
+/// The app's language, or Indonesian before the first screen is built.
+AppLocalizations get _l => L10n.current ?? lookupAppLocalizations(const Locale('id'));
+
 /// Get the location once. Never throws an error.
 Future<LocationResult> getLocation() async {
   try {
     if (!await Geolocator.isLocationServiceEnabled()) {
-      return const LocationResult(problem: 'GPS HP mati. Nyalakan Lokasi di pengaturan cepat.');
+      return LocationResult(problem: _l.locGpsOff);
     }
     var permissions = await Geolocator.checkPermission();
     if (permissions == LocationPermission.denied) permissions = await Geolocator.requestPermission();
     if (permissions == LocationPermission.denied) {
-      return const LocationResult(problem: 'Izin lokasi ditolak.');
+      return LocationResult(problem: _l.locDenied);
     }
     if (permissions == LocationPermission.deniedForever) {
-      return const LocationResult(problem: 'Izin lokasi ditolak permanen. Buka Pengaturan → Aplikasi → TerraBot Field → Izin.');
+      return LocationResult(problem: _l.locDeniedForever);
     }
 
     Position? p;
@@ -61,13 +66,13 @@ Future<LocationResult> getLocation() async {
       p = await Geolocator.getLastKnownPosition();
     }
     if (p == null) {
-      return const LocationResult(problem: 'Sinyal GPS tidak didapat dalam 20 detik.');
+      return LocationResult(problem: _l.locNoSignal);
     }
     return LocationResult(
       point: GeoPoint(lat: p.latitude, lng: p.longitude, accuracyM: p.accuracy, mocked: p.isMocked),
     );
   } catch (e) {
-    return LocationResult(problem: 'Lokasi gagal dibaca: $e');
+    return LocationResult(problem: _l.locFailed('$e'));
   }
 }
 

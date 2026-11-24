@@ -404,11 +404,13 @@ class _IplPageState extends ConsumerState<IplPage> {
   Widget build(BuildContext context) {
     final w = context.colors;
     final l = t(context);
-    final projects = ref.watch(projectsProvider).value ?? const <Map<String, Object?>>[];
+    // Only the projects the office gave this surveyor (24 Nov 2026).
+    final projects = ref.watch(castingProjectsProvider).value ?? const <Map<String, Object?>>[];
     final mine = ref.watch(myProjectProvider);
-    if (!_defaultApplied && mine.hasValue) {
+    if (!_defaultApplied && mine.hasValue && projects.isNotEmpty) {
       _defaultApplied = true;
-      _projectId = mine.value ?? (projects.isEmpty ? null : toIntOrNull(projects.first['id']));
+      final ids = [for (final p in projects) toIntOrNull(p['id'])];
+      _projectId = ids.contains(mine.value) ? mine.value : ids.first;
     }
     final docsAsync = ref.watch(documentsProvider('ipl'));
     final measuredAsync = ref.watch(documentsProvider('gs_ukur'));
@@ -495,6 +497,17 @@ class _IplPageState extends ConsumerState<IplPage> {
       const SizedBox(height: 16),
       Text(l.projectLabel, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
       const SizedBox(height: 6),
+      // ONE project: no choice to make, so none is offered (Daniel, 24 Nov
+      // 2026: "kalau emang dia cuma pegang 1 proyek udah gausah pilih
+      // project lagi"). None: the office has not given any yet.
+      if (projects.isEmpty)
+        TerraBanner(kind: BannerKind.info, title: l.noProjectAssignedTitle, body: l.noProjectAssignedBody)
+      else if (projects.length == 1)
+        Text(
+          '${projects.first['code']} · ${projects.first['name']}',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink),
+        )
+      else
       DropdownButtonFormField<int>(
         key: ValueKey(_projectId),
         initialValue: _projectId,

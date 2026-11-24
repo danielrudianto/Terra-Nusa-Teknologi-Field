@@ -334,7 +334,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(pt.code, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: w.ink)),
-                Text('D${pt.diameterMm} · efektif ${formatMeters(pt.plannedEffectiveLengthM)} · ${formatVolume(pt.plannedTheoreticalVolumeM3)}',
+                Text(t(context).pointCardLine('${pt.diameterMm}', formatMeters(pt.plannedEffectiveLengthM), formatVolume(pt.plannedTheoreticalVolumeM3)),
                     style: TextStyle(color: w.muted, fontSize: 13)),
                 if (pt.groundLevel == null && pt.stage != 'sudah_cor')
                   Text(t(context).gsMissingShort, style: TextStyle(color: w.warnFg, fontSize: 13, fontWeight: FontWeight.w600)),

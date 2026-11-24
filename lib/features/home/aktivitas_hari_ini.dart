@@ -314,6 +314,11 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
 
     final tampil = data.take(AktivitasHariIniCard.maksBaris).toList();
     final sisa = data.length - tampil.length;
+    final proyekBeda = <int?>{for (final k in tampil) k.projectID}.toList();
+    final kodeProyek = <int?, String>{
+      for (final p in ref.watch(projectsProvider).value ?? const <Map<String, Object?>>[])
+        toIntOrNull(p['id']): '${p['code']}',
+    };
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -359,8 +364,28 @@ class _AktivitasHariIniCardState extends ConsumerState<AktivitasHariIniCard>
             ),
             if (_terbuka) ...[
               const SizedBox(height: 10),
-              for (final k in tampil)
-                BarisKegiatan(k: k, onKetuk: () => _buka(k), last: k == tampil.last),
+              // LEBIH DARI SATU PROYEK (24 Nov 2026): baris dikelompokkan per
+              // proyek, berjudul kodenya — tanpa itu dua titik "SP.B12" dari
+              // dua proyek tidak dapat dibedakan. Satu proyek: tanpa judul.
+              if (proyekBeda.length > 1)
+                for (final pid in proyekBeda) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, bottom: 4),
+                    child: Text(
+                      kodeProyek[pid] ?? '–',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: w.muted, letterSpacing: 0.3),
+                    ),
+                  ),
+                  for (final k in tampil.where((k) => k.projectID == pid))
+                    BarisKegiatan(
+                      k: k,
+                      onKetuk: () => _buka(k),
+                      last: k == tampil.lastWhere((x) => x.projectID == pid),
+                    ),
+                ]
+              else
+                for (final k in tampil)
+                  BarisKegiatan(k: k, onKetuk: () => _buka(k), last: k == tampil.last),
               if (sisa > 0) ...[
                 const SizedBox(height: 8),
                 Text(

@@ -224,11 +224,13 @@ class _ConcreteProfileCardState extends State<ConcreteProfileCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l.profileTitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: w.ink)),
-        const SizedBox(height: 8),
-        if (judged == 0)
-          Text(l.profileNone, style: TextStyle(color: w.muted, height: 1.4))
-        else ...[
+        // ONE title: the picture carries its own ("Profil beton · SP.B69"),
+        // so the card heading only stands when there is no picture.
+        if (judged == 0) ...[
+          Text(l.profileTitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: w.ink)),
+          const SizedBox(height: 8),
+          Text(l.profileNone, style: TextStyle(color: w.muted, height: 1.4)),
+        ] else ...[
           RepaintBoundary(
             key: _picture,
             child: ColoredBox(
@@ -397,10 +399,16 @@ class _ProfilePainter extends CustomPainter {
         ..strokeWidth = 1.5,
     );
 
-    // Brackets and labels, pushed apart so short stretches do not overlap.
+    // Brackets first, then the labels — laid out as a column TOP TO BOTTOM.
+    //
+    // 24 Nov 2026 (SP.B69): the labels were placed in truck order, which is
+    // BOTTOM to top, each pushed below the one before — so every label
+    // after TM #1 slid further down, off the picture and over the text
+    // under it. Now they are sorted by height, pushed apart downwards, and
+    // pulled back up when the last one would leave the picture.
     final xb = math.min(widest + 8, size.width - labelW - 4);
     final xl = size.width - labelW + 6;
-    var lastY = -1e9;
+    final items = <({ConcreteSegment s, Rect r, Color color, double want})>[];
     for (final (s, r) in rects) {
       if (s.ratio == null) continue;
       final color = switch (s.kind) {
@@ -417,12 +425,40 @@ class _ProfilePainter extends CustomPainter {
       // Effective walls in the bracket colour.
       c.drawLine(r.topLeft, r.bottomLeft, p..strokeWidth = 1.5);
       c.drawLine(r.topRight, r.bottomRight, p);
-      final ly = math.max(r.center.dy, lastY + 26);
-      lastY = ly;
-      c.drawLine(Offset(xb, r.center.dy), Offset(xl - 3, ly), Paint()..color = color.withValues(alpha: 0.5));
-      _text(c, labelOf(s), Offset(xl, ly - 6), color: color, weight: FontWeight.w700);
-      _text(c, '${_dia(s.diameterM!)} · TM #${s.seq}', Offset(xl, ly + 7), size: 10);
+      items.add((s: s, r: r, color: color, want: r.center.dy));
     }
+    items.sort((a, b) => a.want.compareTo(b.want));
+
+    const gap = 30.0; // two lines: the verdict, then Ø and the truck
+    const labelTop = 10.0;
+    final labelBottom = size.height - 18;
+    final ys = [for (final it in items) it.want];
+    for (var k = 0; k < ys.length; k++) {
+      ys[k] = math.max(ys[k], k == 0 ? labelTop : ys[k - 1] + gap);
+    }
+    if (ys.isNotEmpty && ys.last > labelBottom) {
+      ys[ys.length - 1] = labelBottom;
+      for (var k = ys.length - 2; k >= 0; k--) {
+        ys[k] = math.min(ys[k], ys[k + 1] - gap);
+      }
+    }
+
+    c.save();
+    c.clipRect(Offset.zero & size);
+    for (var k = 0; k < items.length; k++) {
+      final it = items[k];
+      final ly = ys[k];
+      c.drawLine(
+        Offset(xb, it.want),
+        Offset(xl - 3, ly),
+        Paint()
+          ..color = it.color.withValues(alpha: 0.6)
+          ..strokeWidth = 1,
+      );
+      _text(c, labelOf(it.s), Offset(xl, ly - 6), color: it.color, weight: FontWeight.w700);
+      _text(c, '${_dia(it.s.diameterM!)} · TM #${it.s.seq}', Offset(xl, ly + 8), size: 10);
+    }
+    c.restore();
   }
 
   @override

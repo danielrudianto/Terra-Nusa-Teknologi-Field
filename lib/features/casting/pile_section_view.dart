@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/i18n.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/util/format.dart';
 import 'calc/cut_plan.dart';
@@ -68,9 +69,9 @@ class _PileSectionViewState extends State<PileSectionView> with SingleTickerProv
             children: [
               Icon(Icons.vertical_split_outlined, size: 18, color: w.brand),
               const SizedBox(width: 8),
-              Expanded(child: Text('Penampang lubang', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: w.ink))),
+              Expanded(child: Text(t(context).sectionTitle, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: w.ink))),
               if (!s.concreteMeasured)
-                Text('muka beton perkiraan', style: TextStyle(fontSize: 12, color: w.warnFg, fontWeight: FontWeight.w600)),
+                Text(t(context).sectionEstimated, style: TextStyle(fontSize: 12, color: w.warnFg, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 10),
@@ -96,6 +97,7 @@ class _PileSectionViewState extends State<PileSectionView> with SingleTickerProv
                       phase: live ? _flow.value : 0,
                       live: live,
                       colors: w,
+                      l: t(context),
                     ),
                   ),
                 ),
@@ -116,9 +118,13 @@ class _SectionPainter extends CustomPainter {
     required this.phase,
     required this.live,
     required this.colors,
+    required this.l,
   });
 
   final PileSnapshot s;
+
+  /// Label texts in the app's language — a painter has no context.
+  final AppLocalizations l;
   final double concreteNowM;
   final double tremieBottomM;
   final double phase;
@@ -248,12 +254,12 @@ class _SectionPainter extends CustomPainter {
 
     // --- labels (pushed apart so they never overlap) -----------------------------
     final labels = <_Label>[
-      _Label(y(0), 'GS', 'muka tanah', colors.ink),
+      _Label(y(0), 'GS', l.sectionGround, colors.ink),
       _Label(y(s.cutOffDepthM), 'Cut-off', formatMeters(s.cutOffDepthM), colors.brand),
-      if (target != null) _Label(y(target), 'Akhir TM ini ±', formatMeters(target), colors.ink),
-      _Label(cTop, s.concreteMeasured ? 'Muka beton' : 'Muka beton ±', formatMeters(concreteNowM), colors.ink),
-      if (emb > 0) _Label((cTop + pipeBottomY) / 2, 'Tertanam', formatMeters(emb), embColor),
-      _Label(pipeBottomY, 'Ujung tremie', formatMeters(tremieBottomM), colors.muted),
+      if (target != null) _Label(y(target), l.sectionTruckEnd, formatMeters(target), colors.ink),
+      _Label(cTop, s.concreteMeasured ? l.cellConcreteLevel : l.sectionConcreteEst, formatMeters(concreteNowM), colors.ink),
+      if (emb > 0) _Label((cTop + pipeBottomY) / 2, l.sectionEmbedded, formatMeters(emb), embColor),
+      _Label(pipeBottomY, l.sectionTremieTip, formatMeters(tremieBottomM), colors.muted),
     ]..sort((a, b) => a.y.compareTo(b.y));
     const minGap = 28.0;
     var lastY = -1000.0;
@@ -308,6 +314,7 @@ class _SectionPainter extends CustomPainter {
       old.concreteNowM != concreteNowM ||
       old.tremieBottomM != tremieBottomM ||
       old.live != live ||
+      old.l != l ||
       old.s != s ||
       old.colors != colors;
 }

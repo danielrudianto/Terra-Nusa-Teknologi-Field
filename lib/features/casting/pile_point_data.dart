@@ -89,14 +89,20 @@ class FieldPilePoint {
   }
 
   /// Drilling may start only with an IPL confirmed for TODAY (23 Nov 2026).
-  /// A server older than IPL never sends the key: then nothing is gated.
+  ///
+  /// A MISSING key means "no IPL", not "not gated" (24 Nov 2026). Points the
+  /// phone pulled BEFORE the server sent IPL dates never carry the key: the
+  /// pull only resends a point when it changes, and most points have not
+  /// changed since. Read as "not gated", 291 of R501's 336 points showed up
+  /// as "today's points" on Ryan's phone. A point does get the key again as
+  /// soon as an IPL for it is confirmed — confirming touches the point.
   ///
   /// Checked against ALL confirmed dates when the server sends them: the
   /// latest one alone is wrong for a point in today's IPL and in tomorrow's
   /// too — once tomorrow's is confirmed, the latest date is tomorrow and the
   /// point would be shut for the rest of today.
   bool get iplReady {
-    if (!server.containsKey('iplDate')) return true;
+    if (!server.containsKey('iplDate')) return false;
     final today = isoDate(DateTime.now());
     return iplDates?.contains(today) ?? iplDate == today;
   }
@@ -105,7 +111,8 @@ class FieldPilePoint {
   /// that starts after midnight is still yesterday's permitted work. The
   /// same rule as the server (`_tahan_tanpa_ipl`, 24 Nov 2026).
   bool get iplReadyForCast {
-    if (!server.containsKey('iplDate')) return true;
+    // Missing key = no IPL — see [iplReady].
+    if (!server.containsKey('iplDate')) return false;
     final now = DateTime.now();
     final days = {isoDate(now), isoDate(now.subtract(const Duration(days: 1)))};
     final dates = iplDates ?? {?iplDate};

@@ -340,7 +340,15 @@ final castingProjectsProvider = Provider<AsyncValue<List<Map<String, Object?>>>>
 
 /// See [castingProjectsProvider]. Booleans may arrive as `true`/`false` or `1`/`0`.
 bool isCastingProject(Map<String, Object?> project) =>
-    !isRetentionProject(project) && _flag(project['fieldCastingEnabled'], fallback: true);
+    !isRetentionProject(project) &&
+    _flag(project['fieldCastingEnabled'], fallback: true) &&
+    isMyProject(project);
+
+/// A project the office gave THIS user (24 Nov 2026). The server decides:
+/// level 5 sees every project; Engineering, Surveyor and level 4 only the
+/// projects assigned to them — none assigned means none. A missing key
+/// (older server) counts as assigned.
+bool isMyProject(Map<String, Object?> project) => _flag(project['assignedToMe'], fallback: true);
 
 /// Handed over and waiting out the retention period: no more field work.
 bool isRetentionProject(Map<String, Object?> project) => _flag(project['isRetention'], fallback: false);

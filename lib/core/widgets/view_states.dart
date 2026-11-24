@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../i18n.dart';
 import '../theme/color_tokens.dart';
 import '../theme/dimens.dart';
 
@@ -55,7 +56,7 @@ class ErrorState extends StatelessWidget {
           ],
           if (onRetry != null) ...[
             const SizedBox(height: 14),
-            OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Coba lagi')),
+            OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: Text(t(context).retry)),
           ],
         ],
       ),

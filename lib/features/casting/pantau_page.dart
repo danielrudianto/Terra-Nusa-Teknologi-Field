@@ -816,7 +816,7 @@ class _PantauBorState extends State<_PantauBor> {
         if (ringkas.lajuRataMPerJam != null)
           _Angka(
             label: t(context).watchRate,
-            nilai: '${formatMeters(ringkas.lajuRataMPerJam)}/jam',
+            nilai: t(context).metresPerHour(ringkas.lajuRataMPerJam!.toStringAsFixed(1).replaceAll('.', ',')),
           ),
         _Angka(label: t(context).watchReadings, nilai: '${ringkas.jumlahBacaan}'),
         if (bacaan.isNotEmpty) ...[

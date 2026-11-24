@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../i18n.dart';
 import '../theme/color_tokens.dart';
 import '../theme/dimens.dart';
 import '../util/format.dart';
@@ -17,7 +18,7 @@ import '../util/format.dart';
 Future<DateTime?> showTimeWheel(
   BuildContext context, {
   required DateTime initial,
-  String title = 'Jam berapa?',
+  String? title,
   bool quickPicks = true,
 }) {
   return showModalBottomSheet<DateTime>(
@@ -34,7 +35,8 @@ class _TimeWheel extends StatefulWidget {
   const _TimeWheel({required this.initial, required this.title, required this.quickPicks});
 
   final DateTime initial;
-  final String title;
+  /// Null = "What time?" in the app's language.
+  final String? title;
   final bool quickPicks;
 
   @override
@@ -69,7 +71,7 @@ class _TimeWheelState extends State<_TimeWheel> {
             Row(
               children: [
                 Expanded(
-                  child: Text(widget.title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
+                  child: Text(widget.title ?? t(context).timeWheelTitle, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: w.ink)),
                 ),
                 Text(
                   formatTime(_value),
@@ -87,11 +89,11 @@ class _TimeWheelState extends State<_TimeWheel> {
               // One row of four equal buttons — a wrapped second row cost height.
               Row(
                 children: [
-                  for (final (i, (label, ago)) in const [
-                    ('Sekarang', Duration.zero),
-                    ('−5 mnt', Duration(minutes: 5)),
-                    ('−15 mnt', Duration(minutes: 15)),
-                    ('−30 mnt', Duration(minutes: 30)),
+                  for (final (i, (label, ago)) in [
+                    (t(context).now, Duration.zero),
+                    (t(context).minutesAgoShort('5'), const Duration(minutes: 5)),
+                    (t(context).minutesAgoShort('15'), const Duration(minutes: 15)),
+                    (t(context).minutesAgoShort('30'), const Duration(minutes: 30)),
                   ].indexed) ...[
                     if (i > 0) const SizedBox(width: 6),
                     Expanded(
@@ -133,7 +135,7 @@ class _TimeWheelState extends State<_TimeWheel> {
               height: Dimens.minTouch + 4,
               child: FilledButton(
                 onPressed: () => Navigator.pop(context, _value),
-                child: Text('Pakai jam ${formatTime(_value)}'),
+                child: Text(t(context).timeWheelUse(formatTime(_value))),
               ),
             ),
           ],

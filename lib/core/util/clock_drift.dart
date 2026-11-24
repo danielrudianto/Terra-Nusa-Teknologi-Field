@@ -1,3 +1,7 @@
+import 'package:flutter/widgets.dart' show Locale;
+
+import '../i18n.dart';
+
 /// How far the phone clock was from the server clock at the last pull.
 ///
 /// The pull stores `server_time` as `<server ISO>|<phone ISO at that moment>`.
@@ -23,6 +27,7 @@ String clockDriftText(Duration d) {
   final abs = d.abs();
   final h = abs.inHours;
   final m = abs.inMinutes % 60;
-  final amount = h == 0 ? '$m menit' : (m == 0 ? '$h jam' : '$h jam $m menit');
-  return d.isNegative ? '$amount terlambat' : '$amount lebih cepat';
+  final l = L10n.current ?? lookupAppLocalizations(const Locale('id'));
+  final amount = h == 0 ? l.driftMinutes('$m') : (m == 0 ? l.driftHours('$h') : l.driftHoursMinutes('$h', '$m'));
+  return d.isNegative ? l.driftSlow(amount) : l.driftFast(amount);
 }

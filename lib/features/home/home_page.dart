@@ -13,6 +13,7 @@ import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/list_card.dart';
 import 'aktivitas_hari_ini.dart';
 import 'status_banners.dart';
+import 'today_points_card.dart';
 import 'watched_logs.dart';
 import '../ipl/ipl_approve_page.dart';
 import '../settings/power_guide.dart';
@@ -41,7 +42,9 @@ class HomePage extends ConsumerWidget {
     // and as TerraBot Engineering (22 Nov 2026).
     final level = session?.permissions.level ?? 0;
     final engineering = session?.permissions.departments.contains('engineering') ?? false;
-    final canReport = (level >= 4 || engineering) && (session?.allows('field_casting', 'read') ?? false);
+    // Engineering from LEVEL 2 (24 Nov 2026) — the same rule as the server
+    // (`LEVEL_LAPORAN_ENGINEERING`).
+    final canReport = (level >= 4 || (engineering && level >= 2)) && (session?.allows('field_casting', 'read') ?? false);
     // Confirming IPLs from the phone (24 Nov 2026): level 4 and up, the same
     // rule as the web. The waiting count is read only for those who see it.
     final canApprove = canApproveIpl(session);
@@ -78,6 +81,8 @@ class HomePage extends ConsumerWidget {
             const StatusBanners(showUpdate: true, showNotifWarning: true),
             const PowerBanner(),
             const _WatchedCard(),
+            // Titik IPL hari ini, per proyek — untuk yang mengerjakan bor/cor.
+            if (canCast) const TodayPointsCard(),
             // Sejauh mana pekerjaan HARI INI — hak bacanya SAMA dengan
             // halaman Laporan, karena datanya memang dari sana.
             if (canReport) const AktivitasHariIniCard(),

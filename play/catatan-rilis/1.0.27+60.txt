@@ -1,15 +1,21 @@
 # Nama rilis (Play Console, maks 50 karakter):
-1.0.27 (60) — Lembar titik lebih ringkas
+1.0.27 (60) — Proyek sesuai tim, titik hari ini
 
 <id>
-• Lembar titik lebih ringkas: tombol kerja langsung terlihat, data titik lengkap dilipat di bawah ringkasan diameter, panjang bor, dan volume.
-• Engineering level 1 hanya melihat titik di IPL hari ini; level 2 ke atas melihat semua titik.
+• Aplikasi hanya menampilkan proyek tempat Anda ditambahkan kantor ke tim lapangan; yang memegang satu proyek langsung masuk ke titiknya.
+• Beranda menampilkan titik IPL hari ini per proyek beserta kemajuannya.
+• Lembar titik lebih ringkas: tombol kerja langsung terlihat.
+• Engineering level 1 hanya melihat titik IPL hari ini; laporan harian mulai level 2.
 </id>
 <en-US>
-• A simpler point sheet: the work buttons show straight away, and the full point data folds under a summary of diameter, drill length and volume.
-• Engineering level 1 sees only today's IPL points; level 2 and up see every point.
+• The app shows only the projects whose field team the office added you to; with one project you go straight to its points.
+• Home shows today's IPL points per project with their progress.
+• A simpler point sheet: the work buttons show straight away.
+• Engineering level 1 sees only today's IPL points; daily reports from level 2.
 </en-US>
 <zh-CN>
-• 桩位页面更简洁：操作按钮直接可见，完整桩位数据折叠在直径、钻孔长度和体积摘要之下。
-• 工程部 1 级只能看到今日 IPL 中的桩位；2 级及以上可看到全部桩位。
+• 应用只显示办公室将您加入现场团队的项目；只负责一个项目时直接进入其桩位。
+• 首页按项目显示今日 IPL 桩位及进度。
+• 桩位页面更简洁：操作按钮直接可见。
+• 工程部 1 级只能看到今日 IPL 桩位；日报从 2 级开始。
 </zh-CN>

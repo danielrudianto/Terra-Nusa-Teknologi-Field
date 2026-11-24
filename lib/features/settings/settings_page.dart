@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/config/env.dart';
-import '../../core/config/features.dart';
 import '../../core/device/notifications.dart';
 import '../../core/i18n.dart';
 import '../../core/providers.dart';
@@ -16,7 +15,6 @@ import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
 import '../../core/util/app_log.dart';
-import '../../core/util/format.dart';
 import '../../core/widgets/terra_banner.dart';
 import 'power_guide.dart';
 
@@ -78,8 +76,9 @@ class SettingsPage extends ConsumerWidget {
           _Section(t(context).sectionAppearance),
           const _AppearanceCard(),
 
-          _Section(t(context).sectionMyProject),
-          const _MyProjectOptions(),
+          // "Proyek saya" DIHAPUS dari Pengaturan (Daniel, 24 Nov 2026: "gw
+          // gamau dia bisa pilih proyek"). Proyek ditentukan kantor lewat Tim
+          // lapangan di halaman proyek; HP tidak memilih apa pun.
 
           _Section(t(context).sectionNotifications),
           const _NotificationTile(),
@@ -482,65 +481,6 @@ class _Tile extends StatelessWidget {
   }
 }
 
-/// "Proyek saya": the site this user works on for the coming weeks.
-///
-/// One tile per ongoing project, like the theme choice on m.terrabot — one
-/// tap, no dropdown to open and scroll. Tapping the chosen one again clears it.
-class _MyProjectOptions extends ConsumerWidget {
-  const _MyProjectOptions();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final w = context.colors;
-    final mine = ref.watch(myProjectProvider).value;
-    final projects = ref.watch(projectsProvider);
-    final all = projects.value ?? const <Map<String, Object?>>[];
-    final choices = [
-      for (final p in all)
-        if (!isRetentionProject(p) || '${p['id']}' == '$mine') p,
-    ];
-
-    Future<void> choose(int? id) async {
-      await ref.read(myProjectProvider.notifier).choose(id);
-      if (!context.mounted) return;
-      _snack(context, id == null ? t(context).myProjectCleared : t(context).myProjectSaved);
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 2, bottom: 10),
-          child: Text(
-              Features.attendance
-                  ? t(context).myProjectBodyAttendance
-                  : t(context).myProjectBody,
-              style: TextStyle(color: w.muted, height: 1.4)),
-        ),
-        if (projects.hasError)
-          TerraBanner(kind: BannerKind.danger, title: t(context).projectsLoadFailed, body: '${projects.error}')
-        else if (projects.hasValue && choices.isEmpty)
-          TerraBanner(
-            kind: BannerKind.info,
-            title: t(context).projectsMissingTitle,
-            body: t(context).projectsMissingBody,
-          ),
-        for (final p in choices)
-          _Tile(
-            icon: Icons.location_city_outlined,
-            title: '${p['code']}',
-            subtitle: '${p['name']}',
-            selected: '${p['id']}' == '$mine',
-            onTap: () {
-              final id = toIntOrNull(p['id']);
-              choose(id == mine ? null : id);
-            },
-          ),
-      ],
-    );
-  }
-}
-
 /// Whether the casting reminders can buzz. Off = the reminders after 20
 /// minutes and during a pause never reach the user.
 class _NotificationTile extends ConsumerWidget {
@@ -617,7 +557,7 @@ class _LogoutButton extends StatelessWidget {
             children: [
               Icon(Icons.logout, size: 20, color: w.badFg),
               const SizedBox(width: 8),
-              Text('Keluar', style: TextStyle(color: w.badFg, fontWeight: FontWeight.w700, fontSize: 15)),
+              Text(t(context).logout, style: TextStyle(color: w.badFg, fontWeight: FontWeight.w700, fontSize: 15)),
             ],
           ),
         ),

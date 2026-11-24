@@ -6,10 +6,13 @@ import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/theme/motion.dart';
+import '../../core/util/format.dart';
 import '../../core/widgets/list_card.dart';
+import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/view_states.dart';
 import '../../core/widgets/page_header.dart';
 import '../home/status_banners.dart';
+import 'pile_points_page.dart';
 import '../../core/i18n.dart';
 
 /// Choose a project → list of pile points.
@@ -21,6 +24,13 @@ class CastingPage extends ConsumerWidget {
     final w = context.colors;
     final projects = ref.watch(castingProjectsProvider);
     final mine = ref.watch(myProjectProvider).value;
+    // ONE project: straight into its points, no list of one to tap through
+    // (Daniel, 24 Nov 2026: "kita bikin simple untuk orang orang itu").
+    final only = projects.value;
+    if (only != null && only.length == 1) {
+      final id = toIntOrNull(only.first['id']);
+      if (id != null) return PilePointsPage(projectId: id);
+    }
     return Scaffold(
       appBar: AppBar(title: Text(t(context).castingTitle)),
       body: RefreshIndicator(
@@ -39,10 +49,14 @@ class CastingPage extends ConsumerWidget {
             children: [
               const StatusBanners(showPending: false),
               PageHeader(title: t(context).pickProject, description: t(context).pickProjectBody),
+              // No project at all: below level 5 that means the office has
+              // not added this person to any project's field team yet.
               if (items.isEmpty)
-                EmptyState(
-                  message: t(context).noCastingProjects,
-                  icon: Icons.domain_disabled,
+                TerraBanner(
+                  kind: BannerKind.info,
+                  icon: Icons.group_off_outlined,
+                  title: t(context).noProjectAssignedTitle,
+                  body: t(context).noProjectAssignedBody,
                 ),
               for (final (i, p) in items.indexed)
                 AppearIn(

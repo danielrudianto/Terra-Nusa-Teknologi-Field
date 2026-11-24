@@ -185,6 +185,17 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     for (final p in projects) {
       if (toIntOrNull(p['id']) == _projectId) chosen = p;
     }
+    // ONE project: chosen for them, nothing to pick (Daniel, 24 Nov 2026:
+    // "kalau emang dia cuma pegang 1 proyek udah gausah pilih project lagi").
+    final single = projects.length == 1;
+    if (single && _projectId == null) {
+      final only = toIntOrNull(projects.first['id']);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _projectId != null || only == null) return;
+        setState(() => _projectId = only);
+        unawaited(_load());
+      });
+    }
     final r = _result;
     final canAct = !_busy && !_loading && r?.png != null;
 
@@ -204,7 +215,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                 type: MaterialType.transparency,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: projects.isEmpty ? null : () => _pickProject(projects),
+                  onTap: projects.isEmpty || single ? null : () => _pickProject(projects),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(minHeight: 64),
                     child: Padding(
@@ -234,8 +245,10 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Icon(Icons.expand_more, color: w.muted),
+                          if (!single) ...[
+                            const SizedBox(width: 8),
+                            Icon(Icons.expand_more, color: w.muted),
+                          ],
                         ],
                       ),
                     ),

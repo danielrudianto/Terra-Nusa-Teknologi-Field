@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.28 (61) — Bahasa konsisten di seluruh aplikasi
+
+<id>
+• Semua tulisan mengikuti bahasa yang dipilih, termasuk tombol Keluar, penampang lubang, pemilih jam, nama saluran notifikasi, pesan lokasi, dan pesan koneksi.
+• Pengaturan tidak lagi menampilkan pilihan proyek: proyek ditentukan kantor.
+• Label profil beton tidak lagi bertumpuk dan keluar dari gambar.
+• Daftar "titik hari ini" kini hanya berisi titik di IPL terkonfirmasi.
+</id>
+<en-US>
+• All text now follows the chosen language, including Log out, the hole section, the time picker, notification channel names, location messages and connection messages.
+• Settings no longer offers a project choice: the office decides the projects.
+• Concrete profile labels no longer pile up or run off the picture.
+• The "today's points" list now holds only points in a confirmed IPL.
+</en-US>
+<zh-CN>
+• 所有文字均跟随所选语言，包括退出按钮、孔截面、时间选择器、通知渠道名称、定位提示和连接提示。
+• 设置中不再提供项目选择：项目由办公室指定。
+• 混凝土剖面标签不再重叠或超出图片。
+• “今日桩位”列表现仅包含已确认 IPL 中的桩位。
+</zh-CN>
