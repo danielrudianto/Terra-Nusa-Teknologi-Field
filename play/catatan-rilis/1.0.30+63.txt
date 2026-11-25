@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.30 (63) — Bagikan IPL dan ganti kata sandi
+
+<id>
+• IPL bisa dibagikan dari HP sebagai gambar (enak untuk WhatsApp) atau PDF, lengkap dengan tanda tangan; begitu dikonfirmasi langsung ditawari bagikan.
+• Kata sandi bisa diganti sendiri: Pengaturan → Ganti kata sandi.
+• Peringatan bila X/Y aktual yang diketik sama dengan titik lain.
+• Pesan dari server kini mengikuti bahasa aplikasi.
+</id>
+<en-US>
+• Share IPLs from the phone as an image (good for WhatsApp) or PDF, with the signature; offered right after confirming.
+• Change your own password: Settings → Change password.
+• Warning when the actual X/Y typed matches another point.
+• Server messages now follow the app language.
+</en-US>
+<zh-CN>
+• 可从手机以图片（适合 WhatsApp）或 PDF 分享 IPL，附签名；确认后立即提示分享。
+• 可自行修改密码：设置 → 修改密码。
+• 输入的实际 X/Y 与其他桩位相同时会提醒。
+• 服务器消息现跟随应用语言。
+</zh-CN>
