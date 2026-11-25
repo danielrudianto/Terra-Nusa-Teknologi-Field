@@ -2873,6 +2873,143 @@
   "@drillNoteOtherLabel": {
     "description": "drillNoteOtherLabel"
   },
+  "iplShare": "Bagikan IPL",
+  "@iplShare": {
+    "description": "iplShare"
+  },
+  "iplShareImage": "Gambar",
+  "@iplShareImage": {
+    "description": "iplShareImage"
+  },
+  "iplShareImageHint": "Paling enak untuk WhatsApp, langsung terlihat di obrolan.",
+  "@iplShareImageHint": {
+    "description": "iplShareImageHint"
+  },
+  "iplSharePdf": "PDF",
+  "@iplSharePdf": {
+    "description": "iplSharePdf"
+  },
+  "iplSharePdfHint": "Untuk owner dan arsip.",
+  "@iplSharePdfHint": {
+    "description": "iplSharePdfHint"
+  },
+  "iplShareDraftNote": "IPL ini belum dikonfirmasi: lembarnya bertanda DRAFT, tanpa tanda tangan.",
+  "@iplShareDraftNote": {
+    "description": "iplShareDraftNote"
+  },
+  "iplShareFailed": "Gagal mengambil IPL: {error}",
+  "@iplShareFailed": {
+    "description": "iplShareFailed",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "iplShareAfterConfirm": "Lembarnya sekarang bertanda tangan. Bagikan ke grup sekarang?",
+  "@iplShareAfterConfirm": {
+    "description": "iplShareAfterConfirm"
+  },
+  "iplShareLater": "Nanti saja",
+  "@iplShareLater": {
+    "description": "iplShareLater"
+  },
+  "pwTitle": "Ganti kata sandi",
+  "@pwTitle": {
+    "description": "pwTitle"
+  },
+  "pwMenuBody": "Untuk masuk ke aplikasi ini dan TerraBot web.",
+  "@pwMenuBody": {
+    "description": "pwMenuBody"
+  },
+  "pwInfoTitle": "Sandi yang sama untuk HP dan web",
+  "@pwInfoTitle": {
+    "description": "pwInfoTitle"
+  },
+  "pwInfoBody": "Sandi baru minimal {min} karakter. Anda tetap masuk di HP ini; sandi baru dipakai saat masuk berikutnya.",
+  "@pwInfoBody": {
+    "description": "pwInfoBody",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "pwCurrent": "Sandi sekarang",
+  "@pwCurrent": {
+    "description": "pwCurrent"
+  },
+  "pwNew": "Sandi baru",
+  "@pwNew": {
+    "description": "pwNew"
+  },
+  "pwRepeat": "Ulangi sandi baru",
+  "@pwRepeat": {
+    "description": "pwRepeat"
+  },
+  "pwShow": "Tampilkan sandi",
+  "@pwShow": {
+    "description": "pwShow"
+  },
+  "pwHide": "Sembunyikan sandi",
+  "@pwHide": {
+    "description": "pwHide"
+  },
+  "pwSave": "Simpan sandi baru",
+  "@pwSave": {
+    "description": "pwSave"
+  },
+  "pwChanged": "Kata sandi diganti.",
+  "@pwChanged": {
+    "description": "pwChanged"
+  },
+  "pwCurrentEmpty": "Isi sandi sekarang dulu.",
+  "@pwCurrentEmpty": {
+    "description": "pwCurrentEmpty"
+  },
+  "pwTooShort": "Sandi baru minimal {min} karakter.",
+  "@pwTooShort": {
+    "description": "pwTooShort",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "pwMismatch": "Sandi baru dan ulangannya tidak sama.",
+  "@pwMismatch": {
+    "description": "pwMismatch"
+  },
+  "pwSameAsOld": "Sandi baru sama dengan sandi sekarang.",
+  "@pwSameAsOld": {
+    "description": "pwSameAsOld"
+  },
+  "pwCurrentWrong": "Sandi sekarang salah.",
+  "@pwCurrentWrong": {
+    "description": "pwCurrentWrong"
+  },
+  "pwUnset": "Akun ini belum punya sandi. Minta kantor mengaturnya.",
+  "@pwUnset": {
+    "description": "pwUnset"
+  },
+  "xyTwinTitle": "X/Y ini sama dengan {code}",
+  "@xyTwinTitle": {
+    "description": "xyTwinTitle",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "xyTwinBody": "X/Y aktual yang diketik sama dengan X/Y aktual titik {code}. Dua lubang tidak mungkin berpusat di tempat yang sama — kemungkinan angkanya tersalin dari titik {code}. Periksa lagi ke surveyor.",
+  "@xyTwinBody": {
+    "description": "xyTwinBody",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"

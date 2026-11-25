@@ -86,6 +86,12 @@ class SettingsPage extends ConsumerWidget {
 
           _Section(t(context).sectionAccount),
           _Tile(
+            icon: Icons.lock_outline,
+            title: t(context).pwTitle,
+            subtitle: t(context).pwMenuBody,
+            onTap: () => context.push('/password'),
+          ),
+          _Tile(
             icon: Icons.refresh,
             title: t(context).reloadPermissions,
             subtitle: t(context).reloadPermissionsBody,

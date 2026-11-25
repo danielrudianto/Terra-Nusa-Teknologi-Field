@@ -19,6 +19,7 @@ import '../casting/level_reference.dart';
 import 'gs_dialog.dart';
 import 'gs_ukur.dart';
 import 'ipl_confirm_dialog.dart';
+import 'ipl_share.dart';
 
 /// IPL — Izin Pelaksanaan Lapangan (23 Nov 2026).
 ///
@@ -938,6 +939,19 @@ class _History extends StatelessWidget {
                     ),
                   ),
                   Text(word, style: TextStyle(fontWeight: FontWeight.w700, color: color)),
+                  // Share only what the server has: it draws the sheet (and
+                  // the signature). Not yet sent, or refused = nothing to send.
+                  if (d.serverId != null && d.sendStatus != 'rejected' && d.serverStatus != 'ditolak')
+                    IconButton(
+                      tooltip: l.iplShare,
+                      icon: Icon(Icons.ios_share, color: w.brand),
+                      onPressed: () => shareIpl(
+                        context,
+                        iplId: d.serverId!,
+                        fileStem: iplFileStem(codes['${b['projectID']}'] ?? '', '${b['date']}'),
+                        confirmed: d.serverStatus == 'dikonfirmasi',
+                      ),
+                    ),
                 ],
               ),
             );

@@ -13,6 +13,7 @@ import '../../core/widgets/list_card.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/view_states.dart';
 import '../casting/level_reference.dart';
+import 'ipl_share.dart';
 
 /// IPLs waiting for confirmation, straight from the server (no offline copy:
 /// a decision taken on yesterday's list could confirm what someone else has
@@ -174,6 +175,8 @@ class _IplDetailPageState extends ConsumerState<_IplDetailPage> {
 
   int get _id => int.parse('${widget.ipl['id']}');
 
+  String get _stem => iplFileStem('${widget.ipl['projectCode'] ?? ''}', '${widget.ipl['date'] ?? ''}');
+
   Future<void> _confirm() async {
     final l = t(context);
     final ok = await askConfirm(
@@ -190,7 +193,21 @@ class _IplDetailPageState extends ConsumerState<_IplDetailPage> {
       if (!mounted) return;
       final skipped = [for (final c in (r['skipped'] as List? ?? const [])) '$c'];
       showSnack(context, skipped.isEmpty ? l.iplApproveDone : l.iplApproveDoneSkipped(skipped.join(', ')));
-      Navigator.of(context).pop(true);
+      // The moment it is confirmed is the moment the group wants the signed
+      // sheet; once this page closes the IPL leaves the waiting list and
+      // there is nothing left to tap (25 Nov 2026).
+      final share = await askConfirm(
+        context,
+        title: l.iplApproveDone,
+        body: l.iplShareAfterConfirm,
+        confirmLabel: l.iplShare,
+        cancelLabel: l.iplShareLater,
+        icon: Icons.ios_share,
+      );
+      if (share && mounted) {
+        await shareIpl(context, iplId: _id, fileStem: _stem, confirmed: true);
+      }
+      if (mounted) Navigator.of(context).pop(true);
     } on ApiError catch (e) {
       if (mounted) showSnack(context, e.message, icon: Icons.error_outline);
     } finally {
@@ -230,7 +247,16 @@ class _IplDetailPageState extends ConsumerState<_IplDetailPage> {
     final note = '${ipl['note'] ?? ''}'.trim();
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.iplApproveTitle)),
+      appBar: AppBar(
+        title: Text(l.iplApproveTitle),
+        actions: [
+          IconButton(
+            tooltip: l.iplShare,
+            icon: const Icon(Icons.ios_share),
+            onPressed: _busy ? null : () => shareIpl(context, iplId: _id, fileStem: _stem, confirmed: false),
+          ),
+        ],
+      ),
       body: ListView(
         padding: pagePaddingAman(context),
         children: [

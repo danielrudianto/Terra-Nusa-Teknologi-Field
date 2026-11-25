@@ -438,6 +438,10 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
         designX: toDoubleOrNull(_pilePoint!['designX']),
         designY: toDoubleOrNull(_pilePoint!['designY']),
         toleranceMm: _toleranceMm,
+        titikLain: xyTitikLain(
+          ref.read(pilePointsProvider(toIntOrNull(_pilePoint!['projectID']) ?? 0)).value ?? const [],
+          '${_pilePoint!['uuid']}',
+        ),
       ),
     );
     if (result == null) return;
@@ -1303,6 +1307,7 @@ class _FinishDialog extends StatefulWidget {
     required this.designX,
     required this.designY,
     required this.toleranceMm,
+    this.titikLain = const [],
   });
 
   final String code;
@@ -1321,6 +1326,9 @@ class _FinishDialog extends StatefulWidget {
   final double? designX;
   final double? designY;
   final double? toleranceMm;
+
+  /// X/Y aktual titik lain di proyek ini — pemeriksaan kembar.
+  final List<XyTitik> titikLain;
 
   @override
   State<_FinishDialog> createState() => _FinishDialogState();
@@ -1390,6 +1398,7 @@ class _FinishDialogState extends State<_FinishDialog> {
       xText: _xInput.text,
       yText: _yInput.text,
       toleranceMm: widget.toleranceMm,
+      titikLain: widget.titikLain,
     )) {
       return false;
     }

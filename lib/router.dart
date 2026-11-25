@@ -24,6 +24,7 @@ import 'features/reports/daily_report_page.dart';
 import 'features/reports/report_page.dart';
 import 'features/ipl/ipl_approve_page.dart';
 import 'features/ipl/ipl_page.dart';
+import 'features/settings/change_password_page.dart';
 import 'core/config/features.dart';
 import 'core/providers.dart';
 
@@ -100,6 +101,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/attendance/:uuid', builder: (_, s) => AttendanceForm(uuid: s.pathParameters['uuid'])),
       GoRoute(path: '/workers', builder: (_, _) => const WorkersPage()),
+      GoRoute(path: '/password', builder: (_, _) => const ChangePasswordPage()),
       GoRoute(
         path: '/workers/new',
         builder: (_, s) => WorkerForm(uuid: null, projectId: int.tryParse(s.uri.queryParameters['project'] ?? '')),

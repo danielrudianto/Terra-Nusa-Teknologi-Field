@@ -1,15 +1,27 @@
 # Nama rilis (Play Console, maks 50 karakter):
-1.0.29 (62) — Mulai bor dari 0 dan catatan pilihan
+1.0.29 (62) — Bagikan IPL, ganti sandi, bor dari 0
 
 <id>
-• Mulai log bor langsung mencatat bacaan pertama 0 m pada jam itu, tanpa tombol kedua.
-• Catatan bacaan bor kini dipilih: Istirahat, Kerusakan mesin, atau Lainnya (diketik singkat).
+• IPL bisa dibagikan dari HP sebagai gambar atau PDF, lengkap dengan tanda tangan; begitu dikonfirmasi langsung ditawari bagikan.
+• Kata sandi bisa diganti sendiri: Pengaturan → Ganti kata sandi.
+• Mulai log bor langsung mencatat bacaan pertama 0 m.
+• Catatan bacaan bor dipilih: Istirahat, Kerusakan mesin, atau Lainnya.
+• Peringatan bila X/Y aktual sama dengan titik lain.
+• Pesan dari server mengikuti bahasa aplikasi.
 </id>
 <en-US>
-• Starting a drill log records the first reading, 0 m at that moment, straight away.
-• Drill reading notes are now picked: Break, Machine breakdown, or Other (typed briefly).
+• Share IPLs from the phone as an image or PDF, with the signature; offered right after confirming.
+• Change your own password: Settings → Change password.
+• Starting a drill log records the first reading, 0 m, straight away.
+• Drill reading notes are picked: Break, Machine breakdown, or Other.
+• Warning when an actual X/Y matches another point.
+• Server messages follow the app language.
 </en-US>
 <zh-CN>
-• 开始钻孔记录时立即记下第一条读数：当时 0 米，无需再按第二个按钮。
-• 钻孔读数备注改为选择：休息、机器故障或其他（简短输入）。
+• 可从手机以图片或 PDF 分享 IPL，附签名；确认后立即提示分享。
+• 可自行修改密码：设置 → 修改密码。
+• 开始钻孔记录时立即记下第一条读数 0 米。
+• 钻孔读数备注改为选择：休息、机器故障或其他。
+• 实际 X/Y 与其他桩位相同时会提醒。
+• 服务器消息跟随应用语言。
 </zh-CN>

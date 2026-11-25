@@ -947,6 +947,10 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         designX: pt.designX,
         designY: pt.designY,
         toleranceMm: toleranceMm,
+        titikLain: xyTitikLain(
+          [for (final o in ref.read(fieldPilePointsProvider(widget.projectId)).value ?? const <FieldPilePoint>[]) o.server],
+          pt.uuid,
+        ),
       ),
     );
     if (result == null) return;
@@ -1000,6 +1004,7 @@ class _DrillDialog extends StatefulWidget {
     required this.designX,
     required this.designY,
     required this.toleranceMm,
+    this.titikLain = const [],
   });
 
   final String code;
@@ -1014,6 +1019,9 @@ class _DrillDialog extends StatefulWidget {
   final double? designX;
   final double? designY;
   final double? toleranceMm;
+
+  /// X/Y aktual titik lain di proyek ini — pemeriksaan kembar.
+  final List<XyTitik> titikLain;
 
   @override
   State<_DrillDialog> createState() => _DrillDialogState();
@@ -1097,6 +1105,7 @@ class _DrillDialogState extends State<_DrillDialog> {
       xText: _xInput.text,
       yText: _yInput.text,
       toleranceMm: widget.toleranceMm,
+      titikLain: widget.titikLain,
     )) {
       return;
     }

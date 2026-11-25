@@ -24,6 +24,7 @@ Future<bool> askConfirm(
   required String confirmLabel,
   IconData icon = Icons.help_outline,
   bool danger = false,
+  String? cancelLabel,
 }) async {
   final answer = await showDialog<bool>(
     context: context,
@@ -32,7 +33,7 @@ Future<bool> askConfirm(
       title: Text(title, textAlign: TextAlign.center),
       content: Text(body),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(c, false), child: Text(t(context).cancel)),
+        TextButton(onPressed: () => Navigator.pop(c, false), child: Text(cancelLabel ?? t(context).cancel)),
         FilledButton(
           onPressed: () => Navigator.pop(c, true),
           style: danger

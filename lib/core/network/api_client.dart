@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../db/app_database.dart';
 import '../config/env.dart';
+import '../i18n.dart';
 import '../session/session.dart';
 import '../util/format.dart';
 import 'api_error.dart';
@@ -48,6 +49,10 @@ class ApiClient {
           if (access != null && !opts.path.startsWith('/auth/')) {
             opts.headers['Authorization'] = 'Bearer $access';
           }
+          // The language the app shows NOW — read per request, because it
+          // can be changed in Settings at any time. The server answers its
+          // error sentences in it (25 Nov 2026; `utils/pesan_bahasa.py`).
+          opts.headers['X-App-Language'] = _appLanguage();
           handler.next(opts);
         },
         onError: (error, handler) async {
@@ -113,6 +118,7 @@ class ApiClient {
           // Penyegaran juga menulis baris perangkat di server, jadi namanya
           // ikut di sini — kalau tidak, labelnya berubah-ubah sendiri.
           'X-Device-Name': ?deviceName,
+          'X-App-Language': _appLanguage(),
         }),
       );
       final data = r.data ?? const {};
@@ -221,6 +227,23 @@ class ApiClient {
   Future<void> rejectIpl(int iplId, String reason) async {
     try {
       await dio.post<Map<String, dynamic>>('/field/ipl/$iplId/reject', data: {'reason': reason});
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// One IPL sheet as the SERVER renders it — PNG ([pdf] false) or PDF —
+  /// with the confirmer's name and signature once it is confirmed, and
+  /// marked DRAFT before that. The signature only ever exists on the
+  /// server, so a sheet worth sending cannot be drawn on the phone
+  /// (25 Nov 2026: "IPL bisa di share dari app").
+  Future<List<int>> iplFile(int iplId, {required bool pdf}) async {
+    try {
+      final r = await dio.get<List<int>>(
+        '/field/ipl/$iplId/${pdf ? 'pdf' : 'png'}',
+        options: Options(responseType: ResponseType.bytes, receiveTimeout: const Duration(seconds: 60)),
+      );
+      return r.data ?? const [];
     } catch (e) {
       throw ApiError.from(e);
     }
@@ -404,6 +427,21 @@ class ApiClient {
       throw ApiError.from(e);
     }
   }
+
+  /// Change this user's own password (25 Nov 2026: "kalau user mau update
+  /// password bisa di app ga sih?"). The server asks for the current one
+  /// too: a phone left unlocked must not be enough to lock its owner out.
+  Future<void> changePassword({required String current, required String next}) async {
+    try {
+      await dio.put<dynamic>('/users/me/password', data: {'currentPassword': current, 'newPassword': next});
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
+
+  /// `id` / `en` / `zh` — the language the app is showing. `id` before the
+  /// first build, when nothing has been chosen yet.
+  static String _appLanguage() => (L10n.current?.localeName ?? 'id').split(RegExp('[_-]')).first;
 
   Future<void> logout() async {
     final refresh = await session.refreshToken();

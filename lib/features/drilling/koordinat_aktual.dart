@@ -92,6 +92,42 @@ double? simpanganMm({
   return math.sqrt(dx * dx + dy * dy) * 1000;
 }
 
+/// X/Y AKTUAL titik LAIN di proyek yang sama — bahan pemeriksaan kembar.
+typedef XyTitik = ({String code, double x, double y});
+
+/// X/Y aktual setiap titik lain dari baris titik HP (`pile_point` master),
+/// kecuali [kecualiUuid] — titik yang sedang diisi.
+List<XyTitik> xyTitikLain(Iterable<Map<String, Object?>> titik, String? kecualiUuid) => [
+      for (final o in titik)
+        if ('${o['uuid']}' != kecualiUuid)
+          if ((toDoubleOrNull(o['actualX']), toDoubleOrNull(o['actualY'])) case (final double x, final double y))
+            (code: '${o['code']}', x: x, y: y),
+    ];
+
+/// Dua pusat lubang yang lebih dekat dari ini = angka yang sama, bukan dua
+/// lubang. Tiang terkecil AKN berdiameter ratusan milimeter; dua lubang
+/// tidak mungkin berpusat sedekat ini.
+const xyKembarMm = 10.0;
+
+/// KODE titik lain yang X/Y aktualnya (hampir) SAMA dengan yang diketik —
+/// atau `null`.
+///
+/// DANIEL, 24 Nov 2026: SP.D20 (belum dibor) ternyata menyimpan X/Y aktual
+/// PP.D20 di sebelahnya, angka demi angka; di denah titiknya tergambar
+/// menumpuk ke tetangganya dan dicap lewat toleransi 486 mm. Simpangan
+/// sebesar itu sudah dipalang di bawah, tetapi palangnya hanya bilang
+/// "jauh" — yang sebenarnya terjadi, angkanya salah titik. Pertanyaan ini
+/// menyebut titik asalnya, dan itulah yang membuat salahnya terlihat.
+String? xyKembar({required double? x, required double? y, required Iterable<XyTitik> lain}) {
+  if (x == null || y == null) return null;
+  for (final o in lain) {
+    final dx = o.x - x;
+    final dy = o.y - y;
+    if (math.sqrt(dx * dx + dy * dy) * 1000 < xyKembarMm) return o.code;
+  }
+  return null;
+}
+
 /// Dua isian koordinat beserta peringatan simpangannya.
 ///
 /// PENGENDALINYA MILIK INDUKNYA, seperti isian GS di sebelahnya: dibuang di
@@ -323,7 +359,37 @@ Future<bool> lanjutkanMeskiSimpang(
   required String xText,
   required String yText,
   required double? toleranceMm,
+  Iterable<XyTitik> titikLain = const [],
 }) async {
+  final l = t(context);
+  final w = context.colors;
+  // KEMBAR lebih dulu: ia menyebut SEBABNYA ("ini angka titik lain"),
+  // sedangkan simpangan di bawah hanya akibatnya. Lolos yang ini, palang
+  // simpangan tetap berlaku.
+  final kembar = xyKembar(x: parseKoordinat(xText), y: parseKoordinat(yText), lain: titikLain);
+  if (kembar != null) {
+    final lanjut = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Icon(Icons.content_copy, color: w.badFg, size: 32),
+        title: Text(l.xyTwinTitle(kembar)),
+        content: Text(l.xyTwinBody(kembar)),
+        actions: [
+          // Susunan yang sama dengan palang simpangan: lanjut di kiri dan
+          // redup, "Periksa lagi" di kanan sebagai tombol utama.
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l.deviationStopSave, style: TextStyle(color: w.muted)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l.deviationStopRecheck),
+          ),
+        ],
+      ),
+    );
+    if (lanjut != true || !context.mounted) return false;
+  }
   final simpangan = simpanganMm(
     designX: designX,
     designY: designY,
@@ -336,8 +402,6 @@ Future<bool> lanjutkanMeskiSimpang(
   // hampir seluruhnya, dan palang yang selalu muncul berhenti dibaca.
   if (simpangan == null || batas == null || simpangan <= batas) return true;
 
-  final l = t(context);
-  final w = context.colors;
   final boleh = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
