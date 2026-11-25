@@ -20,6 +20,7 @@ import 'gs_dialog.dart';
 import 'gs_ukur.dart';
 import 'ipl_confirm_dialog.dart';
 import 'ipl_share.dart';
+import 'ipl_view_page.dart';
 
 /// IPL — Izin Pelaksanaan Lapangan (23 Nov 2026).
 ///
@@ -494,6 +495,21 @@ class _IplPageState extends ConsumerState<IplPage> {
     final canSend = !_saving && blocked == null;
 
     final header = <Widget>[
+      // EARLIER IPLs AT THE TOP, opened as a sheet (Daniel, 25 Nov 2026):
+      // at the bottom they sat under every open point — 300 rows on a big
+      // project — and sharing a confirmed IPL meant scrolling past all of
+      // them.
+      if (docs.isNotEmpty) ...[
+        SizedBox(
+          height: Dimens.minTouch,
+          child: OutlinedButton.icon(
+            onPressed: () => _showHistory(context, docs, projects),
+            icon: const Icon(Icons.history),
+            label: Text('${l.iplHistory} (${docs.length})'),
+          ),
+        ),
+        const SizedBox(height: 14),
+      ],
       Text(l.iplIntro, style: TextStyle(color: w.muted, height: 1.4)),
       const SizedBox(height: 16),
       Text(l.projectLabel, style: TextStyle(fontWeight: FontWeight.w700, color: w.ink)),
@@ -656,7 +672,17 @@ class _IplPageState extends ConsumerState<IplPage> {
     final pad = pagePaddingAman(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.iplTitle)),
+      appBar: AppBar(
+        title: Text(l.iplTitle),
+        actions: [
+          if (docs.isNotEmpty)
+            IconButton(
+              tooltip: l.iplHistory,
+              icon: const Icon(Icons.history),
+              onPressed: () => _showHistory(context, docs, projects),
+            ),
+        ],
+      ),
       floatingActionButton: showSend
           ? FloatingActionButton.extended(
               heroTag: 'ipl-send',
@@ -720,8 +746,8 @@ class _IplPageState extends ConsumerState<IplPage> {
           ),
           SliverPadding(
             // Room under the last row so the floating button never covers it.
-            padding: EdgeInsets.fromLTRB(pad.left, 20, pad.right, pad.bottom + (showSend ? 88 : 0)),
-            sliver: SliverToBoxAdapter(child: _History(docs: docs, projects: projects)),
+            padding: EdgeInsets.only(bottom: 20 + pad.bottom + (showSend ? 88 : 0)),
+            sliver: const SliverToBoxAdapter(child: SizedBox.shrink()),
           ),
         ],
       ),
@@ -894,6 +920,32 @@ class _PileRow extends StatelessWidget {
   }
 }
 
+/// Earlier IPLs in a bottom sheet — reachable from the top of the page and
+/// the app bar, whatever the length of the point list.
+Future<void> _showHistory(
+  BuildContext context,
+  List<DocumentRow> docs,
+  List<Map<String, Object?>> projects,
+) {
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (c) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      maxChildSize: 0.92,
+      builder: (c, scroll) => SafeArea(
+        child: ListView(
+          controller: scroll,
+          padding: const EdgeInsets.fromLTRB(Dimens.pagePadding, 0, Dimens.pagePadding, Dimens.pagePadding),
+          children: [_History(docs: docs, projects: projects)],
+        ),
+      ),
+    ),
+  );
+}
+
 /// The surveyor's earlier IPLs, newest first, so a rejection or a
 /// confirmation is seen without hunting for it.
 class _History extends StatelessWidget {
@@ -912,7 +964,7 @@ class _History extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         QuietHeading(code: l.iplHistory),
-        for (final d in docs.take(14))
+        for (final d in docs)
           Builder(builder: (context) {
             final b = (jsonDecode(d.body) as Map).cast<String, Object?>();
             final n = ((b['lines'] as List?) ?? const []).length;
@@ -923,7 +975,25 @@ class _History extends StatelessWidget {
               _ when d.serverStatus == 'ditolak' => (l.iplRejected, w.badFg),
               _ => (l.iplWaitingOffice, w.warnFg),
             };
-            return Padding(
+            final stem = iplFileStem(codes['${b['projectID']}'] ?? '', '${b['date']}');
+            // Tap = open the sheet. Only what reached the server can be
+            // drawn; one still waiting to be sent has no sheet yet.
+            final canOpen = d.serverId != null && d.sendStatus != 'rejected';
+            return InkWell(
+              onTap: !canOpen
+                  ? null
+                  : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => IplViewPage(
+                            iplId: d.serverId!,
+                            title: longDate(DateTime.parse('${b['date']}')),
+                            fileStem: stem,
+                            confirmed: d.serverStatus == 'dikonfirmasi',
+                            canShare: d.serverStatus != 'ditolak',
+                          ),
+                        ),
+                      ),
+              child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
@@ -948,11 +1018,13 @@ class _History extends StatelessWidget {
                       onPressed: () => shareIpl(
                         context,
                         iplId: d.serverId!,
-                        fileStem: iplFileStem(codes['${b['projectID']}'] ?? '', '${b['date']}'),
+                        fileStem: stem,
                         confirmed: d.serverStatus == 'dikonfirmasi',
                       ),
                     ),
+                  if (canOpen) Icon(Icons.chevron_right, color: w.muted),
                 ],
+              ),
               ),
             );
           }),

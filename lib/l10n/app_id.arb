@@ -3047,6 +3047,10 @@
       }
     }
   },
+  "iplViewFailed": "IPL gagal dimuat",
+  "@iplViewFailed": {
+    "description": "iplViewFailed"
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"

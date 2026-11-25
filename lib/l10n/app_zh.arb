@@ -554,6 +554,7 @@
   "watchTremieSummary": "{count} 节 · 共 {total} · 孔内仍有 {inHole}",
   "drillOutsideHours": "非工作时间（夜间）{lama} 不计入",
   "drillStopCounted": "计入 {lama}",
+  "iplViewFailed": "IPL 加载失败",
   "noTrucksYet": "还没有罐车",
   "noTrucksReadOnly": "该灌注记录没有罐车。",
   "noTrucksTremieFirst": "请先组装导管，首车到场时点按\"第 1 车到达\"。",

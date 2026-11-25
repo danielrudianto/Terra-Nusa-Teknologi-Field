@@ -554,6 +554,7 @@
   "watchTremieSummary": "{count} pieces · {total} in all · {inHole} still in the hole",
   "drillOutsideHours": "{lama} outside working hours (overnight) not counted",
   "drillStopCounted": "{lama} counted",
+  "iplViewFailed": "Could not load the IPL",
   "noTrucksYet": "No trucks yet",
   "noTrucksReadOnly": "This casting log has no trucks.",
   "noTrucksTremieFirst": "Build the tremie first, then tap \"Truck #1 arrived\" when the first truck gets there.",

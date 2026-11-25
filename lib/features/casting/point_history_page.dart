@@ -332,7 +332,7 @@ class _KartuBor extends StatelessWidget {
             Text(t(context).curveNeedsTwo, style: TextStyle(color: w.faint, fontSize: 13)),
           if (baris.isNotEmpty) ...[
             const Divider(height: 22),
-            for (final b in baris) _BarisBacaanBor(baris: b),
+            _BacaanLipat(baris: baris),
           ],
           if (log['note'] != null && '${log['note']}'.trim().isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -450,6 +450,54 @@ class _JejakLipatState extends State<_JejakLipat> {
         ),
         if (_terbuka)
           for (final j in widget.jejak) _BarisJejak(jejak: j),
+      ],
+    );
+  }
+}
+
+/// The readings of one drill log, FOLDED by default (Daniel, 25 Nov 2026:
+/// "lu harus mikir"). A log carries 40+ readings; listed open, every one of
+/// them sat between the curve and the casting section, and whoever opened
+/// the point to see its cast had to scroll past all of them. The curve and
+/// the summary above already answer "how did it go"; the rows are for
+/// checking one number. Same fold as the watch screen's reading table.
+class _BacaanLipat extends StatefulWidget {
+  const _BacaanLipat({required this.baris});
+
+  final List<BarisBacaan> baris;
+
+  @override
+  State<_BacaanLipat> createState() => _BacaanLipatState();
+}
+
+class _BacaanLipatState extends State<_BacaanLipat> {
+  bool _terbuka = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _terbuka = !_terbuka),
+          child: SizedBox(
+            height: Dimens.minTouch,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    t(context).readingTableTitle('${widget.baris.length}'),
+                    style: TextStyle(fontWeight: FontWeight.w700, color: w.ink),
+                  ),
+                ),
+                Icon(_terbuka ? Icons.expand_less : Icons.expand_more, color: w.muted),
+              ],
+            ),
+          ),
+        ),
+        if (_terbuka)
+          for (final b in widget.baris) _BarisBacaanBor(baris: b),
       ],
     );
   }

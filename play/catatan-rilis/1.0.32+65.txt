@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.32 (65) — Lihat IPL sebelumnya
+
+<id>
+• IPL sebelumnya dibuka dari tombol di atas halaman IPL (dan ikon jam di pojok kanan atas) — tidak perlu menggulir melewati semua titik.
+• Ketuk satu IPL untuk melihat lembarnya (bisa diperbesar) atau membagikannya.
+• Riwayat titik: daftar bacaan bor terlipat, jadi bagian cor langsung terlihat tanpa menggulir.
+</id>
+<en-US>
+• Earlier IPLs open from a button at the top of the IPL page (and the clock icon at the top right) — no scrolling past every point.
+• Tap an IPL to view its sheet (zoomable) or share it.
+• Point history: drill readings are folded, so the casting section shows without scrolling.
+</en-US>
+<zh-CN>
+• 以往的 IPL 可从 IPL 页面顶部按钮（及右上角时钟图标）打开——无需滚过所有桩点。
+• 点击某个 IPL 即可查看其单据（可缩放）或分享。
+• 桩点历史：钻孔读数默认折叠，浇筑部分无需滚动即可看到。
+</zh-CN>
