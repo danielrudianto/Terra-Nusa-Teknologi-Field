@@ -70,6 +70,64 @@ class RuasBor {
 /// titik yang sama merusak kepercayaan pada dua-duanya.
 const menitBerhenti = 15;
 
+/// Field working hours — same as `JAM_KERJA_MULAI`/`SELESAI` on the server
+/// and in `helpers/bor-kurva.helper.ts`.
+const jamKerjaMulai = 6;
+const jamKerjaSelesai = 18;
+
+/// One merged stop, with the hours of it that COUNT as stopped.
+class BerhentiBor extends RuasBor {
+  const BerhentiBor({
+    required super.dariWaktu,
+    required super.sampaiWaktu,
+    required super.deltaM,
+    required super.jam,
+    required super.lajuMPerJam,
+    required this.jamTerhitung,
+  });
+
+  /// Part of [jam] counted as stopped — see [jamBerhentiTerhitung]. Smaller
+  /// than [jam] when the stop ran overnight and the rig only resumed the
+  /// next day.
+  final double jamTerhitung;
+}
+
+int _jamLokal(int t, int hariGeser, int jam) {
+  final d = DateTime.fromMillisecondsSinceEpoch(t);
+  return DateTime(d.year, d.month, d.day + hariGeser, jam).millisecondsSinceEpoch;
+}
+
+/// Hours of `[dari, sampai)` that fall inside working hours (06:00–18:00),
+/// read on the phone's clock — the same clock [titikKurvaBor] reads the
+/// server's zone-less times with.
+double jamDalamJamKerja(int dari, int sampai) {
+  if (sampai <= dari) return 0;
+  var total = 0.0;
+  for (var h = 0; _jamLokal(dari, h, 0) <= sampai; h++) {
+    final awal = math.max(dari, _jamLokal(dari, h, jamKerjaMulai));
+    final akhir = math.min(sampai, _jamLokal(dari, h, jamKerjaSelesai));
+    if (akhir > awal) total += (akhir - awal) / _satuJamMs;
+  }
+  return total;
+}
+
+/// Hours of one STALLED segment that count as stopped — exactly the
+/// server's `jam_berhenti_terhitung`, so this screen matches the field
+/// recap (Daniel, 25 Nov 2026: rest after 18:00 is not a stop, "kecuali di
+/// malam tersebut dia gas lagi").
+///
+///   * rig resumed the SAME night (before 06:00 next day): all of it counts;
+///   * rig resumed the next day or later: only working hours up to 18:00 of
+///     the day BEFORE it resumed.
+double jamBerhentiTerhitung(int dari, int sampai) {
+  if (sampai <= dari) return 0;
+  if (sampai <= _jamLokal(dari, 1, jamKerjaMulai)) {
+    return (sampai - dari) / _satuJamMs;
+  }
+  final akhirKemarin = _jamLokal(sampai, -1, jamKerjaSelesai);
+  return jamDalamJamKerja(dari, math.min(sampai, akhirKemarin));
+}
+
 class RingkasBor {
   const RingkasBor({
     this.mulai,
@@ -77,6 +135,7 @@ class RingkasBor {
     this.durasiJam,
     this.durasiEfektifJam,
     this.durasiBerhentiJam,
+    this.durasiLuarJamKerjaJam,
     this.berhenti = const [],
     this.kedalamanM,
     this.lajuRataMPerJam,
@@ -102,14 +161,18 @@ class RingkasBor {
   /// dari "belum ada yang dapat diukur".
   final double? durasiEfektifJam;
 
-  /// Jam yang hilang karena berhenti. SELALU `durasiJam - durasiEfektifJam`,
-  /// dihitung sebagai selisih dan bukan penjumlahan tersendiri — supaya
-  /// ketiganya selalu saling menjumlah di layar.
+  /// Hours lost to stops — only what COUNTS per [jamBerhentiTerhitung], the
+  /// same as the stopped column of the field recap.
   final double? durasiBerhentiJam;
+
+  /// Stalled hours outside working hours that are NOT counted (a night the
+  /// rig only resumed after). Always `durasiJam - durasiEfektifJam -
+  /// durasiBerhentiJam`, so the three numbers on screen always add up.
+  final double? durasiLuarJamKerjaJam;
 
   /// Ruas berhenti yang LEBIH LAMA dari [menitBerhenti], untuk disebut satu
   /// per satu. Yang lebih pendek tetap mengurangi durasi efektif.
-  final List<RuasBor> berhenti;
+  final List<BerhentiBor> berhenti;
 
   /// Kedalaman TERDALAM yang pernah terbaca, bukan bacaan terakhir.
   final double? kedalamanM;
@@ -229,8 +292,8 @@ List<RuasBor> ruasBor(List<TitikKurvaBor> titik) {
 /// disaring satu per satu ketiganya lolos tanpa terlihat di mana pun.
 ///
 /// ATURAN INI SAMA DI WEB (`bor-kurva.helper.ts`) DAN SERVER.
-List<RuasBor> gabungBerhenti(List<RuasBor> ruas) {
-  final hasil = <RuasBor>[];
+List<BerhentiBor> gabungBerhenti(List<RuasBor> ruas) {
+  final hasil = <BerhentiBor>[];
   var i = 0;
   while (i < ruas.length) {
     if (ruas[i].deltaM > 0) {
@@ -239,18 +302,21 @@ List<RuasBor> gabungBerhenti(List<RuasBor> ruas) {
     }
     final mulai = i;
     var jam = 0.0;
+    var jamTerhitung = 0.0;
     var delta = 0.0;
     while (i < ruas.length && ruas[i].deltaM <= 0) {
       jam += ruas[i].jam;
+      jamTerhitung += jamBerhentiTerhitung(ruas[i].dariWaktu, ruas[i].sampaiWaktu);
       delta += ruas[i].deltaM;
       i++;
     }
     if (jam * 60 < menitBerhenti) continue;
-    hasil.add(RuasBor(
+    hasil.add(BerhentiBor(
       dariWaktu: ruas[mulai].dariWaktu,
       sampaiWaktu: ruas[i - 1].sampaiWaktu,
       deltaM: delta,
       jam: jam,
+      jamTerhitung: jamTerhitung,
       // Ruas gabungan selalu berdurasi > 0 (tiap ruas asalnya begitu),
       // jadi pembagian ini aman.
       lajuMPerJam: delta / jam,
@@ -313,17 +379,26 @@ RingkasBor ringkasBor(List<Map<String, Object?>> bacaan) {
   final efektif =
       durasiJam == null ? null : maju.fold<double>(0, (j, r) => j + r.jam);
   final berhenti = gabungBerhenti(ruas);
+  // Per SEGMENT, not per merged stop — same as the server's `per_hari`.
+  final berhentiJam = durasiJam == null
+      ? null
+      : ruas
+          .where((r) => r.deltaM <= 0)
+          .fold<double>(0, (j, r) => j + jamBerhentiTerhitung(r.dariWaktu, r.sampaiWaktu));
+  final luarJam = durasiJam == null || efektif == null || berhentiJam == null
+      ? null
+      : durasiJam - efektif - berhentiJam;
 
   return RingkasBor(
     mulai: mulai,
     selesai: selesai,
     durasiJam: durasiJam,
     durasiEfektifJam: efektif,
-    // `clamp` TIDAK dipakai: ia dideklarasikan di `num` dan memulangkan
-    // `num`, yang tidak dapat diberikan ke `double?` tanpa pemeran.
-    durasiBerhentiJam: durasiJam == null || efektif == null
-        ? null
-        : (durasiJam - efektif < 0 ? 0.0 : durasiJam - efektif),
+    durasiBerhentiJam: berhentiJam,
+    // No `clamp`: it returns `num`, which does not assign to `double?`.
+    // Rounding residue (2e-16) snaps to zero — otherwise a log that never
+    // crossed a night would read "0 m outside working hours".
+    durasiLuarJamKerjaJam: luarJam == null ? null : (luarJam < 1e-9 ? 0.0 : luarJam),
     berhenti: berhenti,
     kedalamanM: kedalamanM,
     lajuRataMPerJam:

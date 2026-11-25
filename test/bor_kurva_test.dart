@@ -57,9 +57,71 @@ void main() {
       bacaan(jam(13, 0), 14.2),
     ]);
     expect(
-      r.durasiEfektifJam! + r.durasiBerhentiJam!,
+      r.durasiEfektifJam! + r.durasiBerhentiJam! + r.durasiLuarJamKerjaJam!,
       closeTo(r.durasiJam!, 1e-9),
     );
+    expect(r.durasiLuarJamKerjaJam, closeTo(0, 1e-9));
+  });
+
+  // Working hours — Daniel, 25 Nov 2026: rest after 18:00 is not a stop,
+  // unless the rig resumed that same night. Same rule as the server's
+  // `jam_berhenti_terhitung` and the web helper. Hours past 23 roll into
+  // the next day (`DateTime` normalises them).
+  group('stops across a night', () {
+    test('resumed the NEXT day: only up to 18:00 counts', () {
+      final r = ringkasBor([
+        bacaan(jam(7, 0), 0),
+        bacaan(jam(16, 0), 20),
+        bacaan(jam(31, 0), 20), // 07:00 next day
+        bacaan(jam(32, 0), 25),
+      ]);
+      expect(r.durasiJam, closeTo(25, 1e-9));
+      expect(r.durasiEfektifJam, closeTo(10, 1e-9));
+      expect(r.durasiBerhentiJam, closeTo(2, 1e-9));
+      expect(r.durasiLuarJamKerjaJam, closeTo(13, 1e-9));
+      expect(r.berhenti.single.jam, closeTo(15, 1e-9));
+      expect(r.berhenti.single.jamTerhitung, closeTo(2, 1e-9));
+    });
+
+    test('resumed THAT night: the whole stall counts', () {
+      final r = ringkasBor([
+        bacaan(jam(7, 0), 0),
+        bacaan(jam(17, 0), 20),
+        bacaan(jam(21, 0), 20),
+        bacaan(jam(22, 0), 25),
+      ]);
+      expect(r.durasiBerhentiJam, closeTo(4, 1e-9));
+      expect(r.durasiLuarJamKerjaJam, closeTo(0, 1e-9));
+    });
+
+    test('stopped after 18:00, resumed next day: zero stopped hours', () {
+      final r = ringkasBor([
+        bacaan(jam(7, 0), 0),
+        bacaan(jam(19, 0), 20),
+        bacaan(jam(31, 0), 20),
+        bacaan(jam(32, 0), 25),
+      ]);
+      expect(r.durasiBerhentiJam, closeTo(0, 1e-9));
+      expect(r.durasiLuarJamKerjaJam, closeTo(12, 1e-9));
+      expect(r.berhenti.single.jamTerhitung, closeTo(0, 1e-9));
+    });
+
+    test('rig down two days: the full working day between still counts', () {
+      final r = ringkasBor([
+        bacaan(jam(7, 0), 0),
+        bacaan(jam(16, 0), 20),
+        bacaan(jam(55, 0), 20), // 07:00 two days later
+        bacaan(jam(56, 0), 25),
+      ]);
+      expect(r.durasiBerhentiJam, closeTo(14, 1e-9));
+    });
+
+    test('helpers cut at 06:00 and 18:00', () {
+      int ms(int h) => jam(h, 0).millisecondsSinceEpoch;
+      expect(jamDalamJamKerja(ms(4), ms(20)), closeTo(12, 1e-9));
+      expect(jamBerhentiTerhitung(ms(17), ms(29)), closeTo(12, 1e-9));
+      expect(jamBerhentiTerhitung(ms(17), ms(31)), closeTo(1, 1e-9));
+    });
   });
 
   test('mandek 14 menit: mengurangi durasi efektif, TIDAK disebut berhenti',

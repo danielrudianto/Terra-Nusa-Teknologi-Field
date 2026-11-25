@@ -19,6 +19,7 @@ import '../drilling/drill_reasons.dart';
 import 'calc/pile_snapshot.dart';
 import 'concrete_profile.dart';
 import 'pile_section_view.dart';
+import 'tremie_string_view.dart';
 
 /// PANTAU satu titik yang sedang dikerjakan HP lain.
 ///
@@ -354,6 +355,15 @@ class _PantauCor extends StatelessWidget {
             label: t(context).watchEmbedment,
             nilai: formatMeters(toDoubleOrNull(k['tremieBottomM'])! - muka),
           ),
+
+        // SUSUNAN TREMIE — berapa batang, berapa panjangnya, mana yang
+        // sudah dicabut (Daniel, 25 Nov 2026: "itu tremie nya ada berapa
+        // aja, panjang berapa"). Dari `tremieRingkas` server, sama dengan
+        // yang dilihat pemegang lognya.
+        if (h['tremieRingkas'] is Map) ...[
+          const SizedBox(height: 16),
+          _TremiePantau(ringkas: (h['tremieRingkas'] as Map).cast<String, Object?>()),
+        ],
 
         // PROFIL BETON — necking dan bulking per TM, dapat disalin dan
         // dibagikan (24 Nov 2026). Hanya bila dasar lubangnya diketahui:
@@ -835,6 +845,76 @@ class _PantauBorState extends State<_PantauBor> {
 }
 
 /// Satu baris angka: label di kiri, nilainya di kanan.
+/// TREMIE yang dipasang di lubang ini, dibaca dari atas ke bawah seperti
+/// di dalam lubang — baris yang sama dengan layar pemegang lognya
+/// (`TremieSegmentTile`), tanpa tombol cabutnya: penonton hanya melihat.
+class _TremiePantau extends StatelessWidget {
+  const _TremiePantau({required this.ringkas});
+
+  final Map<String, Object?> ringkas;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = context.colors;
+    final l = t(context);
+    final segmen = [
+      for (final s in (ringkas['segmen'] as List?) ?? const [])
+        if (s is Map) s.cast<String, Object?>(),
+    ]..sort((a, b) => (toIntOrNull(b['posisi']) ?? 0).compareTo(toIntOrNull(a['posisi']) ?? 0));
+    if (segmen.isEmpty) return const SizedBox.shrink();
+
+    bool dicabut(Map<String, Object?> s) => s['dicabutSetelahTm'] != null;
+    final terpasang = [for (final s in segmen) if (!dicabut(s)) s];
+    final masihM = terpasang.fold<double>(0, (a, s) => a + (toDoubleOrNull(s['panjangM']) ?? 0));
+    // Paling bawah yang MASIH di lubang: daftarnya dari atas, jadi yang
+    // terakhir di antara yang terpasang.
+    final terbawah = terpasang.isEmpty ? null : terpasang.last;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(l.watchTremieTitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: w.ink)),
+        const SizedBox(height: 2),
+        Text(
+          l.watchTremieSummary(
+            '${segmen.length}',
+            formatMeters(toDoubleOrNull(ringkas['totalPanjangM'])),
+            formatMeters(masihM),
+          ),
+          style: TextStyle(color: w.muted, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        for (final (i, s) in segmen.indexed)
+          TremieSegmentTile(
+            part: s['jenis'] == 'bottom' ? TremiePart.bottom : TremiePart.pipe,
+            number: toIntOrNull(s['posisi']) ?? 0,
+            first: i == 0,
+            last: i == segmen.length - 1,
+            removed: dicabut(s),
+            lowest: identical(s, terbawah),
+            title: s['jenis'] == 'bottom'
+                ? l.tremieBottomOf(_panjang(s['panjangM']))
+                : l.pipeOf(_panjang(s['panjangM'])),
+            subtitle: dicabut(s)
+                ? l.pulledAfterTruck('${s['dicabutSetelahTm']}')
+                : identical(s, terbawah)
+                    ? l.lowest
+                    : null,
+          ),
+      ],
+    );
+  }
+
+  /// "3", "1,5" — tanpa satuan; kalimatnya sudah membawa "m".
+  static String _panjang(Object? v) {
+    final x = toDoubleOrNull(v);
+    if (x == null) return '–';
+    var teks = x.toStringAsFixed(2);
+    teks = teks.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
+    return teks.replaceAll('.', ',');
+  }
+}
+
 class _Angka extends StatelessWidget {
   const _Angka({required this.label, required this.nilai});
 

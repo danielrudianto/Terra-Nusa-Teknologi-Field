@@ -111,6 +111,14 @@ class KurvaBor extends StatelessWidget {
             ),
             style: TextStyle(color: w.warnFg, fontSize: 12, fontWeight: FontWeight.w700),
           ),
+          // Nights the rig only resumed after are not stops (Daniel,
+          // 25 Nov 2026) — named here so drilling + stopped still add up to
+          // the total. Same as the web.
+          if ((ringkas.durasiLuarJamKerjaJam ?? 0) > 0)
+            Text(
+              t(context).drillOutsideHours(_jam(ringkas.durasiLuarJamKerjaJam)),
+              style: TextStyle(color: w.muted, fontSize: 11.5),
+            ),
           const SizedBox(height: 2),
           Wrap(
             spacing: 12,
@@ -118,7 +126,10 @@ class KurvaBor extends StatelessWidget {
             children: [
               for (final r in ringkas.berhenti)
                 Text(
-                  '${_rentang(r)} (${_jam(r.jam)})',
+                  r.jamTerhitung < r.jam - 1 / 60
+                      ? '${_rentang(r)} (${_jam(r.jam)} · '
+                          '${t(context).drillStopCounted(_jam(r.jamTerhitung))})'
+                      : '${_rentang(r)} (${_jam(r.jam)})',
                   style: TextStyle(color: w.muted, fontSize: 11.5),
                 ),
             ],

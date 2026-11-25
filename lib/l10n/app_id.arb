@@ -3010,6 +3010,43 @@
       }
     }
   },
+  "watchTremieTitle": "Tremie",
+  "@watchTremieTitle": {
+    "description": "watchTremieTitle"
+  },
+  "watchTremieSummary": "{count} batang · total {total} · {inHole} masih di lubang",
+  "@watchTremieSummary": {
+    "description": "watchTremieSummary",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "inHole": {
+        "type": "String"
+      }
+    }
+  },
+  "drillOutsideHours": "{lama} di luar jam kerja (malam) tidak dihitung",
+  "@drillOutsideHours": {
+    "description": "drillOutsideHours",
+    "placeholders": {
+      "lama": {
+        "type": "String"
+      }
+    }
+  },
+  "drillStopCounted": "dihitung {lama}",
+  "@drillStopCounted": {
+    "description": "drillStopCounted",
+    "placeholders": {
+      "lama": {
+        "type": "String"
+      }
+    }
+  },
   "noTrucksYet": "Belum ada TM",
   "@noTrucksYet": {
     "description": "noTrucksYet"

@@ -1,0 +1,15 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.31 (64) — Susunan tremie di pantau cor
+
+<id>
+• Pantau cor menampilkan susunan tremie: jumlah batang, panjang tiap batang, berapa meter yang masih di lubang, dan batang yang sudah dicabut setelah TM keberapa.
+• Riwayat titik: berhenti yang melewati malam hanya dihitung sampai jam 18.00 bila bor baru lanjut besoknya — sama dengan rekap lapangan.
+</id>
+<en-US>
+• Watching a cast now shows the tremie string: how many pieces, each length, how many metres are still in the hole, and which pieces were pulled after which TM.
+• Point history: a stop running overnight only counts until 18:00 when drilling resumes the next day — same as the field recap.
+</en-US>
+<zh-CN>
+• 浇筑监看现显示导管组成：节数、每节长度、孔内剩余米数，以及在第几车后拔出的导管。
+• 桩点历史：若次日才继续钻进，跨夜停机只计到 18:00——与现场汇总一致。
+</zh-CN>
