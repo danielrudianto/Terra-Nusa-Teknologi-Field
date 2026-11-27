@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.35 (68) — Nyembul diubah sampai mulai tuang
+
+<id>
+• Nyembul tremie yang sudah dijawab bisa diubah lewat tombol "Ubah nyembul" di kartu tremie, selama belum ada TM yang mulai tuang. Isiannya dimulai dari jawaban sebelumnya.
+• TM yang sudah datang tetapi belum menuang tidak lagi mengunci nyembul.
+• Tombol "Mulai tuang" baru muncul sesudah nyembul diukur.
+</id>
+<en-US>
+• A stick-out already answered can be changed with "Edit stick-out" on the tremie card, as long as no truck has started pouring. The field starts from the previous answer.
+• A truck that has arrived but not started pouring no longer locks the stick-out.
+• "Start pouring" only appears once the stick-out is measured.
+</en-US>
+<zh-CN>
+• 已填写的导管外露长度可在导管卡片上点击“修改外露长度”进行修改，前提是尚无罐车开始浇筑。输入框会显示上次的数值。
+• 罐车已到场但尚未开始浇筑时，外露长度不再被锁定。
+• 测量外露长度后才会显示“开始浇筑”按钮。
+</zh-CN>

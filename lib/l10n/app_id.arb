@@ -7586,5 +7586,9 @@
         "type": "String"
       }
     }
+  },
+  "editStickOut": "Ubah nyembul",
+  "@editStickOut": {
+    "description": "editStickOut"
   }
 }

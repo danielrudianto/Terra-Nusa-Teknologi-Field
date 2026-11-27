@@ -1955,5 +1955,6 @@
   "gsConfirmNo": "再检查",
   "gsRefDesign": "设计 GS（{value}）",
   "gsRefCol": "COL（{value}）",
-  "gsImpossibleShort": "GS {typed} 与{ref}相差太远——请重新输入"
+  "gsImpossibleShort": "GS {typed} 与{ref}相差太远——请重新输入",
+  "editStickOut": "修改外露长度"
 }

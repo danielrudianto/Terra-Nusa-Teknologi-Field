@@ -268,6 +268,10 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// Stopwatch pauses. Older documents on the phone have no `pauses` key.
   List<Map<String, Object?>> get _pauses =>
       [for (final p in (_doc!['pauses'] as List? ?? const [])) (p as Map).cast<String, Object?>()];
+  /// Ada TM yang sudah MULAI menuang. Sampai saat itu nyembul masih bisa
+  /// diukur ulang dan diubah (27 Nov 2026).
+  bool get _sudahTuang => _trucks.any((t) => t['startAt'] != null);
+
   List<Map<String, Object?>> get _trucks => [for (final t in (_doc!['trucks'] as List)) (t as Map).cast<String, Object?>()];
 
   /// Pemasok yang BENAR-BENAR menuang titik ini, dibaca dari TM-nya.
@@ -442,7 +446,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// sehingga batang yang ditambah sesudah mengukur tidak menggeser ujung
   /// tremie sama sekali di hitungan.
   void _lupakanUkuranTremie(Map<String, Object?> d) {
-    if (_trucks.isNotEmpty) return;
+    if (_sudahTuang) return;
     d['tremieDepthStartM'] = null;
     d['tremieStickOutM'] = null;
     d['tremieDepthTypedM'] = null;
@@ -1346,15 +1350,16 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     );
     if (result == null) return;
     // Kedalaman tremie diketik ulang di sini (27 Nov 2026):
-    //  * belum ada TM -> nyembulnya ditanyakan ulang (tombol "Ukur tremie
-    //    dulu"), dan jawabannya dicocokkan dengan angka ketikan ini;
-    //  * sudah ada TM -> tidak dapat ditanyakan lagi; bila tidak cocok
-    //    dengan nyembul yang sudah dijawab, selisihnya ditandai.
+    //  * belum ada TM yang mulai tuang -> nyembulnya ditanyakan ulang
+    //    (tombol "Ukur tremie dulu"), dan jawabannya dicocokkan dengan
+    //    angka ketikan ini;
+    //  * sudah mulai tuang -> tidak dapat ditanyakan lagi; bila tidak
+    //    cocok dengan nyembul yang sudah dijawab, selisihnya ditandai.
     final lama = toDoubleOrNull(_doc!['tremieDepthStartM']);
     final ketik = toDoubleOrNull(result['tremieDepthStartM']);
     if (ketik != null && (lama == null || (ketik - lama).abs() > 0.005)) {
       final nyembul = toDoubleOrNull(_doc!['tremieStickOutM']);
-      if (_trucks.isEmpty) {
+      if (!_sudahTuang) {
         result['tremieStickOutM'] = null;
         result['tremieDepthTypedM'] = null;
       } else if (nyembul != null &&
@@ -1386,6 +1391,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       showDragHandle: true,
       builder: (c) => _PourStartSheet(
         bottomDepthM: k.geometry.bottomDepthM,
+        // Mengubah jawaban lama: isiannya dimulai dari angka itu.
+        initialStickOutM: toDoubleOrNull(_doc!['tremieStickOutM']),
         // Panjang SEBELUM TM pertama: belum ada satu segmen pun yang
         // dicabut, jadi ini seluruh rangkaian yang turun ke lubang.
         tremieLengthM: k.installedLengthAfter(0),
@@ -1436,8 +1443,12 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// udah beres input tremie, yang nyembul jadi berapa" — nyembul satu-
   /// satunya angka yang bisa DILIHAT orang di lubang, dan yang memeriksa
   /// kedalaman ketikannya.
+  ///
+  /// SAMPAI MULAI TUANG, bukan sampai TM datang (27 Nov 2026: "nyembul
+  /// diedit selama belum mulai tuang"). TM yang sudah datang tetapi belum
+  /// menuang tidak mengubah apa pun di lubang.
   bool get _ukurTremieDulu =>
-      _trucks.isEmpty &&
+      !_sudahTuang &&
       (toDoubleOrNull(_doc?['tremieDepthStartM']) == null || toDoubleOrNull(_doc?['tremieStickOutM']) == null);
 
   /// Apa saja yang masih kurang sebelum catatan cor boleh ditutup.
@@ -1802,6 +1813,8 @@ class _CastingFormState extends ConsumerState<CastingForm> {
             onCustom: _customSegment,
             onRemoveTop: _removeTopSegment,
             onToggleRemoved: (uuid, seq) => _toggleRemoved(uuid, seq, tanya: true),
+            // Nyembul yang sudah dijawab tetap bisa diubah sampai mulai tuang.
+            onEditStickOut: !_readOnly && !_finished && !_sudahTuang && k.tremieStartMeasured ? _mulaiCor : null,
           ),
 
           // --- recommendation -----------------------------------------------
@@ -1922,25 +1935,27 @@ class _CastingFormState extends ConsumerState<CastingForm> {
                                   icon: const Icon(Icons.stop_circle_outlined),
                                   label: Text(t(context).finishTruck('${running['seq']}')),
                                 )
-                              : lastTruck != null && lastTruck['startAt'] == null
+                              // Before pouring starts, an assembled
+                              // tremie only needs measuring: the
+                              // button is LIVE and opens the question.
+                              // It used to look disabled while its tap
+                              // opened the question — crews saw a grey
+                              // button and stopped there (Daniel,
+                              // 22 Nov 2026: "dia disabled terus
+                              // kenapa dah"). Checked BEFORE "Mulai
+                              // tuang": a TM that has arrived does not
+                              // start pouring on an unmeasured tremie.
+                              : _tremie.isNotEmpty && _ukurTremieDulu
                                   ? FilledButton.icon(
-                                      onPressed: () => _startTruck(lastTruck),
-                                      icon: const Icon(Icons.play_arrow),
-                                      label: Text(t(context).startTruck('${lastTruck['seq']}')),
+                                      onPressed: _mulaiCor,
+                                      icon: const Icon(Icons.straighten),
+                                      label: Text(t(context).tremieDepthFirst),
                                     )
-                                  // Before the first TM, an assembled
-                                  // tremie only needs measuring: the
-                                  // button is LIVE and opens the question.
-                                  // It used to look disabled while its tap
-                                  // opened the question — crews saw a grey
-                                  // button and stopped there (Daniel,
-                                  // 22 Nov 2026: "dia disabled terus
-                                  // kenapa dah").
-                                  : _tremie.isNotEmpty && _ukurTremieDulu
+                                  : lastTruck != null && lastTruck['startAt'] == null
                                       ? FilledButton.icon(
-                                          onPressed: _mulaiCor,
-                                          icon: const Icon(Icons.straighten),
-                                          label: Text(t(context).tremieDepthFirst),
+                                          onPressed: () => _startTruck(lastTruck),
+                                          icon: const Icon(Icons.play_arrow),
+                                          label: Text(t(context).startTruck('${lastTruck['seq']}')),
                                         )
                                       // No tremie yet: the button is dead,
                                       // and a tap on it answers "why".
@@ -2223,7 +2238,11 @@ class _TremieCard extends StatelessWidget {
     required this.onCustom,
     required this.onRemoveTop,
     required this.onToggleRemoved,
+    this.onEditStickOut,
   });
+
+  /// "Ubah nyembul" — hanya sampai TM pertama mulai tuang; `null` = tidak ada.
+  final VoidCallback? onEditStickOut;
 
   final CastingState castingState;
   final int currentSeq;
@@ -2349,6 +2368,17 @@ class _TremieCard extends StatelessWidget {
               ),
             ],
           ),
+          if (onEditStickOut != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: onEditStickOut,
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: Text(t(context).editStickOut),
+              ),
+            ),
+          ],
           if (canEditLayout && k.segments.isEmpty) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -3998,7 +4028,12 @@ class _PourStartSheet extends StatefulWidget {
     required this.bottomDepthM,
     required this.tremieLengthM,
     this.typedDepthM,
+    this.initialStickOutM,
   });
+
+  /// Nyembul yang sudah dijawab sebelumnya — isian dimulai dari sini saat
+  /// diubah. `null` = pertanyaan pertama.
+  final double? initialStickOutM;
 
   /// Dasar lubang dari GS; celahnya dihitung terhadap ini.
   final double bottomDepthM;
@@ -4015,7 +4050,9 @@ class _PourStartSheet extends StatefulWidget {
 }
 
 class _PourStartSheetState extends State<_PourStartSheet> {
-  final _stickOut = TextEditingController();
+  late final _stickOut = TextEditingController(
+    text: widget.initialStickOutM == null ? '' : decimalText(widget.initialStickOutM!).replaceAll('.', ','),
+  );
   String? _error;
 
   @override

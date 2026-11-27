@@ -1955,5 +1955,6 @@
   "gsConfirmNo": "Check again",
   "gsRefDesign": "design GS ({value})",
   "gsRefCol": "COL ({value})",
-  "gsImpossibleShort": "GS {typed} too far from {ref} — enter it again"
+  "gsImpossibleShort": "GS {typed} too far from {ref} — enter it again",
+  "editStickOut": "Edit stick-out"
 }
