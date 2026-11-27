@@ -1943,5 +1943,17 @@
   "tremieMeasureStickOut": "长度足够。请在 1 号罐车前测量外露长度（下方按钮）。",
   "stickOutTooLowWarn": "外露 {stick}：导管几乎与 GS 齐平，无法安装料斗。请用卷尺重新测量。",
   "stickOutMismatch": "与浇筑数据中填写的深度（{typed}）不一致。将保存此外露长度的结果，差异会标记给办公室。",
-  "stickOutTooHighWarn": "外露 {stick}：超过 3 m，料斗过高无法操作。请重新测量，或检查已记录的导管数量。"
+  "stickOutTooHighWarn": "外露 {stick}：超过 3 m，料斗过高无法操作。请重新测量，或检查已记录的导管数量。",
+  "gsImpossibleTitle": "GS {typed} 不可能正确",
+  "gsImpossibleBody": "与{ref}相差 {diff} m。超过 10 m 几乎肯定是输入错误——请检查小数点位置。无法保存。",
+  "gsUseSuggestion": "改用 {value}",
+  "gsFarTitle": "与{ref}相差 {diff} m",
+  "gsFarBody": "超过 30 cm。请再次核对测量和桩号。保存时会再确认一次。",
+  "gsConfirmTitle": "此 GS 正确吗？",
+  "gsConfirmBody": "GS {typed} 与{ref}相差 {diff} m。仅当该桩位地面确实与图纸不同时才保存。",
+  "gsConfirmYes": "是的，GS 正确",
+  "gsConfirmNo": "再检查",
+  "gsRefDesign": "设计 GS（{value}）",
+  "gsRefCol": "COL（{value}）",
+  "gsImpossibleShort": "GS {typed} 与{ref}相差太远——请重新输入"
 }

@@ -4,18 +4,18 @@ import '../../core/i18n.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/util/decimal_input.dart';
 import '../../core/util/format.dart';
+import '../casting/gs_guard.dart';
 import '../casting/level_reference.dart';
-
-/// Beyond this, a measured GS is most likely a mistyped one or a shot at the
-/// wrong point. Warned, not refused: ground does move.
-const double _beyondDesignM = 0.30;
 
 /// Enter the measured GS of ONE point, with its design GS beside it
 /// (Daniel, 24 Nov 2026: "pas centang muncul in dialog untuk isi GS, kasih
 /// tau juga GS design ya berapa. Jadi minim salah").
 ///
-/// The difference to the design GS is shown while typing, and turns into a
-/// warning past 30 cm. Below the tip is refused — the server refuses it too.
+/// The difference to the design GS is shown while typing. Past 30 cm a
+/// warning banner sits at the TOP and Simpan asks once more; past 10 m it is
+/// refused with a guess of the meant number (6819 → 681,9 — SP.D3, 27 Nov
+/// 2026). See `gs_guard.dart`. Below the tip is refused — the server refuses
+/// it too.
 ///
 /// Returns the GS, or `null` when cancelled. The text controller lives in the
 /// dialog's own State (see `number_dialog.dart` for why).
@@ -57,7 +57,9 @@ class _GsDialogState extends State<_GsDialog> {
   double? get _design => toDoubleOrNull(widget.pile['groundLevel']);
   double? get _tip => toDoubleOrNull(widget.pile['tipLevel']);
 
-  void _submit() {
+  double? get _col => toDoubleOrNull(widget.pile['cutOffLevel']);
+
+  Future<void> _submit() async {
     final l = t(context);
     final v = parseNumber(_input.text);
     if (v == null) {
@@ -69,6 +71,8 @@ class _GsDialogState extends State<_GsDialog> {
       setState(() => _problem = l.iplGsBelowTip(formatElevation(tip)));
       return;
     }
+    if (!await gsConfirmIfFar(context, typed: v, design: _design, cutOffLevel: _col)) return;
+    if (!mounted) return;
     Navigator.pop(context, v);
   }
 
@@ -78,11 +82,11 @@ class _GsDialogState extends State<_GsDialog> {
     final l = t(context);
     final design = _design;
     final tip = _tip;
-    final col = toDoubleOrNull(widget.pile['cutOffLevel']);
+    final col = _col;
     final dia = toIntOrNull(widget.pile['diameterMm']);
     final typed = parseNumber(_input.text);
     final diff = typed != null && design != null ? typed - design : null;
-    final far = diff != null && diff.abs() > _beyondDesignM;
+    final refused = gsRefused(typed, design: design, cutOffLevel: col);
 
     Widget fact(String label, String value, {bool strong = false}) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 3),
@@ -112,6 +116,15 @@ class _GsDialogState extends State<_GsDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            GsGuardBanner(
+              typed: typed,
+              design: design,
+              cutOffLevel: col,
+              onUse: (v) => setState(() {
+                _input.text = gsInputText(v);
+                _problem = null;
+              }),
+            ),
             fact(l.iplGsDesign, design == null ? '—' : formatElevation(design, decimals: 3), strong: true),
             if (col != null) fact('COL', formatElevation(col)),
             if (tip != null) fact('Tip', formatElevation(tip)),
@@ -126,19 +139,15 @@ class _GsDialogState extends State<_GsDialog> {
               onChanged: (_) => setState(() => _problem = null),
               onSubmitted: (_) => _submit(),
             ),
+            // Selisihnya saja, selalu tenang: peringatannya sudah di banner atas.
             if (diff != null) ...[
               const SizedBox(height: 10),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(far ? Icons.warning_amber_rounded : Icons.compare_arrows, size: 18, color: far ? w.warnFg : w.muted),
+                  Icon(Icons.compare_arrows, size: 18, color: w.muted),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      far ? l.iplGsDiffFar(_signed(diff)) : l.iplGsDiff(_signed(diff)),
-                      style: TextStyle(color: far ? w.warnFg : w.muted, fontWeight: far ? FontWeight.w700 : null),
-                    ),
-                  ),
+                  Expanded(child: Text(l.iplGsDiff(gsSigned(diff)), style: TextStyle(color: w.muted))),
                 ],
               ),
             ],
@@ -159,16 +168,11 @@ class _GsDialogState extends State<_GsDialog> {
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
         FilledButton(
-          onPressed: _input.text.trim().isEmpty ? null : _submit,
+          // Mati selama GS-nya mustahil — alasannya banner merah di atas.
+          onPressed: _input.text.trim().isEmpty || refused ? null : _submit,
           child: Text(widget.confirmLabel),
         ),
       ],
     );
-  }
-
-  /// "+0,120" / "−0,050" / "±0,000" — the sign always written.
-  String _signed(double v) {
-    final s = decimalText(v.abs(), decimals: 3).replaceAll('.', ',');
-    return '${v > 0.0005 ? '+' : v < -0.0005 ? '−' : '±'}$s';
   }
 }

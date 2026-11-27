@@ -17,6 +17,7 @@ import '../../core/widgets/view_states.dart';
 import '../../core/widgets/status_badge.dart';
 import '../drilling/drill_readings.dart';
 import '../drilling/koordinat_aktual.dart';
+import 'gs_guard.dart';
 import 'handover.dart';
 import 'level_reference.dart';
 import 'pile_point_data.dart';
@@ -939,6 +940,7 @@ class _PilePointsPageState extends ConsumerState<PilePointsPage> {
         initialDepth: initialDepth == null ? '' : initialDepth.toStringAsFixed(2).replaceAll('.', ','),
         initialGs: knownGs == null ? '' : knownGs.toStringAsFixed(3).replaceAll('.', ','),
         gsRequired: knownGs == null,
+        knownGs: knownGs,
         cutOffLevel: pt.cutOffLevel,
         tipLevel: pt.tipLevel,
         initialX: _koordText(pt.actualX),
@@ -996,6 +998,7 @@ class _DrillDialog extends StatefulWidget {
     required this.initialDepth,
     required this.initialGs,
     required this.gsRequired,
+    required this.knownGs,
     required this.cutOffLevel,
     required this.tipLevel,
     required this.initialX,
@@ -1011,6 +1014,9 @@ class _DrillDialog extends StatefulWidget {
   final String initialDepth;
   final String initialGs;
   final bool gsRequired;
+
+  /// GS yang sudah tercatat — acuan penjaga GS (lihat `gs_guard.dart`).
+  final double? knownGs;
   final double cutOffLevel;
   final double tipLevel;
   final String initialX;
@@ -1062,6 +1068,12 @@ class _DrillDialogState extends State<_DrillDialog> {
       setState(() => _problem = t(context).gsRequiredMsg);
       return;
     }
+    // GS diperiksa SEBELUM kedalaman: rencana bor dihitung dari GS, jadi GS
+    // salah koma membuat pertanyaan kedalaman ikut salah.
+    if (gs != null && !await gsConfirmIfFar(context, typed: gs, design: widget.knownGs, cutOffLevel: widget.cutOffLevel)) {
+      return;
+    }
+    if (!mounted) return;
     if (depth == null || depth <= 0) {
       setState(() => _problem = t(context).drillDepthInvalid);
       return;
@@ -1136,6 +1148,7 @@ class _DrillDialogState extends State<_DrillDialog> {
     final problem = _problem ?? refusal;
     final overPlan = typedDepth == null || refusal != null ? null : beyondPlanM(typedDepth, planned);
     final cutOffAboveGs = typedGs != null && typedGs < widget.cutOffLevel;
+    final gsRefusedNow = gsRefused(typedGs, design: widget.knownGs, cutOffLevel: widget.cutOffLevel);
     return AlertDialog(
       icon: Icon(Icons.straighten, size: 32, color: w.brand),
       title: Text(t(context).markDrilledTitle(widget.code), textAlign: TextAlign.center),
@@ -1144,6 +1157,15 @@ class _DrillDialogState extends State<_DrillDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            GsGuardBanner(
+              typed: typedGs,
+              design: widget.knownGs,
+              cutOffLevel: widget.cutOffLevel,
+              onUse: (v) => setState(() {
+                _gsInput.text = gsInputText(v);
+                _problem = null;
+              }),
+            ),
             if (problem != null) ...[
               TerraBanner(kind: BannerKind.danger, title: t(context).checkInput, body: problem),
               const SizedBox(height: 8),
@@ -1214,7 +1236,7 @@ class _DrillDialogState extends State<_DrillDialog> {
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text(t(context).cancel)),
-        FilledButton(onPressed: refusal == null ? _submit : null, child: Text(t(context).save)),
+        FilledButton(onPressed: refusal == null && !gsRefusedNow ? _submit : null, child: Text(t(context).save)),
       ],
     );
   }

@@ -1943,5 +1943,17 @@
   "tremieMeasureStickOut": "Long enough. Measure the stick-out before truck #1 — button below.",
   "stickOutTooLowWarn": "Stick-out {stick}: the pipe is almost flush with GS, so the hopper cannot be fitted. Measure again with a tape.",
   "stickOutMismatch": "Does not match the depth typed in Casting data ({typed}). This stick-out result is saved; the difference is flagged for the office.",
-  "stickOutTooHighWarn": "Stick-out {stick}: over 3 m, a hopper that high cannot be reached. Measure again, or check the pipes entered."
+  "stickOutTooHighWarn": "Stick-out {stick}: over 3 m, a hopper that high cannot be reached. Measure again, or check the pipes entered.",
+  "gsImpossibleTitle": "GS {typed} cannot be right",
+  "gsImpossibleBody": "{diff} m from {ref}. More than 10 m is almost surely a typo — check the decimal comma. It cannot be saved.",
+  "gsUseSuggestion": "Use {value}",
+  "gsFarTitle": "{diff} m from {ref}",
+  "gsFarBody": "More than 30 cm. Check the shot and the point number again. You will be asked once more when saving.",
+  "gsConfirmTitle": "Is this GS right?",
+  "gsConfirmBody": "GS {typed} is {diff} m from {ref}. Save only if the ground at this point really differs from the drawing.",
+  "gsConfirmYes": "Yes, this GS is right",
+  "gsConfirmNo": "Check again",
+  "gsRefDesign": "design GS ({value})",
+  "gsRefCol": "COL ({value})",
+  "gsImpossibleShort": "GS {typed} too far from {ref} — enter it again"
 }

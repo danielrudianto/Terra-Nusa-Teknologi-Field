@@ -24,6 +24,7 @@ import '../../core/widgets/confirm.dart';
 import '../../core/widgets/swipe_confirm.dart';
 import '../../core/widgets/time_wheel.dart';
 import '../../core/widgets/view_states.dart';
+import '../casting/gs_guard.dart';
 import '../casting/handover.dart';
 import '../casting/level_reference.dart';
 import 'drill_readings.dart';
@@ -849,12 +850,14 @@ class _GsSheetState extends State<_GsSheet> {
 
   double? get _diketik => parseNumber(_gs.text);
 
-  void _submit() {
+  Future<void> _submit() async {
     final gs = _diketik;
     if (gs == null || gs < -500 || gs > 5000) {
       setState(() => _problem = t(context).gsRequiredMsg);
       return;
     }
+    if (!await gsConfirmIfFar(context, typed: gs, design: widget.groundLevel, cutOffLevel: widget.cutOffLevel)) return;
+    if (!mounted) return;
     Navigator.pop(context, gs);
   }
 
@@ -866,6 +869,7 @@ class _GsSheetState extends State<_GsSheet> {
     // Cut-off di ATAS muka tanah: bukan penghalang — kadang memang begitu —
     // tetapi hampir selalu tanda GS salah ketik, jadi harus terbaca sekarang.
     final colDiAtas = gs != null && col != null && col > gs;
+    final gsDitolak = gsRefused(gs, design: widget.groundLevel, cutOffLevel: col);
     return AlertDialog(
       icon: Icon(Icons.height, size: 32, color: w.brand),
       title: Text(widget.pertamaKali ? t(context).confirmBeforeDrilling(widget.code) : t(context).correctGsTitle,
@@ -875,6 +879,15 @@ class _GsSheetState extends State<_GsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            GsGuardBanner(
+              typed: gs,
+              design: widget.groundLevel,
+              cutOffLevel: col,
+              onUse: (v) => setState(() {
+                _gs.text = gsInputText(v);
+                _problem = null;
+              }),
+            ),
             Text(widget.pertamaKali ? t(context).confirmBeforeDrillingBody : t(context).correctGsBody,
                 style: TextStyle(color: w.ink, height: 1.4)),
             const SizedBox(height: 12),
@@ -910,7 +923,8 @@ class _GsSheetState extends State<_GsSheet> {
           onPressed: () => Navigator.pop(context),
           child: Text(widget.pertamaKali ? t(context).backOut : t(context).cancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(t(context).save)),
+        // Mati selama GS-nya mustahil — alasannya banner merah di atas.
+        FilledButton(onPressed: gsDitolak ? null : _submit, child: Text(t(context).save)),
       ],
     );
   }
@@ -1387,6 +1401,10 @@ class _FinishDialogState extends State<_FinishDialog> {
         setState(() => _problem = t(context).gsRequiredMsg);
         return false;
       }
+      if (!await gsConfirmIfFar(context, typed: gs, design: widget.groundLevel, cutOffLevel: widget.cutOffLevel)) {
+        return false;
+      }
+      if (!mounted) return false;
     }
     final salahKoord = _xyNotMeasured
         ? null
@@ -1446,6 +1464,16 @@ class _FinishDialogState extends State<_FinishDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (widget.gsRequired)
+              GsGuardBanner(
+                typed: parseNumber(_gs.text),
+                design: widget.groundLevel,
+                cutOffLevel: widget.cutOffLevel,
+                onUse: (v) => setState(() {
+                  _gs.text = gsInputText(v);
+                  _problem = null;
+                }),
+              ),
             Text(t(context).finishDrillBody(formatMeters(widget.deepestM)),
                 style: TextStyle(color: w.ink, height: 1.4)),
             if (short > 0.5) ...[

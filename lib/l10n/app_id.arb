@@ -7483,5 +7483,108 @@
         "type": "String"
       }
     }
+  },
+  "gsImpossibleTitle": "GS {typed} tidak mungkin benar",
+  "@gsImpossibleTitle": {
+    "description": "gsImpossibleTitle",
+    "placeholders": {
+      "typed": {
+        "type": "String"
+      }
+    }
+  },
+  "gsImpossibleBody": "Berbeda {diff} m dari {ref}. Lebih dari 10 m hampir pasti salah ketik — periksa letak komanya. Tidak bisa disimpan.",
+  "@gsImpossibleBody": {
+    "description": "gsImpossibleBody",
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      },
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "gsUseSuggestion": "Pakai {value}",
+  "@gsUseSuggestion": {
+    "description": "gsUseSuggestion",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "gsFarTitle": "Selisih {diff} m dari {ref}",
+  "@gsFarTitle": {
+    "description": "gsFarTitle",
+    "placeholders": {
+      "diff": {
+        "type": "String"
+      },
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "gsFarBody": "Lebih dari 30 cm. Periksa lagi tembakan dan nomor titiknya. Saat disimpan akan ditanya sekali lagi.",
+  "@gsFarBody": {
+    "description": "gsFarBody"
+  },
+  "gsConfirmTitle": "GS ini sudah benar?",
+  "@gsConfirmTitle": {
+    "description": "gsConfirmTitle"
+  },
+  "gsConfirmBody": "GS {typed} berbeda {diff} m dari {ref}. Simpan hanya bila tanah di titik ini memang berbeda dari gambar.",
+  "@gsConfirmBody": {
+    "description": "gsConfirmBody",
+    "placeholders": {
+      "typed": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      },
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "gsConfirmYes": "Ya, GS ini benar",
+  "@gsConfirmYes": {
+    "description": "gsConfirmYes"
+  },
+  "gsConfirmNo": "Periksa lagi",
+  "@gsConfirmNo": {
+    "description": "gsConfirmNo"
+  },
+  "gsRefDesign": "GS desain ({value})",
+  "@gsRefDesign": {
+    "description": "gsRefDesign",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "gsRefCol": "COL ({value})",
+  "@gsRefCol": {
+    "description": "gsRefCol",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "gsImpossibleShort": "GS {typed} terlalu jauh dari {ref} — isi ulang",
+  "@gsImpossibleShort": {
+    "description": "gsImpossibleShort",
+    "placeholders": {
+      "typed": {
+        "type": "String"
+      },
+      "ref": {
+        "type": "String"
+      }
+    }
   }
 }

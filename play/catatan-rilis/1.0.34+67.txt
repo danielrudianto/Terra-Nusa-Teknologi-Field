@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.34 (67) — Penjaga GS salah ketik
+
+<id>
+• GS yang berbeda lebih dari 10 m dari GS desain atau COL ditolak. Banner merah muncul di bagian paling atas dialog, beserta tombol tebakan angkanya, misalnya "Pakai +681,900" untuk 6819.
+• Selisih lebih dari 30 cm memunculkan banner kuning, dan saat Simpan ditanya sekali lagi.
+• Berlaku di isian GS IPL, Tandai sudah dibor, konfirmasi GS sebelum bor, dan Selesai bor.
+• Draf IPL lama yang GS-nya salah koma ditandai merah dan tidak ikut terkirim.
+</id>
+<en-US>
+• A GS more than 10 m from the design GS or COL is refused: a red banner at the very top of the dialog, with a button for the likely number (e.g. "Use +681,900" for 6819).
+• More than 30 cm off shows a yellow banner, and Save asks once more.
+• Applies to the GS in IPL, Mark drilled, GS check before drilling, and Finish drilling.
+• Old IPL drafts with a misplaced comma are marked red and are not sent.
+</en-US>
+<zh-CN>
+• 与设计 GS 或 COL 相差超过 10 m 的 GS 将被拒绝：对话框最上方显示红色提示，并附上推测数值按钮（例如 6819 → “改用 +681,900”）。
+• 相差超过 30 cm 时显示黄色提示，保存时再确认一次。
+• 适用于 IPL、标记已钻、钻前 GS 确认和完成钻孔中的 GS 输入。
+• 旧 IPL 草稿中小数点错误的 GS 标为红色，不会发送。
+</zh-CN>

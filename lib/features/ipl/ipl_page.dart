@@ -10,11 +10,13 @@ import '../../core/providers.dart';
 import '../../core/theme/color_tokens.dart';
 import '../../core/theme/dimens.dart';
 import '../../core/util/format.dart';
+import '../../core/util/gs_check.dart';
 import '../../core/util/reasons.dart';
 import '../../core/widgets/app_snack.dart';
 import '../../core/widgets/quiet.dart';
 import '../../core/widgets/terra_banner.dart';
 import '../../core/widgets/view_states.dart';
+import '../casting/gs_guard.dart';
 import '../casting/level_reference.dart';
 import 'gs_dialog.dart';
 import 'gs_ukur.dart';
@@ -325,13 +327,27 @@ class _IplPageState extends ConsumerState<IplPage> {
   }
 
   /// The GS of a pile, or the reason it cannot be sent. The dialog already
-  /// refuses a GS below the tip; checked again because a GS can also come
-  /// from an older IPL.
+  /// refuses a GS below the tip or more than 10 m from the design GS/COL;
+  /// checked again because a GS can also come from an older IPL draft.
   ({double? gs, String? error}) _check(BuildContext context, Map<String, Object?> pile) {
     final gs = _gsOf(pile);
     if (gs == null) return (gs: null, error: null);
     final tip = toDoubleOrNull(pile['tipLevel']);
     if (tip != null && gs <= tip) return (gs: null, error: t(context).iplGsBelowTip(formatElevation(tip)));
+    // GS salah koma dari draf lama (SP.D3: 6.819 untuk 681,9) — tidak boleh
+    // ikut terkirim; titiknya merah dan harus diisi ulang.
+    final design = toDoubleOrNull(pile['groundLevel']);
+    final col = toDoubleOrNull(pile['cutOffLevel']);
+    final ref = gsReference(design: design, cutOffLevel: col);
+    if (gsImpossible(gs, ref)) {
+      return (
+        gs: null,
+        error: t(context).gsImpossibleShort(
+          formatElevation(gs, decimals: 3),
+          gsReferenceText(context, design: design, cutOffLevel: col),
+        ),
+      );
+    }
     return (gs: gs, error: null);
   }
 
