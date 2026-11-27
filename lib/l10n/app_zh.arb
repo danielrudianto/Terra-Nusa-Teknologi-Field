@@ -568,6 +568,7 @@
   "castDone": "灌注完成",
   "savedAutoSend": "已保存，将自动上传。",
   "reopen": "重新打开",
+  "takeBackLog": "收回",
   "planNoPull": "第 {seq} 车计划：无需拔管",
   "planTitle": "第 {seq} 车计划",
   "planCutLine": "• 约 {vol} m³ 后：拔 {which} → 埋深 {before} → {after} m",
@@ -1935,5 +1936,12 @@
   "gateOtherPilePick": "是 — 点选下一个孔：",
   "gateOtherPileSearch": "搜索桩号",
   "gateCopiedTitle": "搅拌车 {truck} 继续浇到本桩位",
-  "gateCopiedBody": "只填写浇到本桩位的方量，不是整车方量。"
+  "gateCopiedBody": "只填写浇到本桩位的方量，不是整车方量。",
+  "tremieGapOk": "距孔底 {gap}（目标 1 m）· GS 以上外露 {stick}。",
+  "tremieGapHigh": "导管底端距孔底 {gap}，最多 1.5 m。请加约 {add} 导管，或重新测量外露长度。",
+  "tremieGapLow": "导管底端距孔底仅 {gap}，目标 1 m。请减约 {cut} 导管，或重新测量外露长度。",
+  "tremieMeasureStickOut": "长度足够。请在 1 号罐车前测量外露长度（下方按钮）。",
+  "stickOutTooLowWarn": "外露 {stick}：导管几乎与 GS 齐平，无法安装料斗。请用卷尺重新测量。",
+  "stickOutMismatch": "与浇筑数据中填写的深度（{typed}）不一致。将保存此外露长度的结果，差异会标记给办公室。",
+  "stickOutTooHighWarn": "外露 {stick}：超过 3 m，料斗过高无法操作。请重新测量，或检查已记录的导管数量。"
 }

@@ -568,6 +568,7 @@
   "castDone": "Casting finished",
   "savedAutoSend": "Saved. Sent automatically.",
   "reopen": "Reopen",
+  "takeBackLog": "Take back",
   "planNoPull": "Plan for truck #{seq}: no pulling needed",
   "planTitle": "Plan for truck #{seq}",
   "planCutLine": "• After ±{vol} m³: pull {which} → embedment {before} → {after} m",
@@ -1935,5 +1936,12 @@
   "gateOtherPilePick": "Yes — tap the next hole:",
   "gateOtherPileSearch": "Search pile code",
   "gateCopiedTitle": "Truck {truck} continues to this point",
-  "gateCopiedBody": "Enter only the volume poured AT THIS POINT, not the whole truck load."
+  "gateCopiedBody": "Enter only the volume poured AT THIS POINT, not the whole truck load.",
+  "tremieGapOk": "Gap to the bottom {gap} (target 1 m) · stick-out {stick} above GS.",
+  "tremieGapHigh": "Tremie bottom {gap} above the hole bottom — 1.5 m at most. Add about {add} of pipe, or measure the stick-out again.",
+  "tremieGapLow": "Tremie bottom only {gap} above the hole bottom — target 1 m. Remove about {cut} of pipe, or measure the stick-out again.",
+  "tremieMeasureStickOut": "Long enough. Measure the stick-out before truck #1 — button below.",
+  "stickOutTooLowWarn": "Stick-out {stick}: the pipe is almost flush with GS, so the hopper cannot be fitted. Measure again with a tape.",
+  "stickOutMismatch": "Does not match the depth typed in Casting data ({typed}). This stick-out result is saved; the difference is flagged for the office.",
+  "stickOutTooHighWarn": "Stick-out {stick}: over 3 m, a hopper that high cannot be reached. Measure again, or check the pipes entered."
 }

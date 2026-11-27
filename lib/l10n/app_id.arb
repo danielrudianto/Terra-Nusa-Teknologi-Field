@@ -3118,6 +3118,10 @@
   "@reopen": {
     "description": "reopen"
   },
+  "takeBackLog": "Ambil kembali",
+  "@takeBackLog": {
+    "description": "takeBackLog"
+  },
   "planNoPull": "Rencana TM #{seq}: tidak perlu cabut",
   "@planNoPull": {
     "description": "planNoPull",
@@ -4917,7 +4921,9 @@
   "@rangeTooLong": {
     "description": "rangeTooLong",
     "placeholders": {
-      "max": { "type": "String" }
+      "max": {
+        "type": "String"
+      }
     }
   },
   "dateRange": "{from} – {to}",
@@ -7410,5 +7416,72 @@
   "gateCopiedBody": "Isi volume yang dituang DI TITIK INI saja, bukan seluruh isi TM.",
   "@gateCopiedBody": {
     "description": "gateCopiedBody"
+  },
+  "tremieGapOk": "Celah ke dasar {gap} (target 1 m) · nyembul {stick} di atas GS.",
+  "@tremieGapOk": {
+    "description": "tremieGapOk",
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      },
+      "stick": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieGapHigh": "Ujung tremie {gap} di atas dasar lubang — maksimal 1,5 m. Tambah ±{add} pipa, atau ukur ulang nyembulnya.",
+  "@tremieGapHigh": {
+    "description": "tremieGapHigh",
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      },
+      "add": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieGapLow": "Ujung tremie hanya {gap} di atas dasar lubang — target 1 m. Kurangi ±{cut} pipa, atau ukur ulang nyembulnya.",
+  "@tremieGapLow": {
+    "description": "tremieGapLow",
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      },
+      "cut": {
+        "type": "String"
+      }
+    }
+  },
+  "tremieMeasureStickOut": "Panjang cukup. Ukur nyembulnya sebelum TM #1 — tombol di bawah.",
+  "@tremieMeasureStickOut": {
+    "description": "tremieMeasureStickOut"
+  },
+  "stickOutTooLowWarn": "Nyembul {stick}: pipa hampir rata GS, hopper tidak mungkin terpasang. Ukur lagi dengan meteran.",
+  "@stickOutTooLowWarn": {
+    "description": "stickOutTooLowWarn",
+    "placeholders": {
+      "stick": {
+        "type": "String"
+      }
+    }
+  },
+  "stickOutMismatch": "Tidak cocok dengan kedalaman yang diketik di Data cor ({typed}). Yang disimpan hasil dari nyembul ini; selisihnya ditandai untuk kantor.",
+  "@stickOutMismatch": {
+    "description": "stickOutMismatch",
+    "placeholders": {
+      "typed": {
+        "type": "String"
+      }
+    }
+  },
+  "stickOutTooHighWarn": "Nyembul {stick}: lebih dari 3 m, hopper setinggi itu tidak terjangkau. Ukur lagi, atau periksa jumlah pipa yang dicatat.",
+  "@stickOutTooHighWarn": {
+    "description": "stickOutTooHighWarn",
+    "placeholders": {
+      "stick": {
+        "type": "String"
+      }
+    }
   }
 }

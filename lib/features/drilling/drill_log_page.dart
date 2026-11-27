@@ -176,6 +176,20 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
   /// point. If that is not this document, it says NOTHING about this log —
   /// reading it as a handover would lock a normal log read-only and make every
   /// save do nothing.
+  /// OPER BALIK — sama dengan catatan cor (`casting_form.dart`,
+  /// `_ambilKembali`): HP lama dulu tidak punya jalan meminta log ini kembali.
+  Future<void> _ambilKembali() async {
+    await redeemHandoverFlow(
+      context,
+      ref,
+      entity: 'drill_log',
+      uuid: widget.uuid,
+      pointCode: _code,
+      holderName: _holderName ?? t(context).colleague,
+    );
+    if (mounted) await _load();
+  }
+
   bool get _handedAway {
     if (_row == null) return false;
     final serverUuid = _pilePoint?['drillLogUuid'];
@@ -630,6 +644,7 @@ class _DrillLogPageState extends ConsumerState<DrillLogPage> {
               icon: Icons.swap_horiz,
               title: t(context).handedOverTo(_holderName ?? t(context).colleague),
               body: t(context).drillHandedOverBody(_holderName ?? t(context).colleague),
+              action: TextButton(onPressed: _ambilKembali, child: Text(t(context).takeBackLog)),
             ),
           if (_row?.sendStatus == 'rejected' && !_handedAway)
             TerraBanner(kind: BannerKind.danger, title: t(context).rejectedByServer, body: reasonText(context, _row!.reason, _row!.detail)),

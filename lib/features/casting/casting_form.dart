@@ -364,6 +364,23 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// Nothing on this screen may change the document.
   bool get _readOnly => _locked || _handedAway;
 
+  /// OPER BALIK (Daniel, 27 Nov 2026: "Asep oper ke saya tapi gabisa di oper
+  /// balik"). Log yang sudah dioper dulu hanya bisa DILIHAT di HP lamanya,
+  /// dan jalan mengetik kode cuma ada di titik yang terkunci, sedangkan titik
+  /// ini membuka layar log ini, bukan kotak kodenya. Sekarang tombolnya ada
+  /// di sini: ketik kode dari pemegang sekarang, atau minta tanpa kode.
+  Future<void> _ambilKembali() async {
+    await redeemHandoverFlow(
+      context,
+      ref,
+      entity: 'casting',
+      uuid: widget.uuid,
+      pointCode: '${_pilePoint!['code']}',
+      holderName: _holderName ?? t(context).colleague,
+    );
+    if (mounted) await _load();
+  }
+
   // -------------------------------------------------------------------------
   // Save
   // -------------------------------------------------------------------------
@@ -419,7 +436,20 @@ class _CastingFormState extends ConsumerState<CastingForm> {
     await _appendSegment(lengthM, bottom: bottom);
   }
 
+  /// Susunan tremie berubah sebelum TM pertama: nyembul dan kedalaman yang
+  /// diukur untuk susunan LAMA tidak berlaku lagi, dan ditanyakan ulang
+  /// lewat tombol "Ukur tremie dulu" (27 Nov 2026). Dulu keduanya tertinggal,
+  /// sehingga batang yang ditambah sesudah mengukur tidak menggeser ujung
+  /// tremie sama sekali di hitungan.
+  void _lupakanUkuranTremie(Map<String, Object?> d) {
+    if (_trucks.isNotEmpty) return;
+    d['tremieDepthStartM'] = null;
+    d['tremieStickOutM'] = null;
+    d['tremieDepthTypedM'] = null;
+  }
+
   Future<void> _appendSegment(double lengthM, {bool bottom = false}) => _update((d) {
+        _lupakanUkuranTremie(d);
         final s = _tremie;
         final position = s.isEmpty ? 1 : s.map((x) => toIntOrNull(x['position']) ?? 0).reduce((a, b) => a > b ? a : b) + 1;
         (d['tremie'] as List).add({
@@ -452,6 +482,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       final s = _tremie..sort((a, b) => (toIntOrNull(a['position']) ?? 0).compareTo(toIntOrNull(b['position']) ?? 0));
       final top = s.last;
       (d['tremie'] as List).removeWhere((x) => (x as Map)['uuid'] == top['uuid']);
+      _lupakanUkuranTremie(d);
     });
     if (saved && mounted) showSnack(context, t(context).topSegmentRemoved);
   }
@@ -857,7 +888,10 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       await _block(
         icon: Icons.vertical_align_bottom,
         title: t(context).tremieNotAtBottom,
-        body: t(context).tremieShortBody(formatMeters(k.installedLengthAfter(0)), formatMeters(k.requiredTremieM)),
+        // Diukur: celahnya yang melewati batas 1,5 m. Belum: panjangnya.
+        body: k.tremieStartMeasured
+            ? t(context).tremieGapHigh(formatMeters(k.bottomGapM), formatMeters(k.bottomGapM - tremieGapTargetM))
+            : t(context).tremieShortBody(formatMeters(k.installedLengthAfter(0)), formatMeters(k.targetTremieM)),
       );
       return;
     }
@@ -1311,6 +1345,24 @@ class _CastingFormState extends ConsumerState<CastingForm> {
       ),
     );
     if (result == null) return;
+    // Kedalaman tremie diketik ulang di sini (27 Nov 2026):
+    //  * belum ada TM -> nyembulnya ditanyakan ulang (tombol "Ukur tremie
+    //    dulu"), dan jawabannya dicocokkan dengan angka ketikan ini;
+    //  * sudah ada TM -> tidak dapat ditanyakan lagi; bila tidak cocok
+    //    dengan nyembul yang sudah dijawab, selisihnya ditandai.
+    final lama = toDoubleOrNull(_doc!['tremieDepthStartM']);
+    final ketik = toDoubleOrNull(result['tremieDepthStartM']);
+    if (ketik != null && (lama == null || (ketik - lama).abs() > 0.005)) {
+      final nyembul = toDoubleOrNull(_doc!['tremieStickOutM']);
+      if (_trucks.isEmpty) {
+        result['tremieStickOutM'] = null;
+        result['tremieDepthTypedM'] = null;
+      } else if (nyembul != null &&
+          ((_castingState.segments.fold(0.0, (a, s) => a + s.lengthM) - nyembul) - ketik).abs() >
+              stickOutMismatchM + 0.005) {
+        result['tremieDepthTypedM'] = decimalText(ketik);
+      }
+    }
     if (!await _update((d) => d.addAll(result))) return;
     if (mounted) showSnack(context, t(context).castDataSaved);
   }
@@ -1337,6 +1389,11 @@ class _CastingFormState extends ConsumerState<CastingForm> {
         // Panjang SEBELUM TM pertama: belum ada satu segmen pun yang
         // dicabut, jadi ini seluruh rangkaian yang turun ke lubang.
         tremieLengthM: k.installedLengthAfter(0),
+        // Kedalaman yang sudah DIKETIK di Data cor tanpa nyembul: jawaban
+        // nyembulnya dicocokkan dengan angka ini.
+        typedDepthM: toDoubleOrNull(_doc!['tremieStickOutM']) == null
+            ? toDoubleOrNull(_doc!['tremieDepthStartM'])
+            : null,
       ),
     );
     if (hasil == null) return;
@@ -1373,8 +1430,15 @@ class _CastingFormState extends ConsumerState<CastingForm> {
   /// sudah lewat, dan menahan di sana hanya mengulang kesalahan yang sama
   /// di tempat yang berbeda. Log yang sudah telanjur berjalan tetap
   /// dijaga penahan lama di tombol Selesai.
+  ///
+  /// NYEMBUL IKUT DITAGIH (27 Nov 2026): kedalaman yang diketik langsung di
+  /// Data cor tidak lagi cukup. Daniel: "ini harus ditanyain bang tiap kali
+  /// udah beres input tremie, yang nyembul jadi berapa" — nyembul satu-
+  /// satunya angka yang bisa DILIHAT orang di lubang, dan yang memeriksa
+  /// kedalaman ketikannya.
   bool get _ukurTremieDulu =>
-      _trucks.isEmpty && toDoubleOrNull(_doc?['tremieDepthStartM']) == null;
+      _trucks.isEmpty &&
+      (toDoubleOrNull(_doc?['tremieDepthStartM']) == null || toDoubleOrNull(_doc?['tremieStickOutM']) == null);
 
   /// Apa saja yang masih kurang sebelum catatan cor boleh ditutup.
   ///
@@ -1691,6 +1755,7 @@ class _CastingFormState extends ConsumerState<CastingForm> {
               icon: Icons.swap_horiz,
               title: t(context).handedOverTo(_holderName ?? t(context).colleague),
               body: t(context).handedOverBody(_holderName ?? t(context).colleague),
+              action: TextButton(onPressed: _ambilKembali, child: Text(t(context).takeBackLog)),
             ),
           if (_row?.sendStatus == 'rejected' && !_handedAway)
             TerraBanner(kind: BannerKind.danger, title: t(context).rejectedByServer, body: reasonText(context, _row!.reason, _row!.detail)),
@@ -2175,7 +2240,9 @@ class _TremieCard extends StatelessWidget {
     final w = context.colors;
     final k = castingState;
     final total = k.segments.fold(0.0, (a, s) => a + s.lengthM);
-    final requiredLength = k.geometry.bottomDepthM - k.bottomGapM;
+    // "Perlu" = sampai TARGET celah 1 m, bukan sampai celah yang diisi
+    // sendiri — yang itu membuat celah berapa pun tampak cukup (SP.B73).
+    final requiredLength = k.targetTremieM;
     final installed = k.installedAfter(currentSeq);
     final bottom = installed.isEmpty ? null : installed.first.uuid;
 
@@ -2210,13 +2277,35 @@ class _TremieCard extends StatelessWidget {
                     w.badFg,
                     Icons.error_outline,
                   )
-                : k.tremieReachesBottom
-                    ? (
-                        t(context).tremieAtBottom(formatMeters(math.max(stickUp, 0))),
-                        w.okFg,
-                        Icons.check_circle_outline,
-                      )
-                    : (t(context).tremieShortBy(formatMeters(requiredLength - total)), w.warnFg, Icons.warning_amber_rounded);
+                // DIUKUR: yang dinilai celah ujung tremie ke dasar lubang,
+                // target 1 m, paling jauh 1,5 m (27 Nov 2026).
+                : k.tremieStartMeasured
+                    ? k.gapTooHigh
+                        ? (
+                            t(context).tremieGapHigh(
+                                formatMeters(k.bottomGapM), formatMeters(k.bottomGapM - tremieGapTargetM)),
+                            w.warnFg,
+                            Icons.warning_amber_rounded,
+                          )
+                        : k.gapTooLow
+                            ? (
+                                t(context).tremieGapLow(
+                                    formatMeters(k.bottomGapM), formatMeters(tremieGapTargetM - k.bottomGapM)),
+                                w.warnFg,
+                                Icons.warning_amber_rounded,
+                              )
+                            : (
+                                t(context).tremieGapOk(formatMeters(k.bottomGapM),
+                                    formatMeters(k.stickOutM ?? math.max(stickUp, 0))),
+                                w.okFg,
+                                Icons.check_circle_outline,
+                              )
+                    // BELUM DIUKUR: panjangnya saja yang dapat dinilai, dan
+                    // tidak pernah hijau — hijau baru sesudah nyembulnya
+                    // dijawab.
+                    : k.tremieReachesBottom
+                        ? (t(context).tremieMeasureStickOut, w.brand, Icons.straighten)
+                        : (t(context).tremieShortBy(formatMeters(requiredLength - total)), w.warnFg, Icons.warning_amber_rounded);
 
     final progress = requiredLength <= 0 ? 0.0 : (total / requiredLength).clamp(0.0, 1.0);
 
@@ -3901,10 +3990,14 @@ class _LengkapiSheetState extends State<_LengkapiSheet> {
 /// disimpan diam-diam. Yang menjawab berhak tahu angka apa yang jadi
 /// atas namanya — dan satu salah ketik (10 m, bukan 1 m) langsung
 /// terlihat di kalimat itu, bukan nanti di rekap kantor.
+/// `null` untuk teks kosong — banner tanpa badan, bukan badan kosong.
+String? _nonEmpty(String s) => s.isEmpty ? null : s;
+
 class _PourStartSheet extends StatefulWidget {
   const _PourStartSheet({
     required this.bottomDepthM,
     required this.tremieLengthM,
+    this.typedDepthM,
   });
 
   /// Dasar lubang dari GS; celahnya dihitung terhadap ini.
@@ -3912,6 +4005,10 @@ class _PourStartSheet extends StatefulWidget {
 
   /// Panjang pipa tremie yang SUDAH tersusun — dasar pengurangannya.
   final double tremieLengthM;
+
+  /// Kedalaman ujung tremie yang sudah DIKETIK di Data cor, bila ada —
+  /// pembanding jawaban nyembulnya (27 Nov 2026).
+  final double? typedDepthM;
 
   @override
   State<_PourStartSheet> createState() => _PourStartSheetState();
@@ -3963,8 +4060,16 @@ class _PourStartSheetState extends State<_PourStartSheet> {
       return;
     }
     final dalam = _depthM!;
+    final typed = widget.typedDepthM;
     Navigator.pop(context, {
       'tremieDepthStartM': decimalText(dalam),
+      // NYEMBUL seperti dijawab (27 Nov 2026) — dulu hanya turunannya yang
+      // disimpan, dan kantor tidak dapat melihat jawaban aslinya.
+      'tremieStickOutM': decimalText(parseNumber(_stickOut.text)!),
+      // Ketikan Data cor yang tidak cocok dengan nyembul: disimpan, bukan
+      // ditimpa diam-diam — kantor perlu melihat keduanya.
+      'tremieDepthTypedM':
+          typed != null && (typed - dalam).abs() > stickOutMismatchM + 0.005 ? decimalText(typed) : null,
       // Celahnya ikut dikirim, sama seperti `_HeaderSheet`: server lama
       // tidak mengenal kolom terukurnya dan hitungannya mundur ke sini.
       'tremieBottomGapM': decimalText(gap < 0 ? 0 : gap),
@@ -4027,8 +4132,27 @@ class _PourStartSheetState extends State<_PourStartSheet> {
                   ? const SizedBox.shrink()
                   : TerraBanner(
                       key: ValueKey('${formatMeters(dalam)}|${formatMeters(gap)}'),
-                      kind: gap < -0.005 || gap > 5.005 ? BannerKind.warning : BannerKind.info,
+                      // Di luar 1,0-1,5 m: kuning, dengan sarannya.
+                      kind: gap < tremieGapTargetM - 0.005 || gap > tremieGapMaxM + 0.005
+                          ? BannerKind.warning
+                          : BannerKind.ok,
                       title: t(context).stickOutResult(formatMeters(dalam), formatMeters(gap)),
+                      body: _nonEmpty([
+                        if (gap > tremieGapMaxM + 0.005)
+                          t(context).tremieGapHigh(formatMeters(gap), formatMeters(gap - tremieGapTargetM))
+                        else if (gap < tremieGapTargetM - 0.005)
+                          t(context).tremieGapLow(formatMeters(gap), formatMeters(tremieGapTargetM - gap)),
+                        if ((parseNumber(_stickOut.text) ?? 1) < stickOutMinPlausibleM)
+                          t(context).stickOutTooLowWarn(formatMeters(parseNumber(_stickOut.text)!))
+                        // Nyembul tidak punya batas tegas, tetapi di atas
+                        // 3 m sudah keterlaluan (Daniel, 27 Nov 2026) —
+                        // hopper setinggi itu tidak terjangkau kru.
+                        else if ((parseNumber(_stickOut.text) ?? 0) > tremieStickUpMaxM + 0.005)
+                          t(context).stickOutTooHighWarn(formatMeters(parseNumber(_stickOut.text)!)),
+                        if (widget.typedDepthM != null &&
+                            (widget.typedDepthM! - dalam).abs() > stickOutMismatchM + 0.005)
+                          t(context).stickOutMismatch(formatMeters(widget.typedDepthM!)),
+                      ].join('\n\n')),
                     ),
             ),
             const SizedBox(height: 18),

@@ -17,6 +17,7 @@ class CastingState {
     required this.tremieStartMeasured,
     required this.segments,
     required this.trucks,
+    this.stickOutM,
   });
 
   factory CastingState.from(PileGeometry geometry, Map<String, Object?> doc) {
@@ -32,6 +33,7 @@ class CastingState {
     return CastingState._(
       geometry: geometry,
       tremieStartMeasured: diukur != null,
+      stickOutM: toDoubleOrNull(doc['tremieStickOutM']),
       // 1 m di atas dasar lubang (Daniel, 12 Okt 2026 — sebelumnya 0,30 m).
       // Log cor yang sudah ada menyimpan angkanya sendiri, jadi yang lama
       // tetap 0,30; hanya log baru yang mulai dari 1 m.
@@ -56,6 +58,10 @@ class CastingState {
 
   /// Celahnya datang dari kedalaman tremie yang DIUKUR, bukan dari asumsi.
   final bool tremieStartMeasured;
+
+  /// NYEMBUL seperti dijawab di lapangan (27 Nov 2026); `null` = belum
+  /// ditanyakan untuk susunan tremie yang sekarang.
+  final double? stickOutM;
 
   /// Ordered by position, 1 = BOTTOM-MOST.
   final List<TremieSegment> segments;
@@ -166,10 +172,27 @@ class CastingState {
   /// Tremie length that reaches from the hopper level to the bottom gap.
   double get requiredTremieM => geometry.bottomDepthM - bottomGapM;
 
-  /// Before the first truck, the tremie must reach the bottom (10 cm of
-  /// slack): concrete poured from higher up drops through the slurry and
-  /// segregates.
-  bool get tremieReachesBottom => installedLengthAfter(0) >= requiredTremieM - 0.10;
+  /// Panjang di bawah GS yang menaruh ujung tremie TEPAT di target celah
+  /// (1 m di atas dasar). Inilah "perlu" di layar — bukan [requiredTremieM],
+  /// yang dihitung dari celah yang diisi sendiri, sehingga celah berapa pun
+  /// selalu tampak cukup (SP.B73, 27 Nov 2026: celah 1,74 m tampil hijau).
+  double get targetTremieM => geometry.bottomDepthM - tremieGapTargetM;
+
+  /// Ujung tremie lebih jauh dari dasar daripada batas 1,5 m.
+  bool get gapTooHigh => tremieStartMeasured && bottomGapM > tremieGapMaxM + 0.005;
+
+  /// Ujung tremie lebih dekat ke dasar daripada target 1 m.
+  bool get gapTooLow => tremieStartMeasured && bottomGapM < tremieGapTargetM - 0.005;
+
+  /// Before the first truck, the tremie must reach the bottom: concrete
+  /// poured from higher up drops through the slurry and segregates.
+  ///
+  /// Sejak 27 Nov 2026 diukur terhadap BATAS celah (1,5 m), bukan terhadap
+  /// celah yang diisi sendiri. Belum diukur: panjangnya saja yang dapat
+  /// diperiksa — sekurang-kurangnya sampai batas itu.
+  bool get tremieReachesBottom => tremieStartMeasured
+      ? !gapTooHigh
+      : installedLengthAfter(0) >= geometry.bottomDepthM - tremieGapMaxM - 0.005;
 
   /// How far the assembled tremie stands above GS (to the hopper) when its
   /// lower end hangs at the bottom gap. Negative = still short of the bottom.
@@ -200,6 +223,20 @@ class CastingState {
 /// the crew cannot reach the hopper, and in practice it means one segment
 /// too many was entered.
 const tremieStickUpMaxM = 3.0;
+
+/// Celah ujung bawah tremie ke dasar lubang sebelum TM pertama: TARGET 1 m,
+/// paling jauh 1,5 m (Daniel, 27 Nov 2026). Sama dengan server
+/// (`JARAK_BOTTOM_TARGET_M` / `JARAK_BOTTOM_MAKS_M`).
+const tremieGapTargetM = 1.0;
+const tremieGapMaxM = 1.5;
+
+/// Nyembul lebih pendek dari ini: pipa nyaris rata GS, hopper tidak mungkin
+/// terpasang — jawabannya patut dipertanyakan.
+const stickOutMinPlausibleM = 0.3;
+
+/// Selisih yang masih diterima antara kedalaman tremie yang DIKETIK dan
+/// panjang tremie - nyembul. Sama dengan server (`SELISIH_NYEMBUL_MAKS_M`).
+const stickOutMismatchM = 0.10;
 
 const truckVolumeUsualMaxM3 = 8.0;
 const truckVolumeMaxM3 = 10.0;

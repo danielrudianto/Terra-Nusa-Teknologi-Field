@@ -1,0 +1,18 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.33 (66) — Nyembul tremie & ambil kembali log
+
+<id>
+• Setiap selesai memasang tremie, mandor ditanya berapa meter nyembul di atas muka tanah. Dari situ HP menghitung jarak ujung tremie ke dasar lubang: target 1 m, maksimal 1,5 m. Di luar itu muncul peringatan kuning, dan TM #1 ditahan bila jaraknya lebih dari 1,5 m.
+• Nyembul yang tidak cocok dengan kedalaman yang diketik ditandai, dan ditanyakan lagi bila susunan pipa berubah sebelum TM #1.
+• Log bor/cor yang sudah dioper bisa diambil kembali dari HP lama: tombol "Ambil kembali".
+</id>
+<en-US>
+• After the tremie is installed, the foreman is asked how many metres stick out above ground. The phone then works out the gap from the tremie tip to the hole bottom: 1 m target, 1.5 m maximum. Outside that a yellow warning shows, and truck #1 is held when the gap is above 1.5 m.
+• A stick-out that does not match the typed depth is flagged, and it is asked again if the pipe layout changes before truck #1.
+• A handed-over drilling/casting log can be taken back on the old phone: "Take back".
+</en-US>
+<zh-CN>
+• 导管安装完成后，会询问工长导管露出地面多少米。手机据此计算导管底端到孔底的距离：目标 1 m，最多 1.5 m。超出范围显示黄色提醒；距离超过 1.5 m 时暂停 1 号罐车。
+• 露出长度与输入深度不符时会被标记；在 1 号罐车之前若导管组合变更，会再次询问。
+• 已移交的钻孔/灌注记录可在原手机上收回：点击“收回”。
+</zh-CN>

@@ -23,6 +23,36 @@ void main() {
     });
   });
 
+  // Celah ujung tremie ke dasar: target 1 m, paling jauh 1,5 m (27 Nov 2026).
+  group('measured tremie gap', () {
+    CastingState measured(String depth, {String? stickOut}) => CastingState.from(g, {
+          'tremieDepthStartM': depth,
+          'tremieStickOutM': ?stickOut,
+          'tremie': [
+            {'uuid': 'a', 'position': 1, 'lengthM': '20'},
+          ],
+          'trucks': const [],
+        });
+    test('SP.B73-like: 1.74 m above the bottom is too high', () {
+      final k = measured('18.66', stickOut: '1.34'); // 20.4 - 18.66 = 1.74
+      expect(k.gapTooHigh, isTrue);
+      expect(k.tremieReachesBottom, isFalse);
+      expect(k.stickOutM, 1.34);
+    });
+    test('1.2 m: within target and limit', () {
+      final k = measured('19.2');
+      expect(k.gapTooHigh, isFalse);
+      expect(k.gapTooLow, isFalse);
+      expect(k.tremieReachesBottom, isTrue);
+    });
+    test('0.5 m: closer than the 1 m target', () {
+      expect(measured('19.9').gapTooLow, isTrue);
+    });
+    test('the needed length is to the 1 m target, not to the typed gap', () {
+      expect(measured('18.66').targetTremieM, closeTo(19.4, 1e-9));
+    });
+  });
+
   group('tremie too long', () {
     test('20 m for 20.1 m: just short, not too long', () {
       final k = casting(segments: ['2', '3', '3', '3', '3', '3', '3']);
