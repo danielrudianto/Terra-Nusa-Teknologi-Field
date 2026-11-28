@@ -2421,7 +2421,7 @@
   "@profileNone": {
     "description": "profileNone"
   },
-  "profileNecking": "Necking {p}",
+  "profileNecking": "Necking · volume −{p}",
   "@profileNecking": {
     "description": "profileNecking",
     "placeholders": {
@@ -2434,7 +2434,7 @@
   "@profileBulking": {
     "description": "profileBulking"
   },
-  "profileFits": "Sesuai {p}",
+  "profileFits": "Sesuai · volume {p}",
   "@profileFits": {
     "description": "profileFits",
     "placeholders": {
@@ -2447,7 +2447,7 @@
   "@profileShort": {
     "description": "profileShort"
   },
-  "profileHow": "Rata-rata per TM: volume dibagi tinggi yang diisinya. Necking bila lebih dari 5% di bawah rencana, bulking bila lebih dari 10% di atasnya. Lebar gambar dibesarkan 2× supaya simpangannya terlihat.",
+  "profileHow": "Rata-rata per TM: volume dibagi tinggi yang diisinya. Persen di label = selisih VOLUME terhadap rencana; Ø = diameter efektif dari volume itu, dan angka dalam kurung = selisih diameternya. Necking bila volume lebih dari 3% di bawah rencana, bulking bila lebih dari 10% di atasnya. Lebar gambar dibesarkan 2× supaya simpangannya terlihat.",
   "@profileHow": {
     "description": "profileHow"
   },

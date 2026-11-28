@@ -1,0 +1,21 @@
+# Nama rilis (Play Console, maks 50 karakter):
+1.0.36 (69) — Profil beton: volume dan diameter
+
+<id>
+• Profil beton kini menulis jelas bahwa persen di label adalah selisih VOLUME beton, misalnya "Sesuai · volume +5,3%".
+• Diameter efektif ditulis beserta selisih diameternya, misalnya "Ø 1,23 m (+2,6%)", supaya tidak tertukar dengan persen volume.
+• Keterangan di bawah gambar menjelaskan cara membacanya.
+• Batas necking disamakan dengan TerraBot kantor: volume lebih dari 3% di bawah rencana (sebelumnya 5%).
+</id>
+<en-US>
+• The concrete profile now states that the percentage on each label is the concrete VOLUME difference, e.g. "Within limits · volume +5.3%".
+• The effective diameter is shown with its own difference, e.g. "Ø 1.23 m (+2.6%)", so it is not mistaken for the volume percentage.
+• The note under the picture explains how to read it.
+• The necking limit now matches TerraBot office: volume more than 3% below design (was 5%).
+</en-US>
+<zh-CN>
+• 混凝土剖面标签现明确标示百分比为混凝土方量差值，例如“合格 · 方量 +5.3%”。
+• 有效直径同时显示其直径差值，例如“Ø 1.23 m (+2.6%)”，避免与方量百分比混淆。
+• 图下方的说明解释了如何解读。
+• 缩颈界限与办公室端 TerraBot 一致：方量低于设计 3% 以上（原为 5%）。
+</zh-CN>

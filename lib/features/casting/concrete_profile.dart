@@ -31,7 +31,11 @@ import '../../core/widgets/app_snack.dart';
 /// of the wall — so stretches shorter than [minHeightM] are not judged.
 
 /// Volume more than this below design = necking.
-const neckingLimit = 0.05;
+///
+/// 3%, sama dengan Office (`profil-beton.helper.ts`, 22 Nov 2026) — Daniel,
+/// 28 Nov 2026: "samain dong". Sebelumnya 5% di sini, sehingga ruas −4%
+/// terbaca "Sesuai" di HP tetapi "Necking" di Office untuk TM yang sama.
+const neckingLimit = 0.03;
 
 /// Volume more than this above design = bulking.
 const bulkingLimit = 0.10;
@@ -128,6 +132,19 @@ String _signedPct(double ratio) => '${ratio >= 1 ? '+' : '−'}${_pct(ratio)}';
 
 String _dia(double m) => 'Ø ${m.toStringAsFixed(2).replaceAll('.', ',')} m';
 
+/// Diameter efektif BESERTA selisih diameternya: "Ø 1,23 m (+2,6%)".
+///
+/// Daniel, 28 Nov 2026 — bos membaca "Ø 1,23 m" di samping "+5,3%" lalu
+/// menghitung 1.230/1.200 = +2,5% dan mengira hitungannya salah. Persen di
+/// label adalah selisih VOLUME; diameter hanya diturunkan darinya
+/// (Ø × √rasio), jadi selisih volume ≈ dua kali selisih diameter. Keduanya
+/// kini ditulis berdampingan. Bulking tetap tanpa persen (23 Nov 2026).
+String _diaWithDiff(ConcreteSegment s) {
+  final dia = _dia(s.diameterM!);
+  if (s.kind == SegmentKind.bulking || s.ratio == null) return dia;
+  return '$dia (${_signedPct(math.sqrt(s.ratio!))})';
+}
+
 /// The card on the Watch screen: the picture, one line per truck, and the
 /// Copy (text) / Share (picture + text) buttons.
 class ConcreteProfileCard extends StatefulWidget {
@@ -178,7 +195,7 @@ class _ConcreteProfileCardState extends State<ConcreteProfileCard> {
       final depth = '${s.bottomM.toStringAsFixed(2).replaceAll('.', ',')} → ${formatMeters(s.topM)}';
       b.writeln(
         'TM #${s.seq}: $depth, ${formatVolume(s.volumeM3)}'
-        '${s.diameterM == null ? '' : ', ${_dia(s.diameterM!)}'} — ${_label(context, s)}',
+        '${s.diameterM == null ? '' : ', ${_diaWithDiff(s)}'} — ${_label(context, s)}',
       );
     }
     int n(SegmentKind k) => widget.segments.where((s) => s.kind == k).length;
@@ -309,7 +326,7 @@ class _ConcreteProfileCardState extends State<ConcreteProfileCard> {
           Expanded(
             child: Text(
               '${s.bottomM.toStringAsFixed(2).replaceAll('.', ',')} → ${formatMeters(s.topM)}'
-              '${s.diameterM == null ? '' : '  ${_dia(s.diameterM!)}'}',
+              '${s.diameterM == null ? '' : '  ${_diaWithDiff(s)}'}',
               style: TextStyle(color: w.muted, fontSize: 13, fontFeatures: const [FontFeature.tabularFigures()]),
             ),
           ),
@@ -347,7 +364,10 @@ class _ProfilePainter extends CustomPainter {
   void paint(Canvas c, Size size) {
     const top = 14.0;
     const left = 34.0;
-    final labelW = math.min(150.0, size.width * 0.42);
+    // Lebih lebar sejak 28 Nov 2026: label kini menyebut "volume" dan
+    // selisih diameter dalam kurung, dan yang terpotong di tepi kanan
+    // gambar justru angka yang dipertanyakan.
+    final labelW = math.min(180.0, size.width * 0.5);
     final cx = left + (size.width - left - labelW) / 2;
     const half = 26.0;
     final maxM = bottomM + 0.8;
@@ -456,7 +476,7 @@ class _ProfilePainter extends CustomPainter {
           ..strokeWidth = 1,
       );
       _text(c, labelOf(it.s), Offset(xl, ly - 6), color: it.color, weight: FontWeight.w700);
-      _text(c, '${_dia(it.s.diameterM!)} · TM #${it.s.seq}', Offset(xl, ly + 8), size: 10);
+      _text(c, '${_diaWithDiff(it.s)} · TM #${it.s.seq}', Offset(xl, ly + 8), size: 10);
     }
     c.restore();
   }
