@@ -1,21 +1,18 @@
 # Nama rilis (Play Console, maks 50 karakter):
-1.0.36 (69) — Profil beton: volume dan diameter
+1.0.36 (69) — Profil beton dinilai dari diameter
 
 <id>
-• Profil beton kini menulis jelas bahwa persen di label adalah selisih VOLUME beton, misalnya "Sesuai · volume +5,3%".
-• Diameter efektif ditulis beserta selisih diameternya, misalnya "Ø 1,23 m (+2,6%)", supaya tidak tertukar dengan persen volume.
-• Keterangan di bawah gambar menjelaskan cara membacanya.
-• Batas necking disamakan dengan TerraBot kantor: volume lebih dari 3% di bawah rencana (sebelumnya 5%).
+• Necking dan bulking kini dinilai dari DIAMETER, bukan volume: necking bila diameter lebih dari 5% di bawah rencana, bulking bila lebih dari 10% di atasnya.
+• Label profil beton menulis diameter efektif dan selisih diameternya, misalnya "Necking · Ø 1,13 m (−5,8%)". Persen volume tidak ditulis lagi.
+• Keterangan di bawah gambar menjelaskan cara membacanya: ini hasil ukur lapangan untuk waspada, yang memastikan tetap uji PIT.
 </id>
 <en-US>
-• The concrete profile now states that the percentage on each label is the concrete VOLUME difference, e.g. "Within limits · volume +5.3%".
-• The effective diameter is shown with its own difference, e.g. "Ø 1.23 m (+2.6%)", so it is not mistaken for the volume percentage.
-• The note under the picture explains how to read it.
-• The necking limit now matches TerraBot office: volume more than 3% below design (was 5%).
+• Necking and bulking are now judged on DIAMETER, not volume: necking when the diameter is more than 5% below design, bulking when more than 10% above.
+• Concrete profile labels show the effective diameter and its diameter difference, e.g. "Necking · Ø 1.13 m (−5.8%)". The volume percentage is no longer shown.
+• The note under the picture explains how to read it: a field measurement to stay alert; a PIT test confirms it.
 </en-US>
 <zh-CN>
-• 混凝土剖面标签现明确标示百分比为混凝土方量差值，例如“合格 · 方量 +5.3%”。
-• 有效直径同时显示其直径差值，例如“Ø 1.23 m (+2.6%)”，避免与方量百分比混淆。
-• 图下方的说明解释了如何解读。
-• 缩颈界限与办公室端 TerraBot 一致：方量低于设计 3% 以上（原为 5%）。
+• 缩颈和扩径现按直径而非方量判断：直径低于设计 5% 以上为缩颈，高于 10% 以上为扩径。
+• 混凝土剖面标签显示有效直径及其直径差值，例如“缩颈 · Ø 1.13 m（−5.8%）”。不再显示方量百分比。
+• 图下方的说明解释了如何解读：现场测量仅作提醒，需以 PIT 检测确认。
 </zh-CN>

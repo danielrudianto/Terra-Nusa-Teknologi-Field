@@ -2421,23 +2421,34 @@
   "@profileNone": {
     "description": "profileNone"
   },
-  "profileNecking": "Necking · volume −{p}",
+  "profileNecking": "Necking · {d} ({p})",
   "@profileNecking": {
-    "description": "profileNecking",
+    "description": "Label ruas necking: Ø efektif dan selisih diameternya, mis. Necking · Ø 1,16 m (−3,6%)",
     "placeholders": {
+      "d": {
+        "type": "String"
+      },
       "p": {
         "type": "String"
       }
     }
   },
-  "profileBulking": "Bulking",
+  "profileBulking": "Bulking · {d}",
   "@profileBulking": {
-    "description": "profileBulking"
-  },
-  "profileFits": "Sesuai · volume {p}",
-  "@profileFits": {
-    "description": "profileFits",
+    "description": "Label ruas bulking: Ø efektif tanpa persen, mis. Bulking · Ø 1,28 m",
     "placeholders": {
+      "d": {
+        "type": "String"
+      }
+    }
+  },
+  "profileFits": "Sesuai · {d} ({p})",
+  "@profileFits": {
+    "description": "Label ruas sesuai: Ø efektif dan selisih diameternya, mis. Sesuai · Ø 1,23 m (+2,6%)",
+    "placeholders": {
+      "d": {
+        "type": "String"
+      },
       "p": {
         "type": "String"
       }
@@ -2447,7 +2458,7 @@
   "@profileShort": {
     "description": "profileShort"
   },
-  "profileHow": "Rata-rata per TM: volume dibagi tinggi yang diisinya. Persen di label = selisih VOLUME terhadap rencana; Ø = diameter efektif dari volume itu, dan angka dalam kurung = selisih diameternya. Necking bila volume lebih dari 3% di bawah rencana, bulking bila lebih dari 10% di atasnya. Lebar gambar dibesarkan 2× supaya simpangannya terlihat.",
+  "profileHow": "Rata-rata per TM: volume dibagi tinggi yang diisinya, lalu diubah ke diameter efektif. Dalam kurung: selisih DIAMETER terhadap rencana. Necking bila diameter lebih dari 5% di bawah rencana, bulking bila lebih dari 10% di atasnya. Ini hasil ukur lapangan, bukan pengujian: tanda untuk waspada, bukan vonis. Yang memastikan tetap uji PIT. Lebar gambar dibesarkan 2× supaya simpangannya terlihat.",
   "@profileHow": {
     "description": "profileHow"
   },

@@ -30,14 +30,19 @@ import '../../core/widgets/app_snack.dart';
 /// (bulking). It is an AVERAGE over a stretch of a few metres, not the shape
 /// of the wall — so stretches shorter than [minHeightM] are not judged.
 
-/// Volume more than this below design = necking.
+/// Effective DIAMETER more than this below design = necking (a flag to stay
+/// alert, not a verdict).
 ///
-/// 3%, sama dengan Office (`profil-beton.helper.ts`, 22 Nov 2026) — Daniel,
-/// 28 Nov 2026: "samain dong". Sebelumnya 5% di sini, sehingga ruas −4%
-/// terbaca "Sesuai" di HP tetapi "Necking" di Office untuk TM yang sama.
-const neckingLimit = 0.03;
+/// HARUS sama dengan `BATAS_NECKING` di Office (`profil-beton.helper.ts`).
+/// Keputusan bos 28 Nov 2026: dinilai dari DIAMETER, bukan volume. PIT
+/// menilai dengan BTA (impedansi, sebanding luas): di bawah 80% = slightly
+/// damaged; diakar, √0,80 ≈ 0,894 — necking di bawah 90% diameter dan
+/// bulking di atas +10% diameter baru masalah. Ukurannya manual dan necking
+/// lebih menakutkan, jadi necking sudah ditandai sejak −5% diameter. Ini
+/// hasil ukur lapangan, bukan pengujian: bisa saja galat ukur.
+const neckingLimit = 0.05;
 
-/// Volume more than this above design = bulking.
+/// Effective DIAMETER more than this above design = bulking.
 const bulkingLimit = 0.10;
 
 /// Stretches shorter than this are not judged: the sounding decides too much.
@@ -113,9 +118,10 @@ List<ConcreteSegment> concreteSegments(List<Map<String, Object?>> trucks, Object
       volumeM3: vol,
       ratio: ratio,
       diameterM: dM * math.sqrt(ratio),
-      kind: ratio < 1 - neckingLimit
+      // Dinilai dari DIAMETER (√ratio), bukan volume — lihat [neckingLimit].
+      kind: math.sqrt(ratio) < 1 - neckingLimit
           ? SegmentKind.necking
-          : ratio > 1 + bulkingLimit
+          : math.sqrt(ratio) > 1 + bulkingLimit
               ? SegmentKind.bulking
               : SegmentKind.fits,
     ));
@@ -132,18 +138,17 @@ String _signedPct(double ratio) => '${ratio >= 1 ? '+' : '−'}${_pct(ratio)}';
 
 String _dia(double m) => 'Ø ${m.toStringAsFixed(2).replaceAll('.', ',')} m';
 
-/// Diameter efektif BESERTA selisih diameternya: "Ø 1,23 m (+2,6%)".
+/// LABEL TIAP RUAS — bentuk dari Daniel, 28 Nov 2026 (sama dengan Office,
+/// `profil-beton.helper.ts`):
 ///
-/// Daniel, 28 Nov 2026 — bos membaca "Ø 1,23 m" di samping "+5,3%" lalu
-/// menghitung 1.230/1.200 = +2,5% dan mengira hitungannya salah. Persen di
-/// label adalah selisih VOLUME; diameter hanya diturunkan darinya
-/// (Ø × √rasio), jadi selisih volume ≈ dua kali selisih diameter. Keduanya
-/// kini ditulis berdampingan. Bulking tetap tanpa persen (23 Nov 2026).
-String _diaWithDiff(ConcreteSegment s) {
-  final dia = _dia(s.diameterM!);
-  if (s.kind == SegmentKind.bulking || s.ratio == null) return dia;
-  return '$dia (${_signedPct(math.sqrt(s.ratio!))})';
-}
+///     Necking · Ø 1,16 m (−3,6%)   ← [_label]: Ø efektif + selisih DIAMETER
+///     TM #4                        ← kecil abu
+///
+/// Asal-usulnya: bos membaca "Ø 1,23 m" di samping "+5,3%" (selisih VOLUME),
+/// menghitung 1.230/1.200 = +2,5%, dan mengira hitungannya salah. Sejak
+/// 28 Nov 2026 yang dinilai DIAMETER, dan persen volume tidak ditulis lagi
+/// (Daniel: "untuk persentase volume gausah di kasih"). Bulking tanpa persen
+/// (23 Nov 2026).
 
 /// The card on the Watch screen: the picture, one line per truck, and the
 /// Copy (text) / Share (picture + text) buttons.
@@ -174,9 +179,11 @@ class _ConcreteProfileCardState extends State<ConcreteProfileCard> {
   String _label(BuildContext context, ConcreteSegment s) {
     final l = t(context);
     return switch (s.kind) {
-      SegmentKind.necking => l.profileNecking(_pct(s.ratio!)),
-      SegmentKind.bulking => l.profileBulking,
-      SegmentKind.fits => l.profileFits(_signedPct(s.ratio!)),
+      // Ø efektif + selisih DIAMETER; jenisnya juga dinilai dari DIAMETER
+      // (neckingLimit / bulkingLimit).
+      SegmentKind.necking => l.profileNecking(_dia(s.diameterM!), _signedPct(math.sqrt(s.ratio!))),
+      SegmentKind.bulking => l.profileBulking(_dia(s.diameterM!)),
+      SegmentKind.fits => l.profileFits(_dia(s.diameterM!), _signedPct(math.sqrt(s.ratio!))),
       SegmentKind.short => l.profileShort,
     };
   }
@@ -195,7 +202,7 @@ class _ConcreteProfileCardState extends State<ConcreteProfileCard> {
       final depth = '${s.bottomM.toStringAsFixed(2).replaceAll('.', ',')} → ${formatMeters(s.topM)}';
       b.writeln(
         'TM #${s.seq}: $depth, ${formatVolume(s.volumeM3)}'
-        '${s.diameterM == null ? '' : ', ${_diaWithDiff(s)}'} — ${_label(context, s)}',
+        ' — ${_label(context, s)}',
       );
     }
     int n(SegmentKind k) => widget.segments.where((s) => s.kind == k).length;
@@ -325,8 +332,7 @@ class _ConcreteProfileCardState extends State<ConcreteProfileCard> {
           SizedBox(width: 52, child: Text('TM #${s.seq}', style: TextStyle(fontWeight: FontWeight.w700, color: w.ink))),
           Expanded(
             child: Text(
-              '${s.bottomM.toStringAsFixed(2).replaceAll('.', ',')} → ${formatMeters(s.topM)}'
-              '${s.diameterM == null ? '' : '  ${_diaWithDiff(s)}'}',
+              '${s.bottomM.toStringAsFixed(2).replaceAll('.', ',')} → ${formatMeters(s.topM)}',
               style: TextStyle(color: w.muted, fontSize: 13, fontFeatures: const [FontFeature.tabularFigures()]),
             ),
           ),
@@ -364,10 +370,10 @@ class _ProfilePainter extends CustomPainter {
   void paint(Canvas c, Size size) {
     const top = 14.0;
     const left = 34.0;
-    // Lebih lebar sejak 28 Nov 2026: label kini menyebut "volume" dan
-    // selisih diameter dalam kurung, dan yang terpotong di tepi kanan
-    // gambar justru angka yang dipertanyakan.
-    final labelW = math.min(180.0, size.width * 0.5);
+    // Lebih lebar sejak 28 Nov 2026: label kini memuat Ø efektif DAN
+    // selisih diameternya ("Necking · Ø 1,16 m (−3,6%)"), dan yang
+    // terpotong di tepi kanan gambar justru angka yang dipertanyakan.
+    final labelW = math.min(200.0, size.width * 0.56);
     final cx = left + (size.width - left - labelW) / 2;
     const half = 26.0;
     final maxM = bottomM + 0.8;
@@ -476,7 +482,7 @@ class _ProfilePainter extends CustomPainter {
           ..strokeWidth = 1,
       );
       _text(c, labelOf(it.s), Offset(xl, ly - 6), color: it.color, weight: FontWeight.w700);
-      _text(c, '${_diaWithDiff(it.s)} · TM #${it.s.seq}', Offset(xl, ly + 8), size: 10);
+      _text(c, 'TM #${it.s.seq}', Offset(xl, ly + 8), size: 10);
     }
     c.restore();
   }
